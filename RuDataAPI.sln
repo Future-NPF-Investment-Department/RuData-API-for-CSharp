@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuDataAPI", "RuDataAPI.csproj", "{98360892-ABAE-4E1A-B01A-0ACCBDEA6B05}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98360892-ABAE-4E1A-B01A-0ACCBDEA6B05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98360892-ABAE-4E1A-B01A-0ACCBDEA6B05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98360892-ABAE-4E1A-B01A-0ACCBDEA6B05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98360892-ABAE-4E1A-B01A-0ACCBDEA6B05}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C19B840-FFA5-435B-8121-9A8C02597750}
+	EndGlobalSection
+EndGlobal

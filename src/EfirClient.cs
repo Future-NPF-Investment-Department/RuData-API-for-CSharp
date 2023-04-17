@@ -10,16 +10,16 @@ using Efir.DataHub.Models.Requests.V2.Info;
 namespace RuDataAPI
 {
     /// <summary>
-    ///     Provides API to connect to EFIR.DataHub server to get market financial data.
+    ///     Provides API to communicate with EFIR.DataHub server (Interfax RuData) to get market data.
     /// </summary>
-    public class EfirClient : IDisposable
+    public sealed class EfirClient : IDisposable
     {
         private readonly EfirCredentials _credentials;
         private readonly HttpClient _httpClient;
         private string? _token = default;
         private const string MEDIATYPE = "application/json";
 
-        public EfirClient(EfirCredentials credentials) : base()
+        public EfirClient(EfirCredentials credentials)
         {
             _credentials = credentials;
             _httpClient = new HttpClient();
@@ -43,8 +43,21 @@ namespace RuDataAPI
         }
 
 
-
-        public async Task<FintoolReferenceDataFields[]> GetSecurityData(string isin)
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get static data for chosen security.
+        /// </summary>
+        /// <param name="isin">
+        ///     Security ISIN.    
+        /// </param> 
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData">
+        ///         https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData
+        ///     </see>.
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="FintoolReferenceDataFields"/>.
+        /// </returns>
+        public async Task<FintoolReferenceDataFields[]> GetSecurityDataAsync(string isin)
         {
             var query = new FintoolReferenceDataRequest
             {
@@ -53,12 +66,47 @@ namespace RuDataAPI
                                         "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode"      }
 
             };
-            string url = $"{_credentials.Url}/info/fintoolReferenceData";
+            string url = $"{_credentials.Url}/Info/fintoolReferenceData";
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
 
+        /// <summary> 
+        ///     Sends POST request to EFIR Server to get links to emission docs for chosen security.
+        /// </summary>
+        /// <param name="isin">
+        ///     Security ISIN.
+        /// </param>
+        /// <returns>
+        ///     Instance of <see cref="EmissionDocsResponse"/>.
+        /// </returns>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/EmissionDocs">
+        ///         https://docs.efir-net.ru/dh2/#/Info/EmissionDocs
+        ///     </see>.
+        /// </remarks>
+        public async Task<EmissionDocsResponse> GetEmissionDocsAsync(string isin)
+        {
+            var query = new EmissionDocsRequest
+            {
+                ids = new string[] { isin },              
+            };
+            string url = $"{_credentials.Url}/Info/EmissionDocs";
+            return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
+        }
 
+
+        /// <summary>
+        ///     Sends POST reuest to login to EFIR server using preloaded credentials.
+        /// </summary>
+        /// <remarks>
+        ///     To load credentials from file use <see cref="GetSecurityDataAsync"/> method.
+        ///     <para>
+        ///         For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Account/Login">
+        ///         https://docs.efir-net.ru/dh2/#/Account/Login
+        ///         </see>.
+        ///     </para>
+        /// </remarks>
         public async Task LoginAsync()
         {
             var query = new LoginRequest
@@ -71,7 +119,9 @@ namespace RuDataAPI
             _token = res.Token;
         }
 
-
+        /// <summary>
+        ///     Private method to send POST request to specified url of EFIR server.
+        /// </summary>
         private async Task<TResponse> PostEfirRequestAsync<TRequest, TResponse>(TRequest request, string url)
         {
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MEDIATYPE));

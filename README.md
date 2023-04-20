@@ -1,17 +1,17 @@
-# RuData API
+п»ї# RuData API
 
-## Установка
+## РЈСЃС‚Р°РЅРѕРІРєР°
 
-### Добавление NuGet-пакетов:
+### Р”РѕР±Р°РІР»РµРЅРёРµ NuGet-РїР°РєРµС‚РѕРІ:
 
 ```
 dotnet add package Microsoft.AspNet.WebApi.Client
 dotnet add package Efir.DataHub.Models --source http://developer.efir-net.ru/nuget
 ```
 
-## Зависимости
+## Р—Р°РІРёСЃРёРјРѕСЃС‚Рё
 
 - Microsoft.AspNet.WebApi.Client
-- Efir.DataHub.Models [подробнее тут](https://developer.efir-net.ru/NuGetFeed)
+- Efir.DataHub.Models [РїРѕРґСЂРѕР±РЅРµРµ С‚СѓС‚](https://developer.efir-net.ru/NuGetFeed)
 
-## Использование
+## РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ

@@ -1,11 +1,14 @@
-﻿using System.Net.Http.Headers;
+﻿using System;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
 using Efir.DataHub.Models.Models.Account;
 using Efir.DataHub.Models.Models.Info;
+using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
+using Efir.DataHub.Models.Requests.V2.Moex;
 
 namespace RuDataAPI
 {
@@ -71,6 +74,32 @@ namespace RuDataAPI
         }
 
 
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get indexes history data.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Moex/History">
+        ///         https://docs.efir-net.ru/dh2/#/Moex/History
+        ///     </see>.
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="HistoryStockIndexFields"/>.
+        /// </returns>
+        public async Task<HistoryStockIndexFields[]> GetMoexIndexHistoryAsync(DateTime start, DateTime end, params string[] tickers)
+        {
+            var query = new HistoryRequest
+            {
+                engine = "stock",
+                market = "index",
+                instruments = tickers,
+                dateFrom = start,
+                dateTo = end
+            };
+            string url = $"{_credentials.Url}/Moex/History";
+            return await PostEfirRequestAsync<HistoryRequest, HistoryStockIndexFields[]>(query, url);
+        }
+
+
         /// <summary> 
         ///     Sends POST request to EFIR Server to get links to emission docs for chosen security.
         /// </summary>
@@ -89,7 +118,7 @@ namespace RuDataAPI
         {
             var query = new EmissionDocsRequest
             {
-                ids = new string[] { isin },              
+                ids = new string[] { isin },
             };
             string url = $"{_credentials.Url}/Info/EmissionDocs";
             return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);

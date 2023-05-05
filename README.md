@@ -1,19 +1,20 @@
 ﻿# RuData API
+RuData API - .NET-библиотека, предназначенный для взаимодействия с сервером EFIR.DataHub от Interfax (RuData). 
+RuData API позволяет получить справочные и исторические данные по различным финансовым инструментам.
 
+## Зависимости
 
-### Добавление NuGet-пакетов:
+- Microsoft.AspNet.WebApi.Client
+- Efir.DataHub.Models ([подробнее](https://developer.efir-net.ru/NuGetFeed))
+
+#### Добавление NuGet-пакетов:
 
 ```
 dotnet add package Microsoft.AspNet.WebApi.Client
 dotnet add package Efir.DataHub.Models --source http://developer.efir-net.ru/nuget
 ```
 
-### Зависимости
-
-- Microsoft.AspNet.WebApi.Client
-- Efir.DataHub.Models ([подробнее](https://developer.efir-net.ru/NuGetFeed))
-
-### Использование
+## Использование
 
 ```csharp
 var credentials = EfirClient.GetCredentialsFromFile("MyCredentils.json");

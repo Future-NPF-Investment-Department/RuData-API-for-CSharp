@@ -35,6 +35,6 @@ Console.WriteLine(secinfo.fintoolid);
 {
   "Url": "https://dh2.efir-net.ru/v2",
   "Login": "my-login",
-  "Password": "my-passwork"
+  "Password": "my-password"
 }
 ```

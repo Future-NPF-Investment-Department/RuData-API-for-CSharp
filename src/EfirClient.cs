@@ -6,9 +6,13 @@ using System.Text.Json;
 using Efir.DataHub.Models.Models.Account;
 using Efir.DataHub.Models.Models.Info;
 using Efir.DataHub.Models.Models.Moex;
+using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Requests.V2.Account;
-using Efir.DataHub.Models.Requests.V2.Info;
+using InfoRequest = Efir.DataHub.Models.Requests.V2.Info;
 using Efir.DataHub.Models.Requests.V2.Moex;
+using Efir.DataHub.Models.Requests.V2.Bond;
+using Efir.DataHub.Models.Models.RuData;
+using Efir.DataHub.Models.Requests.V2.RuData;
 
 namespace RuDataAPI
 {
@@ -30,6 +34,7 @@ namespace RuDataAPI
 
         public EfirCredentials Credentials => _credentials;
 
+
         /// <summary>
         ///     Obtains EfirCredentials from json file. If failed returns empty EfirCredentials.
         /// </summary>
@@ -43,6 +48,30 @@ namespace RuDataAPI
 
             using FileStream fs = new(credentialsFilePath, FileMode.Open);
             return JsonSerializer.Deserialize<EfirCredentials>(fs) ?? EfirCredentials.Empty;
+        }
+
+
+        /// <summary>
+        ///     Sends POST reuest to login to EFIR server using preloaded credentials.
+        /// </summary>
+        /// <remarks>
+        ///     To load credentials from file use <see cref="GetSecurityDataAsync"/> method.
+        ///     <para>
+        ///         For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Account/Login">
+        ///         https://docs.efir-net.ru/dh2/#/Account/Login
+        ///         </see>.
+        ///     </para>
+        /// </remarks>
+        public async Task LoginAsync()
+        {
+            var query = new LoginRequest
+            {
+                login = _credentials.Login,
+                password = _credentials.Password
+            };
+            string url = $"{_credentials.Url}/account/login";
+            LoginResponse res = await PostEfirRequestAsync<LoginRequest, LoginResponse>(query, url);
+            _token = res.Token;
         }
 
 
@@ -62,7 +91,7 @@ namespace RuDataAPI
         /// </returns>
         public async Task<FintoolReferenceDataFields[]> GetSecurityDataAsync(string isin)
         {
-            var query = new FintoolReferenceDataRequest
+            var query = new InfoRequest.FintoolReferenceDataRequest
             {
                 id = isin,
                 fields = new string[] { "NickName", "FinToolType", "FaceValue", "FaceFTName", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
@@ -70,7 +99,7 @@ namespace RuDataAPI
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
-            return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
+            return await PostEfirRequestAsync<InfoRequest.FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
 
@@ -116,37 +145,43 @@ namespace RuDataAPI
         /// </remarks>
         public async Task<EmissionDocsResponse> GetEmissionDocsAsync(string isin)
         {
-            var query = new EmissionDocsRequest
+            var query = new InfoRequest.EmissionDocsRequest
             {
                 ids = new string[] { isin },
             };
             string url = $"{_credentials.Url}/Info/EmissionDocs";
-            return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
+            return await PostEfirRequestAsync<InfoRequest.EmissionDocsRequest, EmissionDocsResponse>(query, url);
         }
 
 
-        /// <summary>
-        ///     Sends POST reuest to login to EFIR server using preloaded credentials.
+        /// <summary> 
+        ///     Sends POST request to EFIR Server to get parameters of MOEX yield curve (GCurve) for specified date.
         /// </summary>
+        /// <param name="date">
+        ///     Date of yield curve.
+        /// </param>
+        /// <returns>
+        ///     Instance of <see cref="GCurveOFZResponse"/>.
+        /// </returns>
         /// <remarks>
-        ///     To load credentials from file use <see cref="GetSecurityDataAsync"/> method.
-        ///     <para>
-        ///         For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Account/Login">
-        ///         https://docs.efir-net.ru/dh2/#/Account/Login
-        ///         </see>.
-        ///     </para>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/g-curve-ofz?id=post-g-curve-ofz">
+        ///         https://docs.efir-net.ru/dh2/#/Bond/g-curve-ofz?id=post-g-curve-ofz
+        ///     </see>.
+        ///     <para> For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
+        ///             MOEX GCurve reference page</see>. 
+        ///     </para>    
         /// </remarks>
-        public async Task LoginAsync()
+        public async Task<GCurveOFZResponse> GetGcurveParameters(DateTime date)
         {
-            var query = new LoginRequest
+            var query = new GCurveOFZRequest
             {
-                login = _credentials.Login,
-                password = _credentials.Password 
+               Date = date,
             };
-            string url = $"{_credentials.Url}/account/login";
-            LoginResponse res = await PostEfirRequestAsync<LoginRequest, LoginResponse>(query, url);
-            _token = res.Token;
-        }
+
+            string url = $"{_credentials.Url}/Bond/g-curve-ofz";
+            return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
+        }         
+        
 
         /// <summary>
         ///     Private method to send POST request to specified url of EFIR server.

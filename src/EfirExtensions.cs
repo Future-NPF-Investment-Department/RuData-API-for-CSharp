@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RuDataAPI
+namespace RuDataAPI.Extensions
 {
     /// <summary>
     ///     Provides additional methods to get different sort of market data using EFIR.DataHub services.
@@ -108,7 +108,7 @@ namespace RuDataAPI
                 gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));
             }
 
-            return gt / 100;
+            return Math.Exp(gt/10000)-1;
         }
     }
 }

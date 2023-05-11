@@ -1,17 +1,15 @@
-﻿using System;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
 using Efir.DataHub.Models.Models.Account;
 using Efir.DataHub.Models.Models.Info;
 using Efir.DataHub.Models.Models.Moex;
-using Efir.DataHub.Models.Models.Bond;
-using Efir.DataHub.Models.Requests.V2.Account;
-using InfoRequest = Efir.DataHub.Models.Requests.V2.Info;
-using Efir.DataHub.Models.Requests.V2.Moex;
-using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Models.RuData;
+
+using Efir.DataHub.Models.Requests.V2.Account;
+using Efir.DataHub.Models.Requests.V2.Info;
+using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 
 namespace RuDataAPI
@@ -32,8 +30,14 @@ namespace RuDataAPI
             _httpClient = new HttpClient();
         }
 
+        /// <summary>
+        ///     EFIR.DataHub server authorization credentials.
+        /// </summary>
         public EfirCredentials Credentials => _credentials;
-
+        /// <summary>
+        ///     EFIR.DataHub server Authorization state.
+        /// </summary>
+        public bool IsLoggedIn { get; private set; }
 
         /// <summary>
         ///     Obtains EfirCredentials from json file. If failed returns empty EfirCredentials.
@@ -72,6 +76,7 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/account/login";
             LoginResponse res = await PostEfirRequestAsync<LoginRequest, LoginResponse>(query, url);
             _token = res.Token;
+            IsLoggedIn = true;
         }
 
 
@@ -91,7 +96,7 @@ namespace RuDataAPI
         /// </returns>
         public async Task<FintoolReferenceDataFields[]> GetSecurityDataAsync(string isin)
         {
-            var query = new InfoRequest.FintoolReferenceDataRequest
+            var query = new FintoolReferenceDataRequest
             {
                 id = isin,
                 fields = new string[] { "NickName", "FinToolType", "FaceValue", "FaceFTName", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
@@ -99,7 +104,7 @@ namespace RuDataAPI
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
-            return await PostEfirRequestAsync<InfoRequest.FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
+            return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
 
@@ -145,12 +150,12 @@ namespace RuDataAPI
         /// </remarks>
         public async Task<EmissionDocsResponse> GetEmissionDocsAsync(string isin)
         {
-            var query = new InfoRequest.EmissionDocsRequest
+            var query = new EmissionDocsRequest
             {
                 ids = new string[] { isin },
             };
             string url = $"{_credentials.Url}/Info/EmissionDocs";
-            return await PostEfirRequestAsync<InfoRequest.EmissionDocsRequest, EmissionDocsResponse>(query, url);
+            return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
         }
 
 

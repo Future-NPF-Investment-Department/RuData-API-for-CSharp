@@ -1,9 +1,5 @@
-﻿using Efir.DataHub.Models.Models.RuData;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Efir.DataHub.Models.Models.Info;
+using Efir.DataHub.Models.Models.RuData;
 
 namespace RuDataAPI.Extensions
 {
@@ -23,13 +19,13 @@ namespace RuDataAPI.Extensions
         /// </remarks>
         public static async Task<double> CalculateGcurveForDate(this EfirClient client, DateTime date, double tenor)
         {
-            GCurveOFZResponse curveParams = await client.GetGcurveParameters(date);
+            GCurveOFZResponse curveParams = await client.GetGcurveParametersAsync(date);
 
             // these constants are specified according to MOEX (https://www.moex.com/s2532)
             double k = 1.6, a1 = .0, a2 = .6;
 
-            double beta0 = curveParams.beta0val.HasValue 
-                ? (double)curveParams.beta0val.Value 
+            double beta0 = curveParams.beta0val.HasValue
+                ? (double)curveParams.beta0val.Value
                 : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
             double beta1 = curveParams.beta1val.HasValue
@@ -92,7 +88,7 @@ namespace RuDataAPI.Extensions
                 aCoeffs[i] = previous + a2 * Math.Pow(k, i - 1);
             }
 
-            for(int i = 1; i <= 8; i++)
+            for (int i = 1; i <= 8; i++)
             {
                 bCoeffs[i] = bCoeffs[i - 1] * k;
             }
@@ -108,7 +104,21 @@ namespace RuDataAPI.Extensions
                 gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));
             }
 
-            return Math.Exp(gt/10000)-1;
+            return Math.Exp(gt / 10000) - 1;
+        }
+
+        /// <summary>
+        ///     Fetch static security data from EFIR server.
+        /// </summary>
+        /// <param name="Isin">Security ISIN code.</param>
+        /// <returns><see cref="EfirSecurity"/></returns>
+        public static async Task<EfirSecurity> GetSecurityData(this EfirClient client, string Isin)
+        {
+            FintoolReferenceDataFields[] data = await client.GetSecurityDataAsync(Isin);
+            if (data.Length == 0)
+                throw new Exception($"EFIR: no securities found for ISIN: {Isin}");
+
+            return new EfirSecurity(data[0]);
         }
     }
 }

@@ -99,8 +99,9 @@ namespace RuDataAPI
             var query = new FintoolReferenceDataRequest
             {
                 id = isin,
-                fields = new string[] { "NickName", "FinToolType", "FaceValue", "FaceFTName", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
-                                        "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode"      }
+                fields = new string[] { "NickName", "fullname", "FinToolType", "FaceValue", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
+                                        "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode",
+                                        "coupontypename_nrd", "begdistdate", "enddistdate", "daysall", "firstcoupondate", "ismatched", "numcoupons" }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
@@ -176,7 +177,7 @@ namespace RuDataAPI
         ///             MOEX GCurve reference page</see>. 
         ///     </para>    
         /// </remarks>
-        public async Task<GCurveOFZResponse> GetGcurveParameters(DateTime date)
+        public async Task<GCurveOFZResponse> GetGcurveParametersAsync(DateTime date)
         {
             var query = new GCurveOFZRequest
             {

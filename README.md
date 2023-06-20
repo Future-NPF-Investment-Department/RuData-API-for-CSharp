@@ -20,7 +20,7 @@ using RuDataAPI;
 using RuDataAPI.Extensions;
 
 // reading credentials from json file and instantiate EFIR client
-var credentials = EfirClient.GetCredentialsFromFile("MyCredentils.json");
+var credentials = EfirClient.GetCredentialsFromFile("MyCredentials.json");
 using EfirClient efir = new EfirClient(credentials);
 
 // logging to EFIR server
@@ -28,13 +28,13 @@ using EfirClient efir = new EfirClient(credentials);
 await efir.LoginAsync();
 
 // obtaining bond-issue static parameters
-var secinfo = await efir.GetSecurityData("RU000A100EF5");
-Console.WriteLine(secinfo.nickname);
-Console.WriteLine(secinfo.endmtydate);
-Console.WriteLine(secinfo.fintoolid);
+var secinfo = await efir.GetSecurityDataAsync("RU000A100EF5");
+Console.WriteLine(secinfo.First().nickname);
+Console.WriteLine(secinfo.First().endmtydate);
+Console.WriteLine(secinfo.First().fintoolid);
 
 // obtaining 3-month MOEX G-Curve rate known as of 19 May 2023
-double rate3m = efir.CalculateGcurveForDate(new DateTime(2023, 5, 19), .25);
+double rate3m = await efir.CalculateGcurveForDate(new DateTime(2023, 5, 19), .25);
 ```
 
 ## Файл с параметрами авторизации

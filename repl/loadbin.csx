@@ -14,4 +14,4 @@ EfirCredentials creds = new EfirCredentials()
     Password = Args[1]
 };
 
-Console.WriteLine($"Efir credentials created for ({creds.Login}, {creds.Password}). See 'creds' variable (availavle in REPL context).");
+Console.WriteLine($"Efir credentials created for ({creds.Login}, {creds.Password}). See 'creds' variable (available in REPL context).");

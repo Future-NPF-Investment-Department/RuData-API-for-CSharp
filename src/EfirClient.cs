@@ -124,7 +124,7 @@ namespace RuDataAPI
         /// <returns>
         ///     Array of <see cref="CouponsFields"/>.
         /// </returns>
-        public async Task<CouponsFields[]> GetCouponsDataSync(string secId)
+        public async Task<CouponsFields[]> GetCouponsDataSync(long secId)
         {
             var query = new CouponsRequest()
             {

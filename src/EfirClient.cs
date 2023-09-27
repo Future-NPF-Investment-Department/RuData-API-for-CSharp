@@ -4,11 +4,13 @@ using System.Text.Json;
 
 using Efir.DataHub.Models.Models.Account;
 using Efir.DataHub.Models.Models.Info;
+using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
+using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 
@@ -108,6 +110,31 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get coupon schedule for specified bond.
+        /// </summary>
+        /// <param name="secId">
+        ///     Secuirty ID in Efir database.
+        /// </param>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons">
+        ///         https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons
+        ///     </see>.
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="CouponsFields"/>.
+        /// </returns>
+        public async Task<CouponsFields[]> GetCouponsDataSync(string secId)
+        {
+            var query = new CouponsRequest()
+            {
+                filter = $"id_fintool = \'{secId}\'"
+            };
+
+            string url = $"{_credentials.Url}/Bond/Coupons";
+            return await PostEfirRequestAsync<CouponsRequest, CouponsFields[]>(query, url);
+        }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get indexes history data.
@@ -151,12 +178,12 @@ namespace RuDataAPI
         /// </remarks>
         public async Task<EmissionDocsResponse> GetEmissionDocsAsync(string isin)
         {
-            var query = new EmissionDocsRequest
+            var query = new Efir.DataHub.Models.Requests.V2.Info.EmissionDocsRequest
             {
                 ids = new string[] { isin },
             };
             string url = $"{_credentials.Url}/Info/EmissionDocs";
-            return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
+            return await PostEfirRequestAsync<Efir.DataHub.Models.Requests.V2.Info.EmissionDocsRequest, EmissionDocsResponse>(query, url);
         }
 
 
@@ -186,7 +213,7 @@ namespace RuDataAPI
 
             string url = $"{_credentials.Url}/Bond/g-curve-ofz";
             return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
-        }         
+        }   
         
 
         /// <summary>

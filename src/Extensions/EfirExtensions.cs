@@ -17,7 +17,7 @@ namespace RuDataAPI.Extensions
         ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
         ///             MOEX G-Curve reference page</see>.    
         /// </remarks>
-        public static async Task<double> CalculateGcurveForDate(this EfirClient client, DateTime date, double tenor)
+        public static async Task<double> CalculateGcurveForDateAsync(this EfirClient client, DateTime date, double tenor)
         {
             GCurveOFZResponse curveParams = await client.GetGcurveParametersAsync(date);
 
@@ -111,14 +111,25 @@ namespace RuDataAPI.Extensions
         ///     Fetch static security data from EFIR server.
         /// </summary>
         /// <param name="Isin">Security ISIN code.</param>
+        /// <param name="loadCoupons">Flag to load coupons for bond.</param>
         /// <returns><see cref="EfirSecurity"/></returns>
-        public static async Task<EfirSecurity> GetSecurityData(this EfirClient client, string Isin)
+        public static async Task<EfirSecurity> GetSecurityDataAsync(this EfirClient client, string Isin, bool loadCoupons = false)
         {
             FintoolReferenceDataFields[] data = await client.GetSecurityDataAsync(Isin);
             if (data.Length == 0)
                 throw new Exception($"EFIR: no securities found for ISIN: {Isin}");
 
-            return new EfirSecurity(data[0]);
+            var sec = new EfirSecurity(data[0]);
+
+            if (loadCoupons && sec.SecurityId is not null && sec.AssetClass is "Облигация")
+            {
+                sec.CouponSchedule = new List<CouponPeriod>();
+                var coupons = await client.GetCouponsDataAsync(sec.SecurityId.Value);
+                if (coupons.Length > 0)
+                    foreach (var coupon in coupons)
+                        sec.CouponSchedule.Add(new CouponPeriod(coupon));
+            }
+            return sec;
         }
     }
 }

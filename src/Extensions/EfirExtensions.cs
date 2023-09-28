@@ -124,7 +124,7 @@ namespace RuDataAPI.Extensions
             if (loadCoupons && sec.SecurityId is not null && sec.AssetClass is "Облигация")
             {
                 sec.CouponSchedule = new List<CouponPeriod>();
-                var coupons = await client.GetCouponsDataAsync(sec.SecurityId.Value);
+                var coupons = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
                 if (coupons.Length > 0)
                     foreach (var coupon in coupons)
                         sec.CouponSchedule.Add(new CouponPeriod(coupon));

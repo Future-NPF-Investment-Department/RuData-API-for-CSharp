@@ -1,4 +1,4 @@
-﻿using Efir.DataHub.Models.Models.Bond; 
+﻿using Efir.DataHub.Models.Models.Bond;
 
 namespace RuDataAPI.Extensions
 {
@@ -7,21 +7,16 @@ namespace RuDataAPI.Extensions
     /// </summary>
     public class CouponPeriod
     {
-        public CouponPeriod(CouponsFields fields)
+        public CouponPeriod(TimeTableV2Fields fields)
         {
-            CouponId            = fields.id_coupon;
-            CouponStart         = fields.begin_period!.Value;
-            CouponEnd           = fields.end_period!.Value;
-            CouponLength        = fields.coupon_period!.Value;
-            CouponRate          = (double?)fields.coupon_rate ?? default;
-            Spread              = (double?)fields.rate_spread_pct ?? default;
-            CouponPayment       = (double?)fields.pay_per_bond ?? default;
+            CouponStart = fields.BeginPeriod!.Value;
+            CouponEnd = fields.EndPeriod!.Value;
+            CouponLength = (int)fields.CouponPeriod!.Value;
+            Rate = (double?)fields.Value ?? 0.0;
+            Payment = (double?)fields.Pay1Bond ?? 0.0;
+            PaymentType = Enum.Parse<PaymentType>(fields.EventType);
         }
 
-        /// <summary>
-        ///     Coupon ID.
-        /// </summary>
-        public long CouponId { get; set; }
 
         /// <summary>
         ///     Start date of coupon period.
@@ -36,21 +31,21 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Length of coupon period in days.
         /// </summary>        
-        public long CouponLength { get; set; }
+        public int CouponLength { get; set; }
 
         /// <summary>
         ///     Annual interest rate established for the coupon period.
         /// </summary>
-        public double CouponRate { get; set; }
-
-        /// <summary>
-        ///     Difference between Coupon rate and reference floating rate.
-        /// </summary>
-        public double Spread { get; set; }
+        public double Rate { get; set; }
 
         /// <summary>
         ///     Payment per bond for this coupon period in units of bond's notional currency.
         /// </summary>
-        public double CouponPayment { get; set; }
+        public double Payment { get; set; }
+
+        /// <summary>
+        ///     Payment type (CPN, CALL, MTY, CONV, DIV)
+        /// </summary>
+        public PaymentType PaymentType { get; set; }
     }
 }

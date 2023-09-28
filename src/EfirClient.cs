@@ -7,12 +7,14 @@ using Efir.DataHub.Models.Models.Info;
 using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
+using Efir.DataHub.Models.Models.Rating;
 
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
 using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
+using Efir.DataHub.Models.Requests.V2.Rating;
 
 namespace RuDataAPI
 {
@@ -111,6 +113,28 @@ namespace RuDataAPI
         }
 
         /// <summary>
+        ///     Sends POST request to EFIR Server to get payments (incl. coupon, notional, etc.) schedule for specified bond.
+        /// </summary>
+        /// <param name="secIds">Secuirty ID in Efir database.</param>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/CalendarV2">
+        ///         https://docs.efir-net.ru/dh2/#/Info/CalendarV2
+        ///     </see>.
+        /// </remarks>
+        /// <returns></returns>
+        public async Task<TimeTableV2Fields[]> GetEventsCalendarAsync(params long[] secIds)
+        {
+            var query = new CalendarV2Request
+            {
+                FintoolIds = secIds,
+            };
+
+            string url = $"{_credentials.Url}/Info/CalendarV2";
+            return await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
+        }
+
+
+        /// <summary>
         ///     Sends POST request to EFIR Server to get coupon schedule for specified bond.
         /// </summary>
         /// <param name="secId">
@@ -133,6 +157,30 @@ namespace RuDataAPI
 
             string url = $"{_credentials.Url}/Bond/Coupons";
             return await PostEfirRequestAsync<CouponsRequest, CouponsFields[]>(query, url);
+        }
+
+
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get security ratings.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/SecurityRatings">
+        ///         https://docs.efir-net.ru/dh2/#/Rating/SecurityRatings
+        ///     </see>.
+        /// </remarks>
+        /// <param name="isin">Security ISIN-code.</param>
+        /// <param name="date">Date of rating.</param>
+        /// <returns>Array of <see cref="SecurityRatingsFields"/>.</returns>
+        public async Task<SecurityRatingTableFields[]> GetRatingAsync(string isin)
+        {
+            var query = new SecurityRatingsTableRequest //SecurityRatingsRequest
+            {
+                ids = new string[] { isin },
+                //date = date
+            };
+
+            string url = $"{_credentials.Url}/Rating/SecurityRatingTable";
+            return await PostEfirRequestAsync<SecurityRatingsTableRequest, SecurityRatingTableFields[]>(query, url);
         }
 
 

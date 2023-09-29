@@ -5,28 +5,34 @@ namespace RuDataAPI.Extensions
     /// <summary>
     ///     Represents coupon period of a bond.
     /// </summary>
-    public class CouponPeriod
+    public class SecurityEvent
     {
-        public CouponPeriod(TimeTableV2Fields fields)
+        public SecurityEvent(TimeTableV2Fields fields)
         {
-            CouponStart = fields.BeginPeriod!.Value;
-            CouponEnd = fields.EndPeriod!.Value;
+            CouponStart = fields.BeginPeriod;
+            CouponEnd = fields.EndPeriod;
+            EventDate = fields.EventDate ?? default;
             CouponLength = (int)fields.CouponPeriod!.Value;
             Rate = (double?)fields.Value ?? 0.0;
             Payment = (double?)fields.Pay1Bond ?? 0.0;
-            PaymentType = Enum.Parse<PaymentType>(fields.EventType);
+            PaymentType = Enum.Parse<EventType>(fields.EventType);
         }
 
 
         /// <summary>
         ///     Start date of coupon period.
         /// </summary>
-        public DateTime CouponStart { get; set; }   
+        public DateTime? CouponStart { get; set; }   
         
         /// <summary>
         ///     End date of coupon period.
         /// </summary>
-        public DateTime CouponEnd { get; set; }
+        public DateTime? CouponEnd { get; set; }
+
+        /// <summary>
+        ///     Date of event.
+        /// </summary>
+        public DateTime EventDate { get; set; }
         
         /// <summary>
         ///     Length of coupon period in days.
@@ -46,6 +52,6 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)
         /// </summary>
-        public PaymentType PaymentType { get; set; }
+        public EventType PaymentType { get; set; }
     }
 }

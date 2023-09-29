@@ -3,7 +3,7 @@
     /// <summary>
     ///     Payment type.
     /// </summary>
-    public enum PaymentType
+    public enum EventType
     {
         /// <summary>
         ///     Coupon payment.

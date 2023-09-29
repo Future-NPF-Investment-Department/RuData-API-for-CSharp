@@ -9,10 +9,9 @@ namespace RuDataAPI.Extensions
     {
         public SecurityEvent(TimeTableV2Fields fields)
         {
-            CouponStart = fields.BeginPeriod;
-            CouponEnd = fields.EndPeriod;
-            EventDate = fields.EventDate ?? default;
-            CouponLength = (int)fields.CouponPeriod!.Value;
+            StartDate = fields.BeginEventPer;
+            EndDate = fields.EventDate;
+            PeriodLength = (int?)fields.EventPeriod ?? 0;
             Rate = (double?)fields.Value ?? 0.0;
             Payment = (double?)fields.Pay1Bond ?? 0.0;
             PaymentType = Enum.Parse<EventType>(fields.EventType);
@@ -20,24 +19,19 @@ namespace RuDataAPI.Extensions
 
 
         /// <summary>
-        ///     Start date of coupon period.
+        ///     Event period start date. For CPN events - coupon period start date. For MTY - bond distribution date.
         /// </summary>
-        public DateTime? CouponStart { get; set; }   
-        
-        /// <summary>
-        ///     End date of coupon period.
-        /// </summary>
-        public DateTime? CouponEnd { get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
-        ///     Date of event.
+        ///     Event period end date. For CPN events - coupon period end date. For MTY - bond maturity date.
         /// </summary>
-        public DateTime EventDate { get; set; }
+        public DateTime? EndDate { get; set; }
         
         /// <summary>
-        ///     Length of coupon period in days.
+        ///     Length of coupon period (for CPN events) or length of bond lifetime (for MTY events) in days.
         /// </summary>        
-        public int CouponLength { get; set; }
+        public int PeriodLength { get; set; }
 
         /// <summary>
         ///     Annual interest rate established for the coupon period.

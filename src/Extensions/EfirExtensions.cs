@@ -113,7 +113,7 @@ namespace RuDataAPI.Extensions
         /// <param name="Isin">Security ISIN code.</param>
         /// <param name="loadCoupons">Flag to load coupons for bond.</param>
         /// <returns><see cref="EfirSecurity"/></returns>
-        public static async Task<EfirSecurity> GetSecurityDataAsync(this EfirClient client, string Isin, bool loadCoupons = false)
+        public static async Task<EfirSecurity> GetEfirSecurityAsync(this EfirClient client, string Isin, bool loadCoupons = false)
         {
             FintoolReferenceDataFields[] data = await client.GetSecurityDataAsync(Isin);
             if (data.Length == 0)
@@ -123,11 +123,11 @@ namespace RuDataAPI.Extensions
 
             if (loadCoupons && sec.SecurityId is not null && sec.AssetClass is "Облигация")
             {
-                sec.CouponSchedule = new List<SecurityEvent>();
-                var coupons = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
-                if (coupons.Length > 0)
-                    foreach (var coupon in coupons)
-                        sec.CouponSchedule.Add(new SecurityEvent(coupon));
+                sec.EventsSchedule = new List<SecurityEvent>();
+                var events = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
+                if (events.Length > 0)
+                    foreach (var coupon in events)
+                        sec.EventsSchedule.Add(new SecurityEvent(coupon));
             }
             return sec;
         }

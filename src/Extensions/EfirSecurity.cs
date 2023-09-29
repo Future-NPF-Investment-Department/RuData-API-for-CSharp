@@ -91,7 +91,7 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     List of <see cref="SecurityEvent"/> data.
         /// </summary>
-        public List<SecurityEvent>? CouponSchedule { get; set; }
+        public List<SecurityEvent>? EventsSchedule { get; set; }
         
         /// <summary>
         ///     Start date of first Coupon period

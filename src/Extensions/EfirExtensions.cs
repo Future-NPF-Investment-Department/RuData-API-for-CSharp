@@ -8,6 +8,10 @@ namespace RuDataAPI.Extensions
     /// </summary>
     public static class EfirExtensions
     {
+        // cach variables
+        private static DateTime? _date;
+        private static GCurveOFZResponse? _params;
+
         /// <summary>
         ///     Calculates MOEX G-Curve rate for specified tenor.
         /// </summary>
@@ -19,61 +23,66 @@ namespace RuDataAPI.Extensions
         /// </remarks>
         public static async Task<double> CalculateGcurveForDateAsync(this EfirClient client, DateTime date, double tenor)
         {
-            GCurveOFZResponse curveParams = await client.GetGcurveParametersAsync(date);
+            // caching
+            if (_params is null || _date != date)
+            {
+                _date = date;
+                _params = await client.GetGcurveParametersAsync(date.Date);
+            }
 
             // these constants are specified according to MOEX (https://www.moex.com/s2532)
             double k = 1.6, a1 = .0, a2 = .6;
 
-            double beta0 = curveParams.beta0val.HasValue
-                ? (double)curveParams.beta0val.Value
+            double beta0 = _params.beta0val.HasValue
+                ? (double)_params.beta0val.Value
                 : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double beta1 = curveParams.beta1val.HasValue
-                ? (double)curveParams.beta1val.Value
+            double beta1 = _params.beta1val.HasValue
+                ? (double)_params.beta1val.Value
                 : throw new Exception($"GCurve BETA1 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double beta2 = curveParams.beta2val.HasValue
-                ? (double)curveParams.beta2val.Value
+            double beta2 = _params.beta2val.HasValue
+                ? (double)_params.beta2val.Value
                 : throw new Exception($"GCurve BETA2 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double tau = curveParams.tauval.HasValue
-                ? (double)curveParams.tauval.Value
+            double tau = _params.tauval.HasValue
+                ? (double)_params.tauval.Value
                 : throw new Exception($"GCurve TAU param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g1 = curveParams.g1val.HasValue
-                ? (double)curveParams.g1val.Value
+            double g1 = _params.g1val.HasValue
+                ? (double)_params.g1val.Value
                 : throw new Exception($"GCurve g1 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g2 = curveParams.g2val.HasValue
-                ? (double)curveParams.g2val.Value
+            double g2 = _params.g2val.HasValue
+                ? (double)_params.g2val.Value
                 : throw new Exception($"GCurve g2 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g3 = curveParams.g3val.HasValue
-                ? (double)curveParams.g3val.Value
+            double g3 = _params.g3val.HasValue
+                ? (double)_params.g3val.Value
                 : throw new Exception($"GCurve g3 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g4 = curveParams.g4val.HasValue
-                ? (double)curveParams.g4val.Value
+            double g4 = _params.g4val.HasValue
+                ? (double)_params.g4val.Value
                 : throw new Exception($"GCurve g4 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g5 = curveParams.g5val.HasValue
-                ? (double)curveParams.g5val.Value
+            double g5 = _params.g5val.HasValue
+                ? (double)_params.g5val.Value
                 : throw new Exception($"GCurve g5 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g6 = curveParams.g6val.HasValue
-                ? (double)curveParams.g6val.Value
+            double g6 = _params.g6val.HasValue
+                ? (double)_params.g6val.Value
                 : throw new Exception($"GCurve g6 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g7 = curveParams.g7val.HasValue
-                ? (double)curveParams.g7val.Value
+            double g7 = _params.g7val.HasValue
+                ? (double)_params.g7val.Value
                 : throw new Exception($"GCurve g7 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g8 = curveParams.g8val.HasValue
-                ? (double)curveParams.g8val.Value
+            double g8 = _params.g8val.HasValue
+                ? (double)_params.g8val.Value
                 : throw new Exception($"GCurve g8 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
-            double g9 = curveParams.g9val.HasValue
-                ? (double)curveParams.g9val.Value
+            double g9 = _params.g9val.HasValue
+                ? (double)_params.g9val.Value
                 : throw new Exception($"GCurve g9 param is null when trying to calculate G-Curve value for {date:dd.MM.yyyy}.");
 
             //                                  0   1   2   3   4   5   6   7   8

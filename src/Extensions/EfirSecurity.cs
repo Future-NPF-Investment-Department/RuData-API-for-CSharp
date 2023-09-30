@@ -14,7 +14,7 @@ namespace RuDataAPI.Extensions
             FullName = finref.fullname;
             Isin = finref.isincode;
             IssuerName= finref.issuername_nrd;
-            PlacementDate = finref.enddistdate;
+            PlacementDate = finref.begdistdate;
             MaturityDate = finref.endmtydate;
             Currency = finref.faceftname;
             Notional = (double?)finref.facevalue;

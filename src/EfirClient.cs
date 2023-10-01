@@ -148,6 +148,33 @@ namespace RuDataAPI
         }
 
         /// <summary>
+        ///     Sends POST request to EFIR Server to find all securities that match specified criteria.
+        /// </summary>
+        /// <param name="filter">Filtration string. SQL WHERE clause syntax used.</param> 
+        /// <remarks>
+        ///     For more details about usage see 
+        ///     <see href="https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData">
+        ///         https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData</see>.
+        ///     <para>Please use SQL WHERE clause syntax to specify filtration string.</para>
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="FintoolReferenceDataFields"/>.
+        /// </returns>
+        public async Task<FintoolReferenceDataFields[]> FindSecuritiesAsync(string filter)
+        {
+            var query = new FintoolReferenceDataRequest
+            {
+                filter = filter,
+                fields = new string[] { "NickName", "fullname", "FinToolType", "FaceValue", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
+                                        "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode",
+                                        "coupontypename_nrd", "begdistdate", "enddistdate", "daysall", "firstcoupondate", "ismatched", "numcoupons", "borrowerinn" }
+
+            };
+            string url = $"{_credentials.Url}/Info/fintoolReferenceData";
+            return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
+        }
+
+        /// <summary>
         ///     Sends POST request to EFIR Server to get payments (incl. coupon, notional, etc.) schedule for specified bond.
         /// </summary>
         /// <param name="secIds">Secuirty ID in Efir database.</param>

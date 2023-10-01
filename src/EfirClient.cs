@@ -46,9 +46,7 @@ namespace RuDataAPI
         /// <summary>
         ///     Obtains EfirCredentials from json file. If failed returns empty EfirCredentials.
         /// </summary>
-        /// <param name="credentialsFilePath">
-        ///     Path to file that contains credentials to login Efir server.
-        /// </param>
+        /// <param name="credentialsFilePath">Path to file that contains credentials to login Efir server.</param>
         public static EfirCredentials GetCredentialsFromFile(string credentialsFilePath)
         {
             if (File.Exists(credentialsFilePath) is false)
@@ -63,7 +61,7 @@ namespace RuDataAPI
         ///     Sends POST reuest to login to EFIR server using preloaded credentials.
         /// </summary>
         /// <remarks>
-        ///     To load credentials from file use <see cref="GetSecurityDataAsync"/> method.
+        ///     To load credentials from file use static <see cref="GetSecurityDataAsync"/> method.
         ///     <para>
         ///         For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Account/Login">
         ///         https://docs.efir-net.ru/dh2/#/Account/Login
@@ -85,11 +83,48 @@ namespace RuDataAPI
 
 
         /// <summary>
+        ///     Sends POST request to EFIR Server to get all possible enumerations.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/Enums">
+        ///         https://docs.efir-net.ru/dh2/#/Info/Enums
+        ///     </see>.
+        /// </remarks>
+        /// <returns></returns>
+        public async Task<EnumsFields[]> GetAllEfirEnumerations()
+        {
+            var query = new EnumsRequest();
+            string url = $"{_credentials.Url}/Info/Enums";
+            return await PostEfirRequestAsync<EnumsRequest, EnumsFields[]>(query, url);
+        }
+
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get all possible fields for specified enumeration.
+        /// </summary>
+        /// <param name="dictionaryName">Efir server method name. Two possible values: ReferenceData and Securities</param>
+        /// <param name="enumName">Efir enumeration name.</param>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/EnumValues">
+        ///         https://docs.efir-net.ru/dh2/#/Info/EnumValues
+        ///     </see>.
+        /// </remarks>
+        /// <returns></returns>
+        public async Task<EnumValuesFields[]> GetEfirEnumValues(string dictionaryName, string enumName)
+        {
+            var query = new EnumValuesRequest
+            {
+                dictionaryName = dictionaryName,
+                fieldName = enumName
+            };
+            string url = $"{_credentials.Url}/Info/EnumValues";
+            return await PostEfirRequestAsync<EnumValuesRequest, EnumValuesFields[]>(query, url);
+        }
+
+
+        /// <summary>
         ///     Sends POST request to EFIR Server to get static data for chosen security.
         /// </summary>
-        /// <param name="isin">
-        ///     Security ISIN.    
-        /// </param> 
+        /// <param name="isin">Security ISIN.</param> 
         /// <remarks>
         ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData">
         ///         https://docs.efir-net.ru/dh2/#/Info/FintoolReferenceData
@@ -137,9 +172,7 @@ namespace RuDataAPI
         /// <summary>
         ///     Sends POST request to EFIR Server to get coupon schedule for specified bond.
         /// </summary>
-        /// <param name="secId">
-        ///     Secuirty ID in Efir database.
-        /// </param>
+        /// <param name="secId">Secuirty ID in Efir database.</param>
         /// <remarks>
         ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons">
         ///         https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons
@@ -169,7 +202,6 @@ namespace RuDataAPI
         ///     </see>.
         /// </remarks>
         /// <param name="isin">Security ISIN-code.</param>
-        /// <param name="date">Date of rating.</param>
         /// <returns>Array of <see cref="SecurityRatingsFields"/>.</returns>
         public async Task<SecurityRatingTableFields[]> GetRatingAsync(string isin)
         {
@@ -213,9 +245,7 @@ namespace RuDataAPI
         /// <summary> 
         ///     Sends POST request to EFIR Server to get links to emission docs for chosen security.
         /// </summary>
-        /// <param name="isin">
-        ///     Security ISIN.
-        /// </param>
+        /// <param name="isin">Security ISIN.</param>
         /// <returns>
         ///     Instance of <see cref="EmissionDocsResponse"/>.
         /// </returns>
@@ -238,10 +268,7 @@ namespace RuDataAPI
         /// <summary> 
         ///     Sends POST request to EFIR Server to get parameters of MOEX yield curve (GCurve) for specified date.
         /// </summary>
-        /// <param name="date">
-        ///     Date of yield curve.
-        /// </param>
-        /// <returns>
+        /// <param name="date">Date of yield curve.<returns>
         ///     Instance of <see cref="GCurveOFZResponse"/>.
         /// </returns>
         /// <remarks>

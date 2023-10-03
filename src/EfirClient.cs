@@ -8,6 +8,7 @@ using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 using Efir.DataHub.Models.Models.Rating;
+using CommonDataFields = Efir.DataHub.Models.Models.Nsd.CommonDataFields;
 
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
@@ -15,6 +16,8 @@ using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
+using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
+using Efir.DataHub.Models.Models.Nsd;
 
 namespace RuDataAPI
 {
@@ -174,6 +177,28 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
+        public async Task<CommonDataFields[]> GetNsdSecuritiesDataAsync(string filter, int pagenum)
+        {
+            var query = new CommonDataRequest
+            {
+                filter = filter,     
+                pageNum = pagenum,
+                pageSize = 100
+            };
+            string url = $"{_credentials.Url}/Nsd/CommonData";
+            return await PostEfirRequestAsync<CommonDataRequest, CommonDataFields[]>(query, url);
+        }
+
+        public async Task<NsdEmitentsFields[]> GetNsdEmitentsDataAsync(string filter)
+        {
+            var query = new EmitentsRequest
+            {
+                filter = filter,
+            };
+            string url = $"{_credentials.Url}/Nsd/Emitents";
+            return await PostEfirRequestAsync<EmitentsRequest, NsdEmitentsFields[]>(query, url);
+        }
+
         /// <summary>
         ///     Sends POST request to EFIR Server to get payments (incl. coupon, notional, etc.) schedule for specified bond.
         /// </summary>
@@ -217,6 +242,17 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<SecurityRatingsTableRequest, SecurityRatingTableFields[]>(query, url);
         }
 
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get security ratings history.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory">
+        ///         https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory
+        ///     </see>.
+        /// </remarks>
+        /// <param name="isin">Security ISIN-code.</param>
+        /// <param name="inn">Security issuer inn code.</param>
+        /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
         public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string isin, string? inn = null)
         {
             var query = new RatingsHistoryRequest

@@ -242,6 +242,18 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<SecurityRatingsTableRequest, SecurityRatingTableFields[]>(query, url);
         }
 
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string isin, string? inn = null)
+        {
+            var query = new RatingsHistoryRequest
+            {
+                sort = 1,
+                filter = inn is not null ? $"ISIN = '{isin}' OR INN = '{inn}'" : $"ISIN = '{isin}'"
+            };
+
+            string url = $"{_credentials.Url}/Rating/RatingsHistory";
+            return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
+        }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get indexes history data.

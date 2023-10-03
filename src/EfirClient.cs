@@ -195,31 +195,6 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
         }
 
-
-        /// <summary>
-        ///     Sends POST request to EFIR Server to get coupon schedule for specified bond.
-        /// </summary>
-        /// <param name="secId">Secuirty ID in Efir database.</param>
-        /// <remarks>
-        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons">
-        ///         https://docs.efir-net.ru/dh2/#/Bond/Coupons?id=post-coupons
-        ///     </see>.
-        /// </remarks>
-        /// <returns>
-        ///     Array of <see cref="CouponsFields"/>.
-        /// </returns>
-        public async Task<CouponsFields[]> GetCouponsDataAsync(long secId)
-        {
-            var query = new CouponsRequest()
-            {
-                filter = $"id_fintool = \'{secId}\'"
-            };
-
-            string url = $"{_credentials.Url}/Bond/Coupons";
-            return await PostEfirRequestAsync<CouponsRequest, CouponsFields[]>(query, url);
-        }
-
-
         /// <summary>
         ///     Sends POST request to EFIR Server to get security ratings.
         /// </summary>

@@ -1,8 +1,7 @@
 ﻿#pragma warning disable CS0660, CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
 
-using RuDataAPI.Extensions.Mapping;
 
-namespace RuDataAPI.Extensions
+namespace RuDataAPI.Extensions.Ratings
 {
     public class CreditRating
     {
@@ -13,11 +12,11 @@ namespace RuDataAPI.Extensions
         public DateTime Date { get; set; }
         public string Agency { get; set; } = null!;
         public string Action { get; set; } = null!;
-        public double DefaultProbability { get; set; } 
+        public double DefaultProbability { get; set; }
 
 
         public static bool operator <=(CreditRating rating1, RatingUS value)
-            => rating1.ValueAggregated <= value;    
+            => rating1.ValueAggregated <= value;
 
         public static bool operator >=(CreditRating rating1, RatingUS value)
             => rating1.ValueAggregated >= value;

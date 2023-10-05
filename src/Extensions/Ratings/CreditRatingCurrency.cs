@@ -1,4 +1,4 @@
-﻿namespace RuDataAPI.Extensions.Mapping
+﻿namespace RuDataAPI.Extensions.Ratings
 {
     public enum CreditRatingCurrency
     {

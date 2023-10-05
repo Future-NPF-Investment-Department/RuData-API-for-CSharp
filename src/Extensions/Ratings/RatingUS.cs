@@ -1,4 +1,5 @@
-﻿namespace RuDataAPI.Extensions.Mapping
+﻿
+namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Aggregated credit rating. Based on international rating scale.

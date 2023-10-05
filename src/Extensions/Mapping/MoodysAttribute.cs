@@ -1,6 +1,6 @@
 ﻿namespace RuDataAPI.Extensions.Mapping
 {
-    public class MoodysAttribute : RatingAttribute
+    public class MoodysAttribute : RatingStrAttribute
     {
         public MoodysAttribute(params string[] ratings) : base()
             => _map.Add(MOODYS, ratings);

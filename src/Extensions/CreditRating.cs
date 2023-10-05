@@ -7,7 +7,7 @@ namespace RuDataAPI.Extensions
     public class CreditRating
     {
         public string Value { get; set; } = null!;
-        public CreditRatingValue ValueAggregated { get; set; }
+        public RatingUS ValueAggregated { get; set; }
         public CreditRatingScale Scale { get; set; }
         public CreditRatingCurrency Currency { get; set; }
         public DateTime Date { get; set; }
@@ -16,16 +16,16 @@ namespace RuDataAPI.Extensions
         public double DefaultProbability { get; set; } 
 
 
-        public static bool operator <=(CreditRating rating1, CreditRatingValue value)
+        public static bool operator <=(CreditRating rating1, RatingUS value)
             => rating1.ValueAggregated <= value;    
 
-        public static bool operator >=(CreditRating rating1, CreditRatingValue value)
+        public static bool operator >=(CreditRating rating1, RatingUS value)
             => rating1.ValueAggregated >= value;
 
-        public static bool operator ==(CreditRating rating1, CreditRatingValue value)
+        public static bool operator ==(CreditRating rating1, RatingUS value)
             => rating1.ValueAggregated == value;
 
-        public static bool operator !=(CreditRating rating1, CreditRatingValue value)
+        public static bool operator !=(CreditRating rating1, RatingUS value)
             => rating1.ValueAggregated != value;
     }
 }

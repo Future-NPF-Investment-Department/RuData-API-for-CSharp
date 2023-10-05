@@ -16,7 +16,7 @@ EfirCredentials creds = new EfirCredentials()
 
 Console.WriteLine($"Efir credentials created for ({creds.Login}, {creds.Password}). See 'creds' variable (available in REPL context).");
 Console.ForegroundColor = ConsoleColor.DarkYellow;
-Console.WriteLine()
+Console.WriteLine();
 Console.WriteLine("Start exploring RuDataAPI from these rows:");
 Console.WriteLine(); Console.ResetColor();
 Console.WriteLine("using RuDataAPI;");

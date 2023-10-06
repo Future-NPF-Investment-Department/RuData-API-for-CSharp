@@ -1,8 +1,12 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
+    /// <summary>
+    ///     Represents generic rating to which ratings from different rating agencies can be reduced.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-    public class RatingStrAttribute : Attribute
+    public class GenericRatingAttribute : Attribute
     {
+        // these constants are taken from EFIR raings agencies classification.
         protected const string FITCH = "Fitch Ratings";
         protected const string MOODYS = "Moody's";
         protected const string SNP = "Standard & Poor's";
@@ -13,11 +17,14 @@
 
         private protected readonly Dictionary<string, string[]> _map = new();
 
-        protected RatingStrAttribute() { }
+        protected GenericRatingAttribute() { }
 
-        public RatingStrAttribute(string rating)
+        public GenericRatingAttribute(string rating)
             => Rating = rating;
 
+        /// <summary>
+        ///     Generic rating value.
+        /// </summary>
         public string Rating { get; init; } = null!;
     }
 }

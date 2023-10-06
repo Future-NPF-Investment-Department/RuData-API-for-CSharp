@@ -1,6 +1,9 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
-    public class MoodysAttribute : RatingStrAttribute
+    /// <summary>
+    ///     Represents possible ratings from Moody's agency scale to map.
+    /// </summary>
+    public class MoodysAttribute : GenericRatingAttribute
     {
         public MoodysAttribute(params string[] ratings) : base()
             => _map.Add(MOODYS, ratings);

@@ -1,6 +1,9 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
-    public class AKRAAttribute : RatingStrAttribute
+    /// <summary>
+    ///     Represents possible ratings from Akra agency scale to map.
+    /// </summary>
+    public class AKRAAttribute : GenericRatingAttribute
     {
         public AKRAAttribute(params string[] ratings) : base()
             => _map.Add(AKRA, ratings);

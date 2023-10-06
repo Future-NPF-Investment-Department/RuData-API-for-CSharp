@@ -13,7 +13,21 @@ namespace RuDataAPI.Extensions
         private static GCurveOFZResponse? _params;
 
         /// <summary>
-        ///     Calculates MOEX G-Curve rate for specified tenor.
+        ///     Calculates current MOEX G-Curve rate for specified tenor.
+        /// </summary>
+        /// <param name="tenor">MOEX yield curve tenor in years.</param>
+        /// <remarks>
+        ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
+        ///             MOEX G-Curve reference page</see>.    
+        /// </remarks>
+        public static async Task<double> CalculateGcurveForDateAsync(this EfirClient client, double tenor)
+        {
+            return await client.CalculateGcurveForDateAsync(DateTime.Now, tenor);
+        }
+
+
+        /// <summary>
+        ///     Calculates MOEX G-Curve rate for specified tenor and date.
         /// </summary>
         /// <param name="date">date of MOEX yield curve.</param>
         /// <param name="tenor">MOEX yield curve tenor in years.</param>

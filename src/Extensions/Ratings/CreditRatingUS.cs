@@ -105,7 +105,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 0.56% of probalility of default.
         /// </summary>
         [GenericRating("BB+"), DefaultProb(0.0056)]
-        [Fitch("BB+"), SnP("BB+"), Moodys("Ba1")]
+        [Fitch("BB+", "AA+(rus)", "AA(rus)"), SnP("BB+"), Moodys("Ba1")]
         [AKRA("AA+(RU)", "AA(RU)", "eAA+(RU)", "eAA(RU)", "AA+(ru.sf)", "AA(ru.sf)", "eAA+(ru.sf)", "eAA(ru.sf)")] 
         [ExpRA("ruAA+", "ruAA", "ruAA+(EXP)", "ruAA(EXP)", "ruAA+.sf", "ruAA.sf", "ruAA+.sf(EXP)", "ruAA.sf(EXP)")]
         [NKR("AA+.ru", "AA.ru"), NRA("AA+|ru|", "AA|ru|")]
@@ -117,7 +117,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 0.93% of probalility of default.
         /// </summary>
         [GenericRating("BB"), DefaultProb(0.0093)]
-        [Fitch("BB"), SnP("BB"), Moodys("Ba2")]
+        [Fitch("BB", "AA-(rus)", "A+(rus)"), SnP("BB"), Moodys("Ba2")]
         [AKRA("AA-(RU)", "A+(RU)", "eAA-(RU)", "eA+(RU)", "AA-(ru.sf)", "A+(ru.sf)", "eAA-(ru.sf)", "eA+(ru.sf)")]
         [ExpRA("ruAA-", "ruA+", "ruAA-(EXP)", "ruA+(EXP)", "ruAA-.sf", "ruA+.sf", "ruAA-.sf(EXP)", "ruA+.sf(EXP)")]
         [NKR("AA-.ru", "A+.ru"), NRA("AA-|ru|", "A+|ru|")]
@@ -129,7 +129,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 1.55% of probalility of default.
         /// </summary>
         [GenericRating("BB-"), DefaultProb(0.0155)]
-        [Fitch("BB-"), SnP("BB-"), Moodys("Ba3")]
+        [Fitch("BB-", "A(rus)", "A-(rus)"), SnP("BB-"), Moodys("Ba3")]
         [AKRA("A(RU)", "A-(RU)", "eA(RU)", "eA-(RU)", "A(ru.sf)", "A-(ru.sf)", "eA(ru.sf)", "eA-(ru.sf)")]
         [ExpRA("ruA", "ruA-", "ruA(EXP)", "ruA-(EXP)", "ruA.sf", "ruA-.sf", "ruA.sf(EXP)", "ruA-.sf(EXP)")]
         [NKR("A.ru", "A-.ru"), NRA("A|ru|", "A-|ru|")]
@@ -141,7 +141,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 2.94% of probalility of default.
         /// </summary>
         [GenericRating("B+"), DefaultProb(0.0294)]
-        [Fitch("B+"), SnP("B+"), Moodys("B1")]
+        [Fitch("B+", "BBB+(rus)", "BBB(rus)"), SnP("B+"), Moodys("B1")]
         [AKRA("BBB+(RU)", "BBB(RU)", "eBBB+(RU)", "eBBB(RU)", "BBB+(ru.sf)", "BBB(ru.sf)", "eBBB+(ru.sf)", "eBBB(ru.sf)")]
         [ExpRA("ruBBB+", "ruBBB", "ruBBB+(EXP)", "ruBBB(EXP)", "ruBBB+.sf", "ruBBB.sf", "ruBBB+.sf(EXP)", "ruBBB.sf(EXP)")]
         [NKR("BBB+.ru", "BBB.ru"), NRA("BBB+|ru|", "BBB|ru|")]
@@ -153,7 +153,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 4.66% of probalility of default.
         /// </summary>
         [GenericRating("B"), DefaultProb(0.0466)]
-        [Fitch("B"), SnP("B"), Moodys("B2")]
+        [Fitch("B", "BBB-(rus)", "BB+(rus)"), SnP("B"), Moodys("B2")]
         [AKRA("BBB-(RU)", "BB+(RU)", "eBBB-(RU)", "eBB+(RU)", "BBB-(ru.sf)", "BB+(ru.sf)", "eBBB-(ru.sf)", "eBB+(ru.sf)")]
         [ExpRA("ruBBB-", "ruBB+", "ruBBB-(EXP)", "ruBB+(EXP)", "ruBBB-.sf", "ruBB+.sf", "ruBBB-.sf(EXP)", "ruBB+.sf(EXP)")]
         [NKR("BBB-.ru", "BB+.ru"), NRA("BBB-|ru|", "BB+|ru|")]
@@ -165,7 +165,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 7.17% of probalility of default.
         /// </summary>
         [GenericRating("B-"), DefaultProb(0.0717)]
-        [Fitch("B-"), SnP("B-"), Moodys("B3")]
+        [Fitch("B-", "BB(rus)"), SnP("B-"), Moodys("B3")]
         [AKRA("BB(RU)", "eBB(RU)", "BB(ru.sf)", "eBB(ru.sf)")]
         [ExpRA("ruBB", "ruBB(EXP)", "ruBB.sf", "ruBB.sf(EXP)")]
         [NKR("BB.ru"), NRA("BB|ru|")]
@@ -177,7 +177,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 11.95% of probalility of default.
         /// </summary>
         [GenericRating("CCC+"), DefaultProb(0.1195)]
-        [Fitch("CCC+"), SnP("CCC+"), Moodys("Caa1")]
+        [Fitch("CCC+", "BB-(rus)"), SnP("CCC+"), Moodys("Caa1")]
         [AKRA("BB-(RU)", "eBB-(RU)", "BB-(ru.sf)", "eBB-(ru.sf)")]
         [ExpRA("ruBB-", "ruBB-(EXP)", "ruBB-.sf", "ruBB-.sf(EXP)")]
         [NKR("BB-.ru"), NRA("BB-|ru|")]
@@ -189,7 +189,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 19.91% of probalility of default.
         /// </summary>
         [GenericRating("CCC"), DefaultProb(0.1991)]
-        [Fitch("CCC"), SnP("CCC"), Moodys("Caa2")]
+        [Fitch("CCC", "B+(rus)"), SnP("CCC"), Moodys("Caa2")]
         [AKRA("B+(RU)", "eB+(RU)", "B+(ru.sf)", "eB+(ru.sf)")]
         [ExpRA("ruB+", "ruB+(EXP)", "ruB+.sf", "ruB+.sf(EXP)")]
         [NKR("B+.ru"), NRA("B+|ru|")]
@@ -201,7 +201,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 42.97% of probalility of default.
         /// </summary>
         [GenericRating("CCC-"), DefaultProb(0.4297)]
-        [Fitch("CCC-"), SnP("CCC-"), Moodys("Caa3")]
+        [Fitch("CCC-", "B(rus)"), SnP("CCC-"), Moodys("Caa3")]
         [AKRA("B(RU)", "eB(RU)", "B(ru.sf)", "eB(ru.sf)")]
         [ExpRA("ruB", "ruB(EXP)", "ruB.sf", "ruB(EXP).sf")]
         [NKR("B.ru"), NRA("B|ru|")]
@@ -213,7 +213,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 77.64% of probalility of default.
         /// </summary>
         [GenericRating("CC"), DefaultProb(0.7764)]
-        [Fitch("CC"), SnP("CC"), Moodys("Ca")]
+        [Fitch("CC", "B-(rus)"), SnP("CC"), Moodys("Ca")]
         [AKRA("B-(RU)", "eB-(RU)", "B-(ru.sf)", "eB-(ru.sf)")]
         [ExpRA("ruB-", "ruB-(EXP)", "ruB-.sf", "ruB-.sf(EXP)")]
         [NKR("B-.ru"), NRA("B-|ru|")]
@@ -225,7 +225,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 96.62% of probalility of default.
         /// </summary>
         [GenericRating("C"), DefaultProb(0.9662)]
-        [Fitch("C"), SnP("C"), Moodys("C")]
+        [Fitch("C", "CCC(rus)", "CC(rus)", "C(rus)"), SnP("C"), Moodys("C")]
         [AKRA("CCC(RU)", "CC(RU)", "C(RU)", "eCCC(RU)", "eCC(RU)", "eC(RU)", "CCC(ru.sf)", "CC(ru.sf)", "C(ru.sf)", "eCCC(ru.sf)", "eCC(ru.sf)", "eC(ru.sf)")]
         [ExpRA("ruCCC", "ruCC", "ruC", "ruCCC(EXP)", "ruCC(EXP)", "ruC(EXP)", "ruCCC.sf", "ruCC.sf", "ruC,sf", "ruCCC.sf(EXP)", "ruCC.sf(EXP)", "ruC.sf(EXP)")]
         [NKR("CCC.ru", "CC.ru", "C.ru"), NRA("CCC|ru|", "CC|ru|", "C|ru|")]
@@ -237,7 +237,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 99.50% of probalility of default.
         /// </summary>
         [GenericRating("D"), DefaultProb(0.9950)]
-        [Fitch("D"), SnP("D")] 
+        [Fitch("D", "D(rus)"), SnP("D")] 
         [AKRA("D(RU)", "eD(RU)", "D(ru.sf)", "eD(ru.sf)")]
         [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)")]
         [NKR("D.ru"), NRA("D|ru|")]

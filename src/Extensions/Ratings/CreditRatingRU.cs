@@ -11,6 +11,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         [GenericRating("NR")]
         [AKRA("Снят"), ExpRA("Снят"), NKR("Снят"), NRA("Снят")]
+        [Fitch("Снят")]
         NR = 0,
 
         /// <summary>
@@ -22,6 +23,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AAA(RU)", "eAAA(RU)", "AAA(ru.sf)", "eAAA(ru.sf)")]
         [ExpRA("ruAAA", "ruAAA(EXP)", "ruAAA.sf", "ruAAA.sf(EXP)")]
         [NKR("AAA.ru"), NRA("AAA|ru|")]
+        [Fitch("AAA(rus)")]
         AAA = 22,
 
         /// <summary>
@@ -33,17 +35,19 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AA+(RU)", "eAA+(RU)", "AA+(ru.sf)", "eAA+(ru.sf)")]
         [ExpRA("ruAA+", "ruAA+(EXP)", "ruAA+.sf", "ruAA+.sf(EXP)")]
         [NKR("AA+.ru"), NRA("AA+|ru|")]
+        [Fitch("AA+(rus)")]
         AAplus = 21,
 
         /// <summary>
-        ///      generic rating within Russian rating scale. Corresponds to (ru) rating from AKRA, ru rating
-        ///     from ExpertRA, .ru rating from NKR and |ru| rating from NRA.
+        ///     AA generic rating within Russian rating scale. Corresponds to AA(ru) rating from AKRA, ruAA rating
+        ///     from ExpertRA, AA.ru rating from NKR and AA|ru| rating from NRA.
         ///     Implies 0.56% of probalility of default.
         /// </summary>
         [GenericRating("AA"), DefaultProb(0.0056)]
         [AKRA("AA(RU)", "eAA(RU)", "AA(ru.sf)", "eAA(ru.sf)")]
         [ExpRA("ruAA", "ruAA(EXP)", "ruAA.sf", "ruAA.sf(EXP)")]
         [NKR("AA.ru"), NRA("AA|ru|")]
+        [Fitch("AA(rus)")]
         AA = 20,
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AA-(RU)", "eAA-(RU)", "AA-(ru.sf)", "eAA-(ru.sf)")]
         [ExpRA("ruAA-", "ruAA-(EXP)", "ruAA-.sf", "ruAA-.sf(EXP)")]
         [NKR("AA-.ru"), NRA("AA-|ru|")]
+        [Fitch("AA-(rus)")]
         AAminus = 19,
 
         /// <summary>
@@ -66,6 +71,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("A+(RU)", "eA+(RU)", "A+(ru.sf)", "eA+(ru.sf)")]
         [ExpRA("ruA+", "ruA+(EXP)", "ruA+.sf", "ruA+.sf(EXP)")]
         [NKR("A+.ru"), NRA("A+|ru|")]
+        [Fitch("A+(rus)")]
         Aplus = 18,
 
         /// <summary>
@@ -77,6 +83,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("A(RU)", "eA(RU)", "A(ru.sf)", "eA(ru.sf)")]
         [ExpRA("ruA", "ruA(EXP)", "ruA.sf", "ruA.sf(EXP)")]
         [NKR("A.ru"), NRA("A|ru|")]
+        [Fitch("A(rus)")]
         A = 17,
 
         /// <summary>
@@ -88,6 +95,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("A-(RU)", "eA-(RU)", "A-(ru.sf)", "eA-(ru.sf)")]
         [ExpRA("ruA-", "ruA-(EXP)", "ruA-.sf", "ruA-.sf(EXP)")]
         [NKR("A-.ru"), NRA("A-|ru|")]
+        [Fitch("A-(rus)")]
         Aminus = 16,
 
         /// <summary>
@@ -99,6 +107,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB+(RU)", "eBBB+(RU)", "BBB+(ru.sf)", "eBBB+(ru.sf)")]
         [ExpRA("ruBBB+", "ruBBB+(EXP)", "ruBBB+.sf", "ruBBB+.sf(EXP)")]
         [NKR("BBB+.ru"), NRA("BBB+|ru|")]
+        [Fitch("BBB+(rus)")]
         BBBplus = 15,
 
         /// <summary>
@@ -110,6 +119,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB(RU)", "eBBB(RU)", "BBB(ru.sf)", "eBBB(ru.sf)")]
         [ExpRA("ruBBB", "ruBBB(EXP)", "ruBBB.sf", "ruBBB.sf(EXP)")]
         [NKR("BBB.ru"), NRA("BBB|ru|")]
+        [Fitch("BBB(rus)")]
         BBB = 14,
 
         /// <summary>
@@ -121,6 +131,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB-(RU)", "eBBB-(RU)", "BBB-(ru.sf)", "eBBB-(ru.sf)")]
         [ExpRA("ruBBB-", "ruBBB-(EXP)", "ruBBB-.sf", "ruBBB-.sf(EXP)")]
         [NKR("BBB-.ru"), NRA("BBB-|ru|")]
+        [Fitch("BBB-(rus)")]
         BBBminus = 13,
 
         /// <summary>
@@ -132,6 +143,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BB+(RU)", "eBB+(RU)", "BB+(ru.sf)", "eBB+(ru.sf)")]
         [ExpRA("ruBB+", "ruBB+(EXP)", "ruBB+.sf", "ruBB+.sf(EXP)")]
         [NKR("BB+.ru"), NRA("BB+|ru|")]
+        [Fitch("BB+(rus)")]
         BBplus = 12,
 
         /// <summary>
@@ -143,6 +155,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BB(RU)", "eBB(RU)", "BB(ru.sf)", "eBB(ru.sf)")]
         [ExpRA("ruBB", "ruBB(EXP)", "ruBB.sf", "ruBB.sf(EXP)")]
         [NKR("BB.ru"), NRA("BB|ru|")]
+        [Fitch("BB(rus)")]
         BB = 11,
 
         /// <summary>
@@ -154,6 +167,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BB-(RU)", "eBB-(RU)", "BB-(ru.sf)", "eBB-(ru.sf)")]
         [ExpRA("ruBB-", "ruBB-(EXP)", "ruBB-.sf", "ruBB-.sf(EXP)")]
         [NKR("BB-.ru"), NRA("BB-|ru|")]
+        [Fitch("BB-(rus)")]
         BBminus = 10,
 
         /// <summary>
@@ -165,6 +179,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B+(RU)", "eB+(RU)", "B+(ru.sf)", "eB+(ru.sf)")]
         [ExpRA("ruB+", "ruB+(EXP)", "ruB+.sf", "ruB+.sf(EXP)")]
         [NKR("B+.ru"), NRA("B+|ru|")]
+        [Fitch("B+(rus)")]
         Bplus = 9,
 
         /// <summary>
@@ -176,6 +191,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B(RU)", "eB(RU)", "B(ru.sf)", "eB(ru.sf)")]
         [ExpRA("ruB", "ruB(EXP)", "ruB.sf", "ruB.sf(EXP)")]
         [NKR("B.ru"), NRA("B|ru|")]
+        [Fitch("B(rus)")]
         B = 8,
 
         /// <summary>
@@ -187,6 +203,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B-(RU)", "eB-(RU)", "B-(ru.sf)", "eB-(ru.sf)")]
         [ExpRA("ruB-", "ruB-(EXP)", "ruB-.sf", "ruB-.sf(EXP)")]
         [NKR("B-.ru"), NRA("B-|ru|")]
+        [Fitch("B-(rus)")]
         Bminus = 7,
 
         /// <summary>
@@ -198,6 +215,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("CCC(RU)", "eCCC(RU)", "CCC(ru.sf)", "eCCC(ru.sf)")]
         [ExpRA("ruCCC", "ruCCC(EXP)", "ruCCC.sf", "ruCCC.sf(EXP)")]
         [NKR("CCC.ru"), NRA("CCC|ru|")]
+        [Fitch("CCC(rus)")]
         CCC = 5,
 
         /// <summary>
@@ -209,6 +227,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("CC(RU)", "eCC(RU)", "CC(ru.sf)", "eCC(ru.sf)")]
         [ExpRA("ruCC", "ruCC(EXP)","ruCC.sf", "ruCC.sf(EXP)")]
         [NKR("CC.ru"), NRA("CC|ru|")]
+        [Fitch("CC(rus)")]
         CC = 3,
 
         /// <summary>
@@ -220,6 +239,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("C(RU)", "eC(RU)", "C(ru.sf)", "eC(ru.sf)")]
         [ExpRA("ruC", "ruC(EXP)", "ruC,sf", "ruC.sf(EXP)")]
         [NKR("C.ru"), NRA("C|ru|")]
+        [Fitch("C(rus)")]
         C = 2,
 
         /// <summary>
@@ -231,6 +251,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("D(RU)", "eD(RU)", "D(ru.sf)", "eD(ru.sf)")]
         [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)")]
         [NKR("D.ru"), NRA("D|ru|")]
+        [Fitch("D(rus)")]
         D = 1,
     }
 }

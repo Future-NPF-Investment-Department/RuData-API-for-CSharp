@@ -145,7 +145,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB+(RU)", "BBB(RU)", "eBBB+(RU)", "eBBB(RU)", "BBB+(ru.sf)", "BBB(ru.sf)", "eBBB+(ru.sf)", "eBBB(ru.sf)")]
         [ExpRA("ruBBB+", "ruBBB", "ruBBB+(EXP)", "ruBBB(EXP)", "ruBBB+.sf", "ruBBB.sf", "ruBBB+.sf(EXP)", "ruBBB.sf(EXP)")]
         [NKR("BBB+.ru", "BBB.ru"), NRA("BBB+|ru|", "BBB|ru|")]
-        Bp = 9,
+        Bplus = 9,
 
         /// <summary>   
         ///     B generic rating. Corresponds to B rating from FITCH or SnP, B2 rating from Moody's, BBB-(ru) or BB+(RU) ratings 

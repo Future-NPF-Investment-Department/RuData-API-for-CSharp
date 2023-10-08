@@ -1,5 +1,8 @@
 ﻿using Efir.DataHub.Models.Models.Info;
 using Efir.DataHub.Models.Models.RuData;
+using RuDataAPI.Extensions.Mapping;
+using RuDataAPI.Extensions.Ratings;
+using System.Reflection;
 
 namespace RuDataAPI.Extensions
 {
@@ -153,6 +156,25 @@ namespace RuDataAPI.Extensions
                         sec.EventsSchedule.Add(new SecurityEvent(coupon));
             }
             return sec;
+        }
+
+        /// <summary>
+        ///     Maps string value to specified enum field using attributes specified for this field.
+        /// </summary>
+        /// <typeparam name="TEnum">Enum type.</typeparam>
+        /// <param name="strval">value to parse.</param>
+        /// <returns>Field of specified enum.</returns>
+        internal static TEnum MapToEnum<TEnum>(string strval) where TEnum : struct, Enum
+        {
+            Type enumType = typeof(TEnum);
+            FieldInfo[] fields = enumType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                var attr = field.GetCustomAttribute<EnumFieldStrAttribute>();
+                if (attr is not null && attr.Value == strval)
+                    return Enum.Parse<TEnum>(field.Name);
+            }
+            throw new Exception($"Cannot map '{strval}' to {enumType.Name}.");
         }
     }
 }

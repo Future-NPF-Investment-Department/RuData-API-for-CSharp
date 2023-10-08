@@ -7,10 +7,14 @@ namespace RuDataAPI.Extensions.Ratings
     /// </summary>
     public enum CreditRatingCurrency
     {
+        [EnumFieldStr("Не определена")]
+        Undefined,
+
         [EnumFieldStr("Локальная")]
         Local,
 
         [EnumFieldStr("Иностранная")]
-        Foreign
+        Foreign,
+
     }
 }

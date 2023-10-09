@@ -20,6 +20,9 @@ namespace RuDataAPI.Extensions.Ratings
         Affirmed,
 
         [EnumFieldStr("снят")]
-        Withdrawed
+        Withdrawed,
+
+        [EnumFieldStr("Не изменился")]
+        Unchanged
     }
 }

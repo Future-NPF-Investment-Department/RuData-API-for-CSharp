@@ -1,30 +1,25 @@
-﻿namespace RuDataAPI.Extensions.Ratings
+﻿
+namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
-    ///     Represents generic rating to which ratings from different rating agencies can be reduced.
+    ///     Represents generic credit rating naming.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class GenericRatingAttribute : Attribute
     {
-        // these constants are taken from EFIR raings agencies classification.
-        protected const string FITCH = "Fitch Ratings";
-        protected const string MOODYS = "Moody's";
-        protected const string SNP = "Standard & Poor's";
-        protected const string AKRA = "АКРА";
-        protected const string EXPRA = "Эксперт РА";
-        protected const string NKR = "НКР";
-        protected const string NRA = "НРА";
+        private readonly string _name;
 
-        private protected readonly Dictionary<string, string[]> _map = new();
-
-        protected GenericRatingAttribute() { }
-
-        public GenericRatingAttribute(string rating)
-            => Rating = rating;
+        public GenericRatingAttribute(string ratingName)        
+            => _name = ratingName;        
 
         /// <summary>
-        ///     Generic rating value.
+        ///     Generic credit rating name.
         /// </summary>
-        public string Rating { get; init; } = null!;
+        public string Name => _name;
+
+        /// <summary>
+        ///     Probability of default implied by this credit rating.
+        /// </summary>
+        public double PD { get; set; }
     }
 }

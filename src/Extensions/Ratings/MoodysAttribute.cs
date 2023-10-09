@@ -1,11 +1,16 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
-    ///     Represents possible ratings from Moody's agency scale to map.
+    ///     Represents particular Moody's agency ratings bucket. 
+    ///     All ratings from this bucket should imply equivalent level of credit risk.
     /// </summary>
-    public class MoodysAttribute : GenericRatingAttribute
+    public class MoodysAttribute : AgencyRatingBucketAttribute
     {
-        public MoodysAttribute(params string[] ratings) : base()
-            => _map.Add(MOODYS, ratings);
+        /// <summary>
+        ///     Represents particular Moody's agency ratings bucket. 
+        ///     All ratings from this bucket should imply equivalent level of credit risk.
+        /// </summary>
+        /// <param name="ratings">Set of ratings that determines this particular bucket.</param>
+        public MoodysAttribute(params string[] ratings) : base(MOODYS, ratings) { }
     }
 }

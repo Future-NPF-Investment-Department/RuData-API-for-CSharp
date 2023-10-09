@@ -1,11 +1,16 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
-    ///     Represents possible ratings from SnP agency scale to map.
+    ///     Represents particular SnP agency ratings bucket. 
+    ///     All ratings from this bucket should imply equivalent level of credit risk.
     /// </summary>
-    public class SnPAttribute : GenericRatingAttribute
+    public class SnPAttribute : AgencyRatingBucketAttribute
     {
-        public SnPAttribute(params string[] ratings) : base()
-            => _map.Add(SNP, ratings);
+        /// <summary>
+        ///     Represents particular SnP agency ratings bucket. 
+        ///     All ratings from this bucket should imply equivalent level of credit risk.
+        /// </summary>
+        /// <param name="ratings">Set of ratings that determines this particular bucket.</param>
+        public SnPAttribute(params string[] ratings) : base(SNP, ratings) { }
     }
 }

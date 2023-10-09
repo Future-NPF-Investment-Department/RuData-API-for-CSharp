@@ -1,11 +1,16 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
-    ///     Represents possible ratings from Akra agency scale to map.
+    ///     Represents particular Akra agency ratings bucket. 
+    ///     All ratings from this bucket should imply equivalent level of credit risk.
     /// </summary>
-    public class AKRAAttribute : GenericRatingAttribute
+    public class AKRAAttribute : AgencyRatingBucketAttribute
     {
-        public AKRAAttribute(params string[] ratings) : base()
-            => _map.Add(AKRA, ratings);
+        /// <summary>
+        ///     Represents particular Akra agency ratings bucket. 
+        ///     All ratings from this bucket should imply equivalent level of credit risk.
+        /// </summary>
+        /// <param name="ratings">Set of ratings that determines this particular bucket.</param>
+        public AKRAAttribute(params string[] ratings) : base(AKRA, ratings) { }            
     }
 }

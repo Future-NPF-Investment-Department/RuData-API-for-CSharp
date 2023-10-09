@@ -3,9 +3,13 @@
     /// <summary>
     ///     Represents possible ratings from NKR agency scale to map.
     /// </summary>
-    public class NKRAttribute : GenericRatingAttribute
+    public class NKRAttribute : AgencyRatingBucketAttribute
     {
-        public NKRAttribute(params string[] ratings) : base()
-            => _map.Add(EXPRA, ratings);
+        /// <summary>
+        ///     Represents particular NKR agency ratings bucket. 
+        ///     All ratings from this bucket should imply equivalent level of credit risk.
+        /// </summary>
+        /// <param name="ratings">Set of ratings that determines this particular bucket.</param>
+        public NKRAttribute(params string[] ratings) : base(NKR, ratings) { }
     }
 }

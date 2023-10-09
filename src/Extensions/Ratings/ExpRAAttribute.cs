@@ -1,11 +1,16 @@
 ﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
-    ///     Represents possible ratings from Expert RA agency scale to map.
+    ///     Represents particular Expert RA agency ratings bucket. 
+    ///     All ratings from this bucket should imply equivalent level of credit risk.
     /// </summary>
-    public class ExpRAAttribute : GenericRatingAttribute
+    public class ExpRAAttribute : AgencyRatingBucketAttribute
     {
-        public ExpRAAttribute(params string[] ratings) : base()
-            => _map.Add(EXPRA, ratings);
+        /// <summary>
+        ///     Represents particular Exper RA agency ratings bucket. 
+        ///     All ratings from this bucket should imply equivalent level of credit risk.
+        /// </summary>
+        /// <param name="ratings">Set of ratings that determines this particular bucket.</param>
+        public ExpRAAttribute(params string[] ratings) : base(EXPRA, ratings) { }
     }
 }

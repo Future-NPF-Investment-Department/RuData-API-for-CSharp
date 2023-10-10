@@ -7,6 +7,9 @@ namespace RuDataAPI.Extensions.Ratings
     /// </summary>
     public enum CreditRatingOutlook
     {
+        [EnumFieldStr(null)]
+        None,
+
         [EnumFieldStr("Позитивный")]
         Positive,
 

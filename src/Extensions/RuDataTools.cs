@@ -47,7 +47,8 @@ namespace RuDataAPI.Extensions
                     if (attr.ContainsAgencyRating(agency, rating))
                         return Enum.Parse<CreditRatingRU>(field.Name);
             }
-            throw new Exception($"Cannot parse '{rating}' credit rating (RU) of {agency}.");
+            return CreditRatingRU.NR;
+            //throw new Exception($"Cannot parse '{rating}' credit rating (RU) of {agency}.");
         }
 
         /// <summary>

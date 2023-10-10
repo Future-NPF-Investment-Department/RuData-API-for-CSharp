@@ -1,6 +1,5 @@
 ﻿#pragma warning disable CS0660, CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
 
-
 using Efir.DataHub.Models.Models.Rating;
 
 namespace RuDataAPI.Extensions.Ratings
@@ -10,7 +9,7 @@ namespace RuDataAPI.Extensions.Ratings
     /// </summary>
     public class CreditRating
     {
-        public static CreditRating Default = new CreditRating();
+        public static readonly CreditRating Default = new();
 
         /// <summary>
         ///     Date of credit rating action.
@@ -60,7 +59,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// <summary>
         ///     Previous credit rating.
         /// </summary>
-        public string? PreviousValue { get; set; }
+        public string PreviousValue { get; set; } = string.Empty;
 
         /// <summary>
         ///     Rating agency name.
@@ -72,16 +71,55 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public double DefaultProbability { get; set; }
 
+        /// <summary>
+        ///     Name of issuer that is subject for credit rating action.
+        /// </summary>
+        public string IssuerName { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     Issuer's ISIN that is subject for credit rating action.
+        /// </summary>
+        public string Isin { get; set; } = string.Empty;
+
 
         public static CreditRating New(RatingsHistoryFields fields)
         {
-            var rating = Default;
+            CreditRating rating = new();
             rating.Value = fields.last;
             rating.Agency = fields.rating_agency;
-            rating.Date = fields.last_dt ?? throw new NullReferenceException($"Rating action date is null in EFIR database. Rating: {rating.Value}, Agency: {rating.Agency}");
-
+            rating.Date = fields.last_dt ?? default;
+            rating.PreviousValue = fields.prev;
+            rating.IssuerName = fields.short_name_org;
+            rating.Isin = fields.isin;
+            rating.Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type);
+            rating.Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type);
+            rating.Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur);
+            rating.Action = RuDataTools.MapToEnum<CreditRatingAction>(fields.change);
+            rating.Outlook = RuDataTools.MapToEnum<CreditRatingOutlook>(fields.forecast);
+            rating.AggregatedBig3 = RuDataTools.ParseRatingUS(rating.Agency, rating.Value);
+            rating.AggregatedRu = RuDataTools.ParseRatingRU(rating.Agency, rating.Value);
+            rating.DefaultProbability = RuDataTools.GetDefaultProbality(rating.AggregatedBig3);
             return rating;
         }
+
+        public override string ToString()
+        {
+            string head = $"RATING for {IssuerName} ({Isin})\n";
+            string rating = $"{Value} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
+            string scale = $"Scale: {Scale} in {Currency} currency\n";
+            string action = $"Outlook: {Outlook}\n";
+            string aggrUS = $"Aggregated Big3: {AggregatedBig3}\n";
+            string aggrRU = $"Aggregated RU: {AggregatedRu}\n";
+            return head + rating + scale + action + aggrUS + aggrRU;
+        }
+
+        public string ToShortStringUS()
+            => $"{Value} ({AggregatedBig3}) from {Agency} as of {Date}";
+        
+
+        public string ToShortStringRU()
+            => $"{Value} ({AggregatedRu}) from {Agency} as of {Date}";        
+
 
         public static bool operator <=(CreditRating rating1, CreditRating rating2)
             => rating1.AggregatedBig3 <= rating2.AggregatedBig3;

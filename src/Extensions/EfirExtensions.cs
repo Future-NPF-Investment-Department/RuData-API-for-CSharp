@@ -159,5 +159,14 @@ namespace RuDataAPI.Extensions
             }
             return sec;
         }
+
+        public static async Task GetRatingHistoryAsyncEx(this EfirClient client, string? inn, string? isin = null)
+        {
+            var data = await client.GetRatingHistoryAsync(isin, inn);
+            CreditRating[] ratings = new CreditRating[data.Length];
+            for (int i = 0; i < data.Length; i++)
+                ratings[i] = CreditRating.New(data[i]);
+            foreach(var r in ratings) Console.WriteLine(r.ToShortStringUS());
+        }
     }
 }

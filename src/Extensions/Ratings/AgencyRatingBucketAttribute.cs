@@ -38,6 +38,6 @@
         /// <param name="rating">Credit rating value.</param>
         /// <returns>True if specified agency rating belongs to this bucket, otherwise false.</returns>
         internal bool ContainsAgencyRating(string agency, string rating)
-            => _agency == agency && rating.Contains(agency);
+            => _agency == agency && _bucket.Contains(rating);
     }
 }

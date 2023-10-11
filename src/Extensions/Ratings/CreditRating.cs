@@ -114,11 +114,11 @@ namespace RuDataAPI.Extensions.Ratings
         }
 
         public string ToShortStringUS()
-            => $"{Value} ({AggregatedBig3}) from {Agency} as of {Date}";
+            => $"{AggregatedBig3} from {Agency} as of {Date.ToShortDateString()} ({Action})";
         
 
         public string ToShortStringRU()
-            => $"{Value} ({AggregatedRu}) from {Agency} as of {Date}";        
+            => $"{AggregatedRu} from {Agency} as of {Date.ToShortDateString()} ({Action})";        
 
 
         public static bool operator <=(CreditRating rating1, CreditRating rating2)

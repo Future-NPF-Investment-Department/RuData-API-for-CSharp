@@ -11,8 +11,8 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Rating absence.
         /// </summary>
         [GenericRating("NR")]
-        [Fitch("Снят"), SnP("Снят"), Moodys("Снят")]
-        [AKRA("Снят"), ExpRA("Снят"), NKR("Снят"), NRA("Снят")]
+        [Fitch("Снят", "Приостановлен"), SnP("Снят", "Приостановлен"), Moodys("Снят", "Приостановлен")]
+        [AKRA("Снят", "Приостановлен"), ExpRA("Снят", "Приостановлен"), NKR("Снят", "Приостановлен"), NRA("Снят", "Приостановлен")]
         NR = 0,
 
         /// <summary>
@@ -22,6 +22,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("AAA", PD = 0.0000)]
         [Fitch("AAA"), SnP("AAA"), Moodys("Aaa")]
         [AKRA("AAA")]
+        [ExpRA("AAA")]
         AAA = 22,
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("AA+", PD = 0.0001)]
         [Fitch("AA+"), SnP("AA+"), Moodys("Aa1")]
         [AKRA("AA+")]
+        [ExpRA("AA+")]
         AAplus = 21,
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("AA", PD = 0.0001)]
         [Fitch("AA"), SnP("AA"), Moodys("Aa2")]
         [AKRA("AA")]
+        [ExpRA("AA")]
         AA = 20,
 
         /// <summary>
@@ -49,6 +52,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("AA-", PD = 0.0002)]
         [Fitch("AA-"), SnP("AA-"), Moodys("Aa3")]
         [AKRA("AA-")]
+        [ExpRA("AA-")]
         AAminus = 19,
 
         /// <summary>
@@ -58,6 +62,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("A+", PD = 0.0003)]
         [Fitch("A+"), SnP("A+"), Moodys("A1")]
         [AKRA("A+")]
+        [ExpRA("A+")]
         Aplus = 18,
 
         /// <summary>
@@ -67,6 +72,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("A", PD = 0.0004)]
         [Fitch("A"), SnP("A"), Moodys("A2")]
         [AKRA("A")]
+        [ExpRA("A")]
         A = 17,
 
         /// <summary>
@@ -76,6 +82,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("A-", PD = 0.0007)]
         [Fitch("A-"), SnP("A-"), Moodys("A3")]
         [AKRA("A-")]
+        [ExpRA("A-")]
         Aminus = 16,
 
         /// <summary>
@@ -85,6 +92,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("BBB+", PD = 0.0012)]
         [Fitch("BBB+"), SnP("BBB+"), Moodys("Baa1")]
         [AKRA("BBB+")]
+        [ExpRA("BBB+")]
         BBBplus = 15,
 
         /// <summary>
@@ -94,6 +102,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("BBB", PD = 0.0020)]
         [Fitch("BBB"), SnP("BBB"), Moodys("Baa2")]
         [AKRA("BBB")]
+        [ExpRA("BBB")]
         BBB = 14,
 
         /// <summary>
@@ -102,9 +111,9 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 0.34% of probalility of default.
         /// </summary>
         [GenericRating("BBB-", PD = 0.0034)]
-        [Fitch("BBB-"), SnP("BBB-"), Moodys("Baa3")]
+        [Fitch("BBB-", "AAA(rus)"), SnP("BBB-"), Moodys("Baa3")]
         [AKRA("AAA(RU)", "eAAA(RU)", "AAA(ru.sf)", "eAAA(ru.sf)", "BBB-")]
-        [ExpRA("ruAAA", "ruAAA(EXP)", "ruAAA.sf", "ruAAA.sf(EXP)")]
+        [ExpRA("ruAAA", "ruAAA(EXP)", "ruAAA.sf", "ruAAA.sf(EXP)", "A++", "BBB-")]
         [NKR("AAA.ru"), NRA("AAA|ru|")]
         BBBminus = 13,
 
@@ -116,7 +125,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("BB+", PD = 0.0056)]
         [Fitch("BB+", "AA+(rus)", "AA(rus)"), SnP("BB+"), Moodys("Ba1")]
         [AKRA("AA+(RU)", "AA(RU)", "eAA+(RU)", "eAA(RU)", "AA+(ru.sf)", "AA(ru.sf)", "eAA+(ru.sf)", "eAA(ru.sf)", "BB+")] 
-        [ExpRA("ruAA+", "ruAA", "ruAA+(EXP)", "ruAA(EXP)", "ruAA+.sf", "ruAA.sf", "ruAA+.sf(EXP)", "ruAA.sf(EXP)")]
+        [ExpRA("ruAA+", "ruAA", "ruAA+(EXP)", "ruAA(EXP)", "ruAA+.sf", "ruAA.sf", "ruAA+.sf(EXP)", "ruAA.sf(EXP)", "BB+")]
         [NKR("AA+.ru", "AA.ru"), NRA("AA+|ru|", "AA|ru|")]
         BBplus = 12,
 
@@ -128,7 +137,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("BB", PD = 0.0093)]
         [Fitch("BB", "AA-(rus)", "A+(rus)"), SnP("BB"), Moodys("Ba2")]
         [AKRA("AA-(RU)", "A+(RU)", "eAA-(RU)", "eA+(RU)", "AA-(ru.sf)", "A+(ru.sf)", "eAA-(ru.sf)", "eA+(ru.sf)", "BB")]
-        [ExpRA("ruAA-", "ruA+", "ruAA-(EXP)", "ruA+(EXP)", "ruAA-.sf", "ruA+.sf", "ruAA-.sf(EXP)", "ruA+.sf(EXP)")]
+        [ExpRA("ruAA-", "ruA+", "ruAA-(EXP)", "ruA+(EXP)", "ruAA-.sf", "ruA+.sf", "ruAA-.sf(EXP)", "ruA+.sf(EXP)", "A+ (I)", "A+ (II)", "BB")]
         [NKR("AA-.ru", "A+.ru"), NRA("AA-|ru|", "A+|ru|")]
         BB = 11,
 
@@ -140,7 +149,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("BB-", PD = 0.0155)]
         [Fitch("BB-", "A(rus)", "A-(rus)"), SnP("BB-"), Moodys("Ba3")]
         [AKRA("A(RU)", "A-(RU)", "eA(RU)", "eA-(RU)", "A(ru.sf)", "A-(ru.sf)", "eA(ru.sf)", "eA-(ru.sf)", "BB-")]
-        [ExpRA("ruA", "ruA-", "ruA(EXP)", "ruA-(EXP)", "ruA.sf", "ruA-.sf", "ruA.sf(EXP)", "ruA-.sf(EXP)")]
+        [ExpRA("ruA", "ruA-", "ruA(EXP)", "ruA-(EXP)", "ruA.sf", "ruA-.sf", "ruA.sf(EXP)", "ruA-.sf(EXP)", "A+ (III)", "BB-")]
         [NKR("A.ru", "A-.ru"), NRA("A|ru|", "A-|ru|")]
         BBminus = 10,
 
@@ -152,7 +161,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("B+", PD = 0.0294)]
         [Fitch("B+", "BBB+(rus)", "BBB(rus)"), SnP("B+"), Moodys("B1")]
         [AKRA("BBB+(RU)", "BBB(RU)", "eBBB+(RU)", "eBBB(RU)", "BBB+(ru.sf)", "BBB(ru.sf)", "eBBB+(ru.sf)", "eBBB(ru.sf)", "B+")]
-        [ExpRA("ruBBB+", "ruBBB", "ruBBB+(EXP)", "ruBBB(EXP)", "ruBBB+.sf", "ruBBB.sf", "ruBBB+.sf(EXP)", "ruBBB.sf(EXP)")]
+        [ExpRA("ruBBB+", "ruBBB", "ruBBB+(EXP)", "ruBBB(EXP)", "ruBBB+.sf", "ruBBB.sf", "ruBBB+.sf(EXP)", "ruBBB.sf(EXP)", "A (I)", "A (II)", "B+")]
         [NKR("BBB+.ru", "BBB.ru"), NRA("BBB+|ru|", "BBB|ru|")]
         Bplus = 9,
 
@@ -164,7 +173,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("B", PD = 0.0466)]
         [Fitch("B", "BBB-(rus)", "BB+(rus)"), SnP("B"), Moodys("B2")]
         [AKRA("BBB-(RU)", "BB+(RU)", "eBBB-(RU)", "eBB+(RU)", "BBB-(ru.sf)", "BB+(ru.sf)", "eBBB-(ru.sf)", "eBB+(ru.sf)", "B")]
-        [ExpRA("ruBBB-", "ruBB+", "ruBBB-(EXP)", "ruBB+(EXP)", "ruBBB-.sf", "ruBB+.sf", "ruBBB-.sf(EXP)", "ruBB+.sf(EXP)")]
+        [ExpRA("ruBBB-", "ruBB+", "ruBBB-(EXP)", "ruBB+(EXP)", "ruBBB-.sf", "ruBB+.sf", "ruBBB-.sf(EXP)", "ruBB+.sf(EXP)", "B")]
         [NKR("BBB-.ru", "BB+.ru"), NRA("BBB-|ru|", "BB+|ru|")]
         B = 8,
 
@@ -176,7 +185,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("B-", PD = 0.0717)]
         [Fitch("B-", "BB(rus)"), SnP("B-"), Moodys("B3")]
         [AKRA("BB(RU)", "eBB(RU)", "BB(ru.sf)", "eBB(ru.sf)", "B-")]
-        [ExpRA("ruBB", "ruBB(EXP)", "ruBB.sf", "ruBB.sf(EXP)")]
+        [ExpRA("ruBB", "ruBB(EXP)", "ruBB.sf", "ruBB.sf(EXP)", "A (III)", "B-")]
         [NKR("BB.ru"), NRA("BB|ru|")]
         Bminus = 7,
 
@@ -200,7 +209,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("CCC", PD = 0.1991)]
         [Fitch("CCC", "B+(rus)"), SnP("CCC"), Moodys("Caa2")]
         [AKRA("B+(RU)", "eB+(RU)", "B+(ru.sf)", "eB+(ru.sf)", "CCC")]
-        [ExpRA("ruB+", "ruB+(EXP)", "ruB+.sf", "ruB+.sf(EXP)")]
+        [ExpRA("ruB+", "ruB+(EXP)", "ruB+.sf", "ruB+.sf(EXP)", "B++", "CCC")]
         [NKR("B+.ru"), NRA("B+|ru|")]
         CCC = 5,
 
@@ -224,7 +233,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("CC", PD = 0.7764)]
         [Fitch("CC", "B-(rus)"), SnP("CC"), Moodys("Ca")]
         [AKRA("B-(RU)", "eB-(RU)", "B-(ru.sf)", "eB-(ru.sf)", "CC")]
-        [ExpRA("ruB-", "ruB-(EXP)", "ruB-.sf", "ruB-.sf(EXP)")]
+        [ExpRA("ruB-", "ruB-(EXP)", "ruB-.sf", "ruB-.sf(EXP)", "B+", "CC")]
         [NKR("B-.ru"), NRA("B-|ru|")]
         CC = 3,
 
@@ -236,7 +245,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("C", PD = 0.9662)]
         [Fitch("C", "CCC(rus)", "CC(rus)", "C(rus)"), SnP("C"), Moodys("C")]
         [AKRA("CCC(RU)", "CC(RU)", "C(RU)", "eCCC(RU)", "eCC(RU)", "eC(RU)", "CCC(ru.sf)", "CC(ru.sf)", "C(ru.sf)", "eCCC(ru.sf)", "eCC(ru.sf)", "eC(ru.sf)", "C")]
-        [ExpRA("ruCCC", "ruCC", "ruC", "ruCCC(EXP)", "ruCC(EXP)", "ruC(EXP)", "ruCCC.sf", "ruCC.sf", "ruC,sf", "ruCCC.sf(EXP)", "ruCC.sf(EXP)", "ruC.sf(EXP)")]
+        [ExpRA("ruCCC", "ruCC", "ruC", "ruCCC(EXP)", "ruCC(EXP)", "ruC(EXP)", "ruCCC.sf", "ruCC.sf", "ruC,sf", "ruCCC.sf(EXP)", "ruCC.sf(EXP)", "ruC.sf(EXP)", "C++", "C+", "C")]
         [NKR("CCC.ru", "CC.ru", "C.ru"), NRA("CCC|ru|", "CC|ru|", "C|ru|")]
         C = 2,
 
@@ -248,7 +257,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("D", PD = 0.9950)]
         [Fitch("D", "D(rus)"), SnP("D")] 
         [AKRA("D(RU)", "eD(RU)", "D(ru.sf)", "eD(ru.sf)", "D", "RD", "SD")]
-        [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)")]
+        [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)", "C", "D", "RD")]
         [NKR("D.ru"), NRA("D|ru|")]
         D = 1,
     }

@@ -23,6 +23,9 @@ namespace RuDataAPI.Extensions.Ratings
         Uncertain,
 
         [EnumFieldStr("на пересмотре")]
-        Revising
+        Revising,
+
+        [EnumFieldStr("Развивающийся")]
+        Evolving,
     }
 }

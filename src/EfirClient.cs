@@ -259,6 +259,7 @@ namespace RuDataAPI
             string ra = "(rating_agency like 'Fitch%' OR rating_agency like 'Moody%' OR rating_agency like 'АКРА%' OR rating_agency like 'Эксперт%' OR rating_agency like 'НКР' OR rating_agency like 'НРА')";
             string term = "rating_term = 'Долгосрочный'";
             string filter = $"inn = '{inn}'";
+
             var query = new RatingsHistoryRequest
             {
                 sort = 1,
@@ -357,8 +358,9 @@ namespace RuDataAPI
 
             string jsonRequest = JsonSerializer.Serialize(request);
             HttpResponseMessage response = await _httpClient.PostAsync(url, new StringContent(jsonRequest, Encoding.UTF8, MEDIATYPE));
-            string mes = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
+            if (response.IsSuccessStatusCode is false)            
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync());            
+                
             return await response.Content.ReadAsAsync<TResponse>();                        
         }
 

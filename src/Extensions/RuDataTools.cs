@@ -89,7 +89,36 @@ namespace RuDataAPI.Extensions
                 var attr = field.GetCustomAttribute<GenericRatingAttribute>();
                 pd = (attr is not null) ? attr.PD : default;
             }
-            return default;
+            return pd;
+        }        
+
+        internal static string ToRatingString(this CreditRatingUS rating)
+        {
+            string fieldName = rating.ToString();
+            Type enumType = typeof(CreditRatingUS);
+            FieldInfo[] fields = enumType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name != fieldName) continue;
+                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
+                if (attr is not null) return attr.Name; 
+            }
+            throw new Exception($"Cannot parse '{rating}' (Big 3) to appropriate string.");
+        }
+
+
+        internal static string ToRatingString(this CreditRatingRU rating)
+        {
+            string fieldName = rating.ToString();
+            Type enumType = typeof(CreditRatingUS);
+            FieldInfo[] fields = enumType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name != fieldName) continue;
+                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
+                if (attr is not null) return attr.Name;
+            }
+            throw new Exception($"Cannot parse '{rating}' (RU) to appropriate string.");
         }
     }
 }

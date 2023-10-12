@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CS0660, CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
+#pragma warning disable IDE0017 // Simplify object initialization
 
 using Efir.DataHub.Models.Models.Rating;
 
@@ -81,7 +82,16 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public string Isin { get; set; } = string.Empty;
 
+        /// <summary>
+        ///     Reference to agency press-release regarding this credit rating action.
+        /// </summary>
+        public string PressRelease { get; set; } = null!;
 
+        /// <summary>
+        ///     Creates new rating
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         public static CreditRating New(RatingsHistoryFields fields)
         {
             CreditRating rating = new();
@@ -91,6 +101,7 @@ namespace RuDataAPI.Extensions.Ratings
             rating.PreviousValue = fields.prev;
             rating.IssuerName = fields.short_name_org;
             rating.Isin = fields.isin;
+            rating.PressRelease = fields.press_release;
             rating.Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type);
             rating.Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type);
             rating.Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur);
@@ -108,17 +119,19 @@ namespace RuDataAPI.Extensions.Ratings
             string rating = $"{Value} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
             string scale = $"Scale: {Scale} in {Currency} currency\n";
             string action = $"Outlook: {Outlook}\n";
-            string aggrUS = $"Aggregated Big3: {AggregatedBig3}\n";
-            string aggrRU = $"Aggregated RU: {AggregatedRu}\n";
-            return head + rating + scale + action + aggrUS + aggrRU;
+            string aggrUS = $"Aggregated Big3: {AggregatedBig3.ToRatingString()}\n";
+            string aggrRU = $"Aggregated RU: {AggregatedRu.ToRatingString()}\n";
+            string release = $"Press release: {PressRelease}\n";
+            string pd = $"Probability of default: {DefaultProbability:0.00%}\n";
+            return head + rating + scale + action + aggrUS + aggrRU + release + pd;
         }
 
         public string ToShortStringUS()
-            => $"{AggregatedBig3} from {Agency} as of {Date.ToShortDateString()} ({Action})";
+            => $"{AggregatedBig3.ToRatingString()} from {Agency} as of {Date.ToShortDateString()} ({Action})";
         
 
         public string ToShortStringRU()
-            => $"{AggregatedRu} from {Agency} as of {Date.ToShortDateString()} ({Action})";        
+            => $"{AggregatedRu.ToRatingString()} from {Agency} as of {Date.ToShortDateString()} ({Action})";        
 
 
         public static bool operator <=(CreditRating rating1, CreditRating rating2)

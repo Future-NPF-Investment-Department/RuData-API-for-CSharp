@@ -2,9 +2,6 @@
 using Efir.DataHub.Models.Models.RuData;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
-using System;
-using System.IO;
-using System.Reflection;
 
 namespace RuDataAPI.Extensions
 {
@@ -14,7 +11,8 @@ namespace RuDataAPI.Extensions
     public static class EfirExtensions
     {
         // cach variables
-        private static Dictionary<DateTime, GCurveOFZResponse> _gcparams = new();
+        private static readonly Dictionary<DateTime, GCurveOFZResponse> _gcparams = new();
+        private static readonly Dictionary<string, CreditRating[]> _ratings = new();
 
         /// <summary>
         ///     Calculates current MOEX G-Curve rate for specified tenor.
@@ -156,13 +154,25 @@ namespace RuDataAPI.Extensions
             return sec;
         }
 
-        public static async Task GetRatingHistoryAsyncEx(this EfirClient client, string? inn, string? isin = null)
+        /// <summary>
+        ///     Returns ratings history for specified issuer or its security.
+        /// </summary>
+        /// <param name="innOrIsin">Issuer INN or its ISIN.</param>
+        /// <returns>Array of <see cref="CreditRating"/>.</returns>
+        public static async Task<CreditRating[]> GetAllRatingsAsync(this EfirClient client, string innOrIsin)
         {
-            var data = await client.GetRatingHistoryAsync(isin, inn);
+            if (_ratings.ContainsKey(innOrIsin))
+                return _ratings[innOrIsin];
+
+            var data = await client.GetRatingHistoryAsync(innOrIsin);   
             CreditRating[] ratings = new CreditRating[data.Length];
-            for (int i = 0; i < data.Length; i++)
+            for (int i = 0; i < ratings.Length; i++)
                 ratings[i] = CreditRating.New(data[i]);
-            foreach(var r in ratings) Console.WriteLine(r.ToShortStringUS());
+
+            // caching
+            _ratings.Add(innOrIsin, ratings);
+
+            return ratings;
         }
     }
 }

@@ -253,17 +253,17 @@ namespace RuDataAPI
         /// <param name="isin">Security ISIN-code.</param>
         /// <param name="inn">Security issuer inn code.</param>
         /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string? isin = null, string? inn = null)
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string innOrIsin)
         {
             string iscr = "is_credit_rating = 1";
-            string ra = "(rating_agency like 'Fitch%' OR rating_agency like 'Moody%' OR rating_agency like 'АКРА%' OR rating_agency like 'Эксперт%' OR rating_agency like 'НКР' OR rating_agency like 'НРА')";
+            string ra = "rating_agency in ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
             string term = "rating_term = 'Долгосрочный'";
-            string filter = $"inn = '{inn}'";
+            string filter = $"(inn = '{innOrIsin}' OR isin = '{innOrIsin}')";
 
             var query = new RatingsHistoryRequest
             {
                 sort = 1,
-                filter = string.Join(" AND ", iscr, ra, term, filter)   //inn is not null ? $"ISIN = '{isin}' OR INN = '{inn}'" : $"ISIN = '{isin}'"
+                filter = string.Join(" AND ", iscr, ra, term, filter)
             };
 
             string url = $"{_credentials.Url}/Rating/RatingsHistory";

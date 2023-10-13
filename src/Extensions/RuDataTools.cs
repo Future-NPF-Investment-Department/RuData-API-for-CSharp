@@ -90,8 +90,59 @@ namespace RuDataAPI.Extensions
                 pd = (attr is not null) ? attr.PD : default;
             }
             return pd;
-        }        
+        }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="ratings"></param>
+        /// <returns></returns>
+        internal static CreditRatingAggregated CreateAggregatedRating(CreditRating[] ratings)
+        {
+            const CreditRatingScale NATIONAL = CreditRatingScale.National;
+            const CreditRatingScale INTERNATIONAL = CreditRatingScale.International;
+
+            string issuer = ratings[0].IssuerName;
+
+            var filtered = ratings.Any(r => r.Object == CreditRatingTarget.Issuer)
+                ? ratings.Where(r => r.Object == CreditRatingTarget.Issuer)
+                : ratings;
+
+            var lastRatings = filtered
+                .GroupBy(r => r.Agency)
+                .Select(g => g.MaxBy(r => r.Date)!)
+                .ToList();
+
+            CreditRatingUS usr = filtered
+                .Where(r => r.Scale is INTERNATIONAL)
+                .GroupBy(r => r.Agency)
+                .Select(g => g.MaxBy(r => r.Date))
+                .Select(r => ParseRatingUS(r!.Agency, r!.Value))
+                .Max();
+
+            CreditRatingRU rur = filtered
+                .Where(r => r.Scale is NATIONAL)
+                .GroupBy(r => r.Agency)
+                .Select(g => g.MaxBy(r => r.Date))
+                .Select(r => ParseRatingRU(r!.Agency, r!.Value))
+                .Max();
+
+            return new CreditRatingAggregated
+            {
+                Issuer = issuer,
+                RatingBig3 = usr,
+                RatingRu = rur,
+                Ratings = lastRatings,
+                DefaultProbability = GetDefaultProbality(usr)
+            };
+        }
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         internal static string ToRatingString(this CreditRatingUS rating)
         {
             string fieldName = rating.ToString();
@@ -106,7 +157,12 @@ namespace RuDataAPI.Extensions
             throw new Exception($"Cannot parse '{rating}' (Big 3) to appropriate string.");
         }
 
-
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         internal static string ToRatingString(this CreditRatingRU rating)
         {
             string fieldName = rating.ToString();

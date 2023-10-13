@@ -1,5 +1,4 @@
-﻿#pragma warning disable CS0660, CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
-#pragma warning disable IDE0017 // Simplify object initialization
+﻿//#pragma warning disable IDE0017 // Simplify object initialization
 
 using Efir.DataHub.Models.Models.Rating;
 
@@ -36,16 +35,6 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Credit rating action type.
         /// </summary>
         public CreditRatingAction Action { get; set; } 
-
-        /// <summary>
-        ///     International aggregated credit rating value. Based on BIG3 (FITCH, SnP, Moodys) rating scale.
-        /// </summary>
-        public CreditRatingUS AggregatedBig3 { get; set; }
-
-        /// <summary>
-        ///     National (RU) aggregated credit rating value.
-        /// </summary>
-        public CreditRatingRU AggregatedRu { get; set; }
 
         /// <summary>
         ///     Credit rating outlook (forecast).
@@ -92,64 +81,43 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public static CreditRating New(RatingsHistoryFields fields)
+        public static CreditRating ConvertFromEfirRatingsFields(RatingsHistoryFields fields)
         {
-            CreditRating rating = new();
-            rating.Value = fields.last;
-            rating.Agency = fields.rating_agency;
-            rating.Date = fields.last_dt ?? default;
-            rating.PreviousValue = fields.prev;
-            rating.IssuerName = fields.short_name_org;
-            rating.Isin = fields.isin;
-            rating.PressRelease = fields.press_release;
-            rating.Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type);
-            rating.Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type);
-            rating.Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur);
-            rating.Action = RuDataTools.MapToEnum<CreditRatingAction>(fields.change);
-            rating.Outlook = RuDataTools.MapToEnum<CreditRatingOutlook>(fields.forecast);
-            rating.AggregatedBig3 = RuDataTools.ParseRatingUS(rating.Agency, rating.Value);
-            rating.AggregatedRu = RuDataTools.ParseRatingRU(rating.Agency, rating.Value);
-            rating.DefaultProbability = RuDataTools.GetDefaultProbality(rating.AggregatedBig3);
-            return rating;
+            return new()
+            {
+                Value = fields.last,
+                Agency = fields.rating_agency,
+                Date = fields.last_dt ?? default,
+                PreviousValue = fields.prev,
+                IssuerName = fields.short_name_org,
+                Isin = fields.isin,
+                PressRelease = fields.press_release,
+                Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type),
+                Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type),
+                Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur),
+                Action = RuDataTools.MapToEnum<CreditRatingAction>(fields.change),
+                Outlook = RuDataTools.MapToEnum<CreditRatingOutlook>(fields.forecast)
+            };
         }
 
+        /// <summary>
+        ///     Provides extended stylized rating description.
+        /// </summary>
         public override string ToString()
         {
-            string head = $"RATING for {IssuerName} ({Isin})\n";
+            string head = $"RATING for {IssuerName} (ISIN: {Isin})\n";
             string rating = $"{Value} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
             string scale = $"Scale: {Scale} in {Currency} currency\n";
             string action = $"Outlook: {Outlook}\n";
-            string aggrUS = $"Aggregated Big3: {AggregatedBig3.ToRatingString()}\n";
-            string aggrRU = $"Aggregated RU: {AggregatedRu.ToRatingString()}\n";
             string release = $"Press release: {PressRelease}\n";
             string pd = $"Probability of default: {DefaultProbability:0.00%}\n";
-            return head + rating + scale + action + aggrUS + aggrRU + release + pd;
+            return head + rating + scale + action + release + pd;
         }
 
-        public string ToShortStringUS()
-            => $"{AggregatedBig3.ToRatingString()} from {Agency} as of {Date.ToShortDateString()} ({Action})";
-        
-
-        public string ToShortStringRU()
-            => $"{AggregatedRu.ToRatingString()} from {Agency} as of {Date.ToShortDateString()} ({Action})";        
-
-
-        public static bool operator <=(CreditRating rating1, CreditRating rating2)
-            => rating1.AggregatedBig3 <= rating2.AggregatedBig3;
-
-        public static bool operator >=(CreditRating rating1, CreditRating rating2)
-            => rating1.AggregatedBig3 >= rating2.AggregatedBig3;
-
-        public static bool operator <=(CreditRating rating1, CreditRatingUS value)
-            => rating1.AggregatedBig3 <= value;
-
-        public static bool operator >=(CreditRating rating1, CreditRatingUS value)
-            => rating1.AggregatedBig3 >= value;
-
-        public static bool operator ==(CreditRating rating1, CreditRatingUS value)
-            => rating1.AggregatedBig3 == value;
-
-        public static bool operator !=(CreditRating rating1, CreditRatingUS value)
-            => rating1.AggregatedBig3 != value;
+        /// <summary>
+        ///     Provides short stylized rating description.
+        /// </summary>
+        public string ToShortString()
+            => $"{Date.ToShortDateString()} {Value} by {Agency} ({Action})";        
     }
 }

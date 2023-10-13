@@ -167,7 +167,7 @@ namespace RuDataAPI.Extensions
             var data = await client.GetRatingHistoryAsync(innOrIsin);   
             CreditRating[] ratings = new CreditRating[data.Length];
             for (int i = 0; i < ratings.Length; i++)
-                ratings[i] = CreditRating.New(data[i]);
+                ratings[i] = CreditRating.ConvertFromEfirRatingsFields(data[i]);
 
             // caching
             _ratings.Add(innOrIsin, ratings);

@@ -255,7 +255,7 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Implies 99.50% of probalility of default.
         /// </summary>
         [GenericRating("D", PD = 0.9950)]
-        [Fitch("D", "D(rus)"), SnP("D")] 
+        [Fitch("D", "D(rus)"), SnP("D", "SD")] 
         [AKRA("D(RU)", "eD(RU)", "D(ru.sf)", "eD(ru.sf)", "D", "RD", "SD")]
         [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)", "C", "D", "RD")]
         [NKR("D.ru"), NRA("D|ru|")]

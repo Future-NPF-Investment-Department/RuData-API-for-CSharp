@@ -161,18 +161,18 @@ namespace RuDataAPI.Extensions
         /// <returns>Array of <see cref="CreditRating"/>.</returns>
         public static async Task<CreditRating[]> GetAllRatingsAsync(this EfirClient client, string innOrIsin)
         {
-            if (_ratings.ContainsKey(innOrIsin))
-                return _ratings[innOrIsin];
+            if (_ratings.TryGetValue(innOrIsin, out CreditRating[]? ratings))
+                return ratings;
 
             var data = await client.GetRatingHistoryAsync(innOrIsin);   
-            CreditRating[] ratings = new CreditRating[data.Length];
-            for (int i = 0; i < ratings.Length; i++)
-                ratings[i] = CreditRating.ConvertFromEfirRatingsFields(data[i]);
+            var ratingsNew = new CreditRating[data.Length];
+            for (int i = 0; i < ratingsNew.Length; i++)
+                ratingsNew[i] = CreditRating.ConvertFromEfirRatingsFields(data[i]);
 
             // caching
-            _ratings.Add(innOrIsin, ratings);
+            _ratings.Add(innOrIsin, ratingsNew);
 
-            return ratings;
+            return ratingsNew;
         }
     }
 }

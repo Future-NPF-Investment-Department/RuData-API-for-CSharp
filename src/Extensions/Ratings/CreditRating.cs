@@ -118,6 +118,6 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Provides short stylized rating description.
         /// </summary>
         public string ToShortString()
-            => $"{Date.ToShortDateString()} {Value} by {Agency} ({Action})";        
+            => $"{Date.ToShortDateString()} {(Value is "Снят" ? "NR" : Value)} by {Agency} ({Action})";        
     }
 }

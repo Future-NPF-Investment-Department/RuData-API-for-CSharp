@@ -48,7 +48,6 @@ namespace RuDataAPI.Extensions
                         return Enum.Parse<CreditRatingRU>(field.Name);
             }
             return CreditRatingRU.NR;
-            //throw new Exception($"Cannot parse '{rating}' credit rating (RU) of {agency}.");
         }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     Obtains default of probility implied by specified aggregated rating.
+        ///     Obtains default of probility implied by specified aggregated rating in Big3 scale.
         /// </summary>
         /// <param name="rating">Rating aggregated.</param>
         /// <returns>Probability of default.</returns>
@@ -81,6 +80,26 @@ namespace RuDataAPI.Extensions
         {
             string fieldName = rating.ToString();
             Type enumType = typeof(CreditRatingUS);
+            FieldInfo[] fields = enumType.GetFields();
+            double pd = default;
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name != fieldName) continue;
+                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
+                pd = (attr is not null) ? attr.PD : default;
+            }
+            return pd;
+        }
+
+        /// <summary>
+        ///     Obtains default of probility implied by specified aggregated rating in Big3 scale.
+        /// </summary>
+        /// <param name="rating">Rating aggregated.</param>
+        /// <returns>Probability of default.</returns>
+        internal static double GetDefaultProbality(CreditRatingRU rating)
+        {
+            string fieldName = rating.ToString();
+            Type enumType = typeof(CreditRatingRU);
             FieldInfo[] fields = enumType.GetFields();
             double pd = default;
             foreach (FieldInfo field in fields)
@@ -113,19 +132,23 @@ namespace RuDataAPI.Extensions
                 .Select(g => g.MaxBy(r => r.Date)!)
                 .ToList();
 
-            CreditRatingUS usr = filtered
+            CreditRatingUS usr = filtered.Any(r => r.Scale is INTERNATIONAL) ? filtered
                 .Where(r => r.Scale is INTERNATIONAL)
                 .GroupBy(r => r.Agency)
                 .Select(g => g.MaxBy(r => r.Date))
                 .Select(r => ParseRatingUS(r!.Agency, r!.Value))
-                .Max();
+                .Max() : default;
 
-            CreditRatingRU rur = filtered
+            CreditRatingRU rur = filtered.Any(r => r.Scale is NATIONAL) ? filtered
                 .Where(r => r.Scale is NATIONAL)
                 .GroupBy(r => r.Agency)
                 .Select(g => g.MaxBy(r => r.Date))
                 .Select(r => ParseRatingRU(r!.Agency, r!.Value))
-                .Max();
+                .Max() : default;
+
+            double pd = usr is not CreditRatingUS.NR
+                ? GetDefaultProbality(usr)
+                : GetDefaultProbality(rur);
 
             return new CreditRatingAggregated
             {
@@ -133,7 +156,7 @@ namespace RuDataAPI.Extensions
                 RatingBig3 = usr,
                 RatingRu = rur,
                 Ratings = lastRatings,
-                DefaultProbability = GetDefaultProbality(usr)
+                DefaultProbability = pd,
             };
         }
 

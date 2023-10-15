@@ -2,6 +2,7 @@
 using Efir.DataHub.Models.Models.RuData;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
+using System.Diagnostics;
 
 namespace RuDataAPI.Extensions
 {
@@ -141,7 +142,7 @@ namespace RuDataAPI.Extensions
             if (data.Length == 0)
                 throw new Exception($"EFIR: no securities found for ISIN: {Isin}");
 
-            var sec = new EfirSecurity(data[0]);
+            var sec = EfirSecurity.ConvertFromEfirFields(data[0]);
 
             if (loadCoupons && sec.SecurityId is not null && sec.AssetClass is "Облигация")
             {
@@ -173,6 +174,109 @@ namespace RuDataAPI.Extensions
             _ratings.Add(innOrIsin, ratingsNew);
 
             return ratingsNew;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public static async Task<EfirSecurity[]> FindAnalogsAsync(this EfirClient client, EfirSecQueryDetails query)
+        {
+            var sw = Stopwatch.StartNew();
+            Console.WriteLine("creating query strings.");
+            string diststart = query.DistributionStart is not null
+                ? $"begdistdate >= '{query.DistributionStart :dd.MM.yyyy}'" 
+                : string.Empty;
+
+            string distend = query.DistributionEnd is not null
+                ? $"begdistdate <= '{query.DistributionEnd:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string matstart = query.MaturityStart is not null
+                ? $"endmtydate >= '{query.MaturityStart:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string matend = query.MaturityEnd is not null
+                ? $"endmtydate <= '{query.MaturityEnd:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string cur = query.Currency is not null
+                ? $"faceftname = '{query.Currency}'"
+                : string.Empty;
+
+            string country = query.Country is not null
+                ? $"issuercountry = '{query.Country}'"
+                : string.Empty;
+
+            string sectors = string.Empty;
+            if (query.Sectors is not null)            
+                if (query.Sectors.Length is 1) sectors = $"issuersector = '{query.Sectors[0]}'";                
+                else sectors = $"issuersector in ('{string.Join("', '", query.Sectors)}')";
+
+            string status = "status = 'В обращении'";
+            string coupontype = "coupontype in ('Постоянный', 'Переменный', 'Фиксированный')";
+            string sectype = "SecurityType = 'Корп'";
+
+            string[] clauses = new string[] { 
+                sectype,
+                country,
+                status, 
+                coupontype, 
+                diststart, 
+                distend, 
+                matstart, 
+                matend, 
+                sectors, 
+                cur, 
+            };
+
+            string querystr = string.Join(" AND ", clauses.Where(str => !string.IsNullOrEmpty(str)));
+            Console.WriteLine(querystr);
+            Console.WriteLine("extracting efir data.");
+            var rawSecurities = await client.FindSecuritiesAsync(querystr);
+            Console.WriteLine($"{rawSecurities.Length} securities found.");
+            var securities = new List<EfirSecurity>();
+
+            Console.WriteLine("extracting ratings for:");
+            foreach (var rs in rawSecurities)
+            {
+                Console.WriteLine($"\t{rs.nickname} (inn: {rs.borrowerinn}) (isin: {rs.isincode}) ");
+                var sec = EfirSecurity.ConvertFromEfirFields(rs);
+                var raitingshist = await client.GetAllRatingsAsync(sec.IssuerInn);
+                var raiting = RuDataTools.CreateAggregatedRating(raitingshist);
+
+                if (query.RatingLow is not null && raiting < query.RatingLow.Value)
+                    continue;
+
+                if (query.RatingHigh is not null && raiting > query.RatingHigh.Value)
+                    continue;
+
+                sec.RatingAggregated = raiting;
+
+                sec.EventsSchedule = new List<SecurityEvent>();
+                var events = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
+                if (events.Length > 0)
+                    foreach (var coupon in events)
+                        sec.EventsSchedule.Add(new SecurityEvent(coupon));
+
+                securities.Add(sec);
+            }
+
+            //var tasks = new List<Task<CreditRating[]>>();
+            //foreach (var rs in rawSecurities)
+            //{
+            //    //Console.Write($"\t{rs.nickname} (inn: {rs.borrowerinn}) (isin: {rs.isincode}) ");
+            //    var sec = EfirSecurity.ConvertFromEfirFields(rs);
+            //    tasks.Add(client.GetAllRatingsAsync(sec.IssuerInn));
+            //}
+            //CreditRating[][] results = await Task.WhenAll(tasks);
+            //Console.WriteLine("done");
+
+            sw.Stop();
+            Console.WriteLine($"time passed: {sw.ElapsedMilliseconds/1000.0:0.00000} sec.");
+            return securities.ToArray();
         }
     }
 }

@@ -121,7 +121,7 @@ namespace RuDataAPI.Extensions
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
             const CreditRatingScale INTERNATIONAL = CreditRatingScale.International;
 
-            string issuer = ratings[0].IssuerName;
+            //string issuer = ratings[0].IssuerName;
 
             var filtered = ratings.Any(r => r.Object == CreditRatingTarget.Issuer)
                 ? ratings.Where(r => r.Object == CreditRatingTarget.Issuer)
@@ -132,8 +132,7 @@ namespace RuDataAPI.Extensions
                 .Select(g => g.MaxBy(r => r.Date)!)
                 .ToList();
 
-            CreditRatingUS usr = filtered.Any(r => r.Scale is INTERNATIONAL) ? filtered
-                .Where(r => r.Scale is INTERNATIONAL)
+            CreditRatingUS usr = filtered.Any() ? filtered
                 .GroupBy(r => r.Agency)
                 .Select(g => g.MaxBy(r => r.Date))
                 .Select(r => ParseRatingUS(r!.Agency, r!.Value))
@@ -152,7 +151,6 @@ namespace RuDataAPI.Extensions
 
             return new CreditRatingAggregated
             {
-                Issuer = issuer,
                 RatingBig3 = usr,
                 RatingRu = rur,
                 Ratings = lastRatings,

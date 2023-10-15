@@ -65,7 +65,6 @@ namespace RuDataAPI.Extensions.Ratings
             return head + values + pd + lastRatingsHead + rawratings;
         }
 
-
         public static bool operator <=(CreditRatingAggregated rating1, CreditRatingAggregated rating2)
             => rating1.RatingBig3 <= rating2.RatingBig3;
 
@@ -77,6 +76,12 @@ namespace RuDataAPI.Extensions.Ratings
 
         public static bool operator >=(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 >= value;
+
+        public static bool operator <(CreditRatingAggregated rating1, CreditRatingUS value)
+            => rating1.RatingBig3 < value;
+
+        public static bool operator >(CreditRatingAggregated rating1, CreditRatingUS value)
+            => rating1.RatingBig3 > value;
 
         public static bool operator ==(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 == value;

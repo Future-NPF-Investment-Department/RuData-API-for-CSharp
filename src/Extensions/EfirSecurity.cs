@@ -1,4 +1,5 @@
 ﻿using Efir.DataHub.Models.Models.Info;
+using RuDataAPI.Extensions.Ratings;
 
 namespace RuDataAPI.Extensions
 {
@@ -7,6 +8,8 @@ namespace RuDataAPI.Extensions
     /// </summary>
     public class EfirSecurity
     {
+        public EfirSecurity() { }   
+
         public EfirSecurity(FintoolReferenceDataFields finref) 
         {
             SecurityId = finref.fintoolid;
@@ -26,6 +29,7 @@ namespace RuDataAPI.Extensions
             AssetClass = finref.fintooltype;
             IssueVolume = (double?)finref.summarketval;
             IssueSector = finref.issuersector;
+            IssuerInn = finref.borrowerinn;
         }
 
         /// <summary>
@@ -117,5 +121,33 @@ namespace RuDataAPI.Extensions
         ///     Security issuer's sector (gov, fin, etc.).
         /// </summary>
         public string? IssueSector { get; set; }
+
+        public CreditRatingAggregated RatingAggregated { get; set; }
+        public string? IssuerInn { get; set; }
+
+        public static EfirSecurity ConvertFromEfirFields(FintoolReferenceDataFields finref)
+        {
+            var sec = new EfirSecurity();
+            sec.SecurityId = finref.fintoolid;
+            sec.ShortName = finref.nickname;
+            sec.FullName = finref.fullname;
+            sec.Isin = finref.isincode;
+            sec.IssuerName = finref.issuername_nrd;
+            sec.PlacementDate = finref.begdistdate;
+            sec.MaturityDate = finref.endmtydate;
+            sec.Currency = finref.faceftname;
+            sec.Notional = (double?)finref.facevalue;
+            sec.CouponReferenceRateName = finref.floatratename;
+            sec.CouponType = finref.coupontype;
+            sec.CouponPeriodType = finref.coupontypename_nrd;
+            sec.FirstCouponStartDate = finref.firstcoupondate;
+            sec.Status = finref.status;
+            sec.AssetClass = finref.fintooltype;
+            sec.IssueVolume = (double?)finref.summarketval;
+            sec.IssueSector = finref.issuersector;
+            sec.IssuerInn = finref.borrowerinn;
+
+            return sec;
+        }
     }
 }

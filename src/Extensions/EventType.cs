@@ -28,6 +28,8 @@
         /// <summary>
         ///     Dividend payment.
         /// </summary>
-        DIV
+        DIV,
+
+        DFLT
     }
 }

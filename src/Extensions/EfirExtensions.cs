@@ -3,6 +3,7 @@ using Efir.DataHub.Models.Models.RuData;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace RuDataAPI.Extensions
 {
@@ -242,16 +243,47 @@ namespace RuDataAPI.Extensions
             Console.WriteLine("extracting ratings for:");
             foreach (var rs in rawSecurities)
             {
+                if (rs.borrowerinn is null) continue; // <--------------------------------------------------------- PLUG to overcome.
+
                 Console.WriteLine($"\t{rs.nickname} (inn: {rs.borrowerinn}) (isin: {rs.isincode}) ");
                 var sec = EfirSecurity.ConvertFromEfirFields(rs);
-                var raitingshist = await client.GetAllRatingsAsync(sec.IssuerInn);
+                var raitingshist = await client.GetAllRatingsAsync(sec.IssuerInn!);
                 var raiting = RuDataTools.CreateAggregatedRating(raitingshist);
 
-                if (query.RatingLow is not null && raiting < query.RatingLow.Value)
-                    continue;
+                if (query.Big3RatingLow is null)
+                {
+                    if (query.RuRatingLow is not null)
+                    {
+                        if (raiting < query.RuRatingLow.Value) continue;
+                    }
+                }
+                else
+                {
+                    if (raiting < query.Big3RatingLow.Value) continue;
+                }
 
-                if (query.RatingHigh is not null && raiting > query.RatingHigh.Value)
-                    continue;
+
+                if (query.Big3RatingHigh is null)
+                {
+                    if (query.RuRatingHigh is not null)
+                    {
+                        if (raiting > query.RuRatingHigh.Value) continue;
+                    }
+                }
+                else
+                {
+                    if (raiting > query.Big3RatingHigh.Value) continue;
+                }
+
+
+
+
+
+                //if (query.Big3RatingLow is not null && raiting < query.Big3RatingLow.Value)
+                //    continue;
+
+                //if (query.Big3RatingHigh is not null && raiting > query.Big3RatingHigh.Value)
+                //    continue;
 
                 sec.RatingAggregated = raiting;
 

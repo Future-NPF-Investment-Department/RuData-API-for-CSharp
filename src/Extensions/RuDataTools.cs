@@ -1,4 +1,5 @@
-﻿using RuDataAPI.Extensions.Mapping;
+﻿using Efir.DataHub.Models.Models.Bond;
+using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
 using System.Reflection;
 
@@ -196,6 +197,41 @@ namespace RuDataAPI.Extensions
                 if (attr is not null) return attr.Name;
             }
             throw new Exception($"Cannot parse '{rating}' (RU) to appropriate string.");
+        }
+
+        
+        internal static List<SecurityEvent> GetFlowsForPricing(TimeTableV2Fields[] input)
+        {
+            var flows = new List<SecurityEvent>();
+            DateTime? firstOffer = null;
+            foreach (var cf in input)
+            {
+                SecurityEvent flow = new(cf);
+                if (flow.PaymentType is EventType.CALL)
+                {
+                    if (firstOffer is null)
+                    {
+                        firstOffer = cf.EventDate;
+                    }
+                    else
+                    {
+                        flow.Rate = default;
+                        flow.Payment = default;
+                    }
+                }
+                else if (flow.PaymentType is EventType.MTY)
+                {                    
+                    if(firstOffer != null)
+                    {
+                        flow.Rate = default;
+                        flow.Payment = default;
+                    }
+                }
+                flows.Add(flow);
+            }
+
+
+            return flows;
         }
     }
 }

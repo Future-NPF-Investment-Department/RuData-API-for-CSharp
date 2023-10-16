@@ -34,15 +34,31 @@ namespace RuDataAPI.Extensions
             return this;
         }
 
-        public EfirSecQueryBuilder WithLowRating(CreditRatingUS rating)
+        public EfirSecQueryBuilder WithRatingBig3(CreditRatingUS rating)
         {
-            _query.RatingLow = rating;
+            _query.Big3RatingLow = rating;
+            _query.Big3RatingHigh = rating;
             return this;
         }
 
-        public EfirSecQueryBuilder WithHighRating(CreditRatingUS rating)
+        public EfirSecQueryBuilder WithRatingBig3(CreditRatingUS low, CreditRatingUS high)
         {
-            _query.RatingHigh = rating;
+            _query.Big3RatingLow = low;
+            _query.Big3RatingHigh = high;
+            return this;
+        }
+
+        public EfirSecQueryBuilder WithRatingRu(CreditRatingRU rating)
+        {
+            _query.RuRatingLow = rating;
+            _query.RuRatingHigh = rating;
+            return this;
+        }
+
+        public EfirSecQueryBuilder WithRatingRu(CreditRatingRU low, CreditRatingRU high)
+        {
+            _query.RuRatingLow = low;
+            _query.RuRatingHigh = high;
             return this;
         }
 

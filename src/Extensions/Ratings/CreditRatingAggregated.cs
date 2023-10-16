@@ -83,6 +83,12 @@ namespace RuDataAPI.Extensions.Ratings
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 > value;
 
+        public static bool operator <(CreditRatingAggregated rating1, CreditRatingRU value)
+            => rating1.RatingRu < value;
+
+        public static bool operator >(CreditRatingAggregated rating1, CreditRatingRU value)
+            => rating1.RatingRu > value;
+
         public static bool operator ==(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 == value;
 

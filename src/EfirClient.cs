@@ -214,6 +214,7 @@ namespace RuDataAPI
             var query = new CalendarV2Request
             {
                 FintoolIds = secIds,
+                StartDate = DateTime.Now.Date,
             };
 
             string url = $"{_credentials.Url}/Info/CalendarV2";

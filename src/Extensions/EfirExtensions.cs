@@ -287,11 +287,16 @@ namespace RuDataAPI.Extensions
 
                 sec.RatingAggregated = raiting;
 
-                sec.EventsSchedule = new List<SecurityEvent>();
+                var flows = new List<SecurityEvent>();
                 var events = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
-                if (events.Length > 0)
-                    foreach (var coupon in events)
-                        sec.EventsSchedule.Add(new SecurityEvent(coupon));
+                sec.EventsSchedule = RuDataTools.GetFlowsForPricing(events);
+                //if (events.Length > 0)
+                //    foreach (var coupon in events)
+                //        flows.Add(new SecurityEvent(coupon));
+
+                //sec.EventsSchedule = flows.Any(f => f.PaymentType is EventType.CALL)
+                //    ? flows.Where(f => f.PaymentType != EventType.MTY).ToList() 
+                //    : flows;
 
                 securities.Add(sec);
             }

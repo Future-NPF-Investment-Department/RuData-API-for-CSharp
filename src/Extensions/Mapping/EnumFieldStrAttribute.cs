@@ -3,14 +3,14 @@
 namespace RuDataAPI.Extensions.Mapping
 {
     /// <summary>
-    ///     Represents alternative string description for enum field.
+    ///     Represents collection of alternative string descriptions for enum field.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class EnumFieldStrAttribute : Attribute
     {
-        public EnumFieldStrAttribute(string stringVal) 
-            => Value = stringVal;
+        public EnumFieldStrAttribute(params string[] stringVal) 
+            => Values = stringVal;
         
-        public string Value { get; set; }
+        public string[] Values { get; set; }
     }
 }

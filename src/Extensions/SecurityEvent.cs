@@ -1,4 +1,5 @@
 ﻿using Efir.DataHub.Models.Models.Bond;
+using RuDataAPI.Extensions.Mapping;
 
 namespace RuDataAPI.Extensions
 {
@@ -14,7 +15,7 @@ namespace RuDataAPI.Extensions
             PeriodLength = (int?)fields.EventPeriod ?? 0;
             Rate = (double?)fields.Value ?? 0.0;
             Payment = (double?)fields.Pay1Bond ?? 0.0;
-            PaymentType = Enum.Parse<EventType>(fields.EventType);
+            PaymentType = RuDataTools.MapToEnum<SecurityFlow>(fields.TypeOperation);
         }
 
 
@@ -46,6 +47,6 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)
         /// </summary>
-        public EventType PaymentType { get; set; }
+        public SecurityFlow PaymentType { get; set; }
     }
 }

@@ -17,14 +17,16 @@ namespace RuDataAPI.Extensions
         /// <typeparam name="TEnum">Enum type.</typeparam>
         /// <param name="strval">value to parse.</param>
         /// <returns>Field of specified enum.</returns>
-        internal static TEnum MapToEnum<TEnum>(string strval) where TEnum : struct, Enum
+        internal static TEnum MapToEnum<TEnum>(string? strval) where TEnum : struct, Enum
         {
+            if (strval is null) return default;
+
             Type enumType = typeof(TEnum);
             FieldInfo[] fields = enumType.GetFields();
             foreach (FieldInfo field in fields)
             {
                 var attr = field.GetCustomAttribute<EnumFieldStrAttribute>();
-                if (attr is not null && attr.Value == strval)
+                if (attr is not null && attr.Values.Contains(strval))
                     return Enum.Parse<TEnum>(field.Name);
             }
             throw new Exception($"Cannot map '{strval}' to {enumType.Name}.");
@@ -197,41 +199,6 @@ namespace RuDataAPI.Extensions
                 if (attr is not null) return attr.Name;
             }
             throw new Exception($"Cannot parse '{rating}' (RU) to appropriate string.");
-        }
-
-        
-        internal static List<SecurityEvent> GetFlowsForPricing(TimeTableV2Fields[] input)
-        {
-            var flows = new List<SecurityEvent>();
-            DateTime? firstOffer = null;
-            foreach (var cf in input)
-            {
-                SecurityEvent flow = new(cf);
-                if (flow.PaymentType is EventType.CALL)
-                {
-                    if (firstOffer is null)
-                    {
-                        firstOffer = cf.EventDate;
-                    }
-                    else
-                    {
-                        flow.Rate = default;
-                        flow.Payment = default;
-                    }
-                }
-                else if (flow.PaymentType is EventType.MTY)
-                {                    
-                    if(firstOffer != null)
-                    {
-                        flow.Rate = default;
-                        flow.Payment = default;
-                    }
-                }
-                flows.Add(flow);
-            }
-
-
-            return flows;
-        }
+        }        
     }
 }

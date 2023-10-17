@@ -214,7 +214,7 @@ namespace RuDataAPI
             var query = new CalendarV2Request
             {
                 FintoolIds = secIds,
-                StartDate = DateTime.Now.Date,
+                Filter = "typeOperation NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')"
             };
 
             string url = $"{_credentials.Url}/Info/CalendarV2";
@@ -233,10 +233,9 @@ namespace RuDataAPI
         /// <returns>Array of <see cref="SecurityRatingsFields"/>.</returns>
         public async Task<SecurityRatingTableFields[]> GetRatingAsync(string isin)
         {
-            var query = new SecurityRatingsTableRequest //SecurityRatingsRequest
+            var query = new SecurityRatingsTableRequest
             {
                 ids = new string[] { isin },
-                //date = date
             };
 
             string url = $"{_credentials.Url}/Rating/SecurityRatingTable";

@@ -275,29 +275,15 @@ namespace RuDataAPI.Extensions
                     if (raiting > query.Big3RatingHigh.Value) continue;
                 }
 
-
-
-
-
-                //if (query.Big3RatingLow is not null && raiting < query.Big3RatingLow.Value)
-                //    continue;
-
-                //if (query.Big3RatingHigh is not null && raiting > query.Big3RatingHigh.Value)
-                //    continue;
-
                 sec.RatingAggregated = raiting;
 
                 var flows = new List<SecurityEvent>();
                 var events = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
-                sec.EventsSchedule = RuDataTools.GetFlowsForPricing(events);
-                //if (events.Length > 0)
-                //    foreach (var coupon in events)
-                //        flows.Add(new SecurityEvent(coupon));
+                if (events.Length > 0)
+                    foreach (var coupon in events)
+                        flows.Add(new SecurityEvent(coupon));
 
-                //sec.EventsSchedule = flows.Any(f => f.PaymentType is EventType.CALL)
-                //    ? flows.Where(f => f.PaymentType != EventType.MTY).ToList() 
-                //    : flows;
-
+                sec.EventsSchedule = flows;
                 securities.Add(sec);
             }
 

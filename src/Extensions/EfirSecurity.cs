@@ -30,6 +30,7 @@ namespace RuDataAPI.Extensions
             IssueVolume = (double?)finref.summarketval;
             IssueSector = finref.issuersector;
             IssuerInn = finref.borrowerinn;
+            EventsSchedule = new();
         }
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     List of <see cref="SecurityEvent"/> data.
         /// </summary>
-        public List<SecurityEvent>? EventsSchedule { get; set; }
+        public List<SecurityEvent> EventsSchedule { get; set; }
         
         /// <summary>
         ///     Start date of first Coupon period

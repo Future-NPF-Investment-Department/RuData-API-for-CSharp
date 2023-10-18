@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿#pragma warning disable IDE1006 // Naming Styles
+
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -18,6 +20,7 @@ using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
 using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
 using Efir.DataHub.Models.Models.Nsd;
+using Efir.DataHub.Models.Requests.V2;
 
 namespace RuDataAPI
 {
@@ -220,7 +223,7 @@ namespace RuDataAPI
             var query = new CalendarV2Request
             {
                 FintoolIds = secIds,
-                Filter = "typeOperation NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')"
+                Filter = "TYPEOPERATION NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')"
             };
 
             string url = $"{_credentials.Url}/Info/CalendarV2";
@@ -229,53 +232,49 @@ namespace RuDataAPI
 
 
         /// <summary>
-        ///     Sends POST request to EFIR Server to get security ratings.
-        /// </summary>
-        /// <remarks>
-        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/SecurityRatings">
-        ///         https://docs.efir-net.ru/dh2/#/Rating/SecurityRatings
-        ///     </see>.
-        /// </remarks>
-        /// <param name="isin">Security ISIN-code.</param>
-        /// <returns>Array of <see cref="SecurityRatingsFields"/>.</returns>
-        public async Task<SecurityRatingTableFields[]> GetRatingAsync(string isin)
-        {
-            var query = new SecurityRatingsTableRequest
-            {
-                ids = new string[] { isin },
-            };
-
-            string url = $"{_credentials.Url}/Rating/SecurityRatingTable";
-            return await PostEfirRequestAsync<SecurityRatingsTableRequest, SecurityRatingTableFields[]>(query, url);
-        }
-
-
-        /// <summary>
-        ///     Sends POST request to EFIR Server to get security ratings history.
+        ///     Sends POST request to EFIR Server to get issuer/security ratings history.
         /// </summary>
         /// <remarks>
         ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory">
         ///         https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory
         ///     </see>.
         /// </remarks>
-        /// <param name="isin">Security ISIN-code.</param>
-        /// <param name="inn">Security issuer inn code.</param>
+        /// <param name="inns">List of issuer INN codes.</param>
         /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string innOrIsin)
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(params string[] inns)
         {
-            string iscr = "is_credit_rating = 1";
-            string ra = "rating_agency in ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
-            string term = "rating_term = 'Долгосрочный'";
-            string filter = $"(inn = '{innOrIsin}' OR isin = '{innOrIsin}')";
+            if (inns.Length > 100) throw new Exception("No more than 100 INN codes are allowed in request.");
 
-            var query = new RatingsHistoryRequest
-            {
-                sort = 1,
-                filter = string.Join(" AND ", iscr, ra, term, filter)
-            };
+            string iscr = "IS_CREDIT_RATING = 1";
+            string term = "RATING_TERM = 'Долгосрочный'";
+            string inn = $"INN IN ('{string.Join("', '", inns)}')";
+            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
+            string filter = string.Join(" AND ", iscr, term, ra, inn);
+
+            var query = CreatePagedRequest<RatingsHistoryRequest>(1);
+            query.sort = 1;
+            query.filter = filter;           
 
             string url = $"{_credentials.Url}/Rating/RatingsHistory";
-            return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
+            var retval = await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
+            
+            if (retval.Length > 0 && retval[0].counter > 300) 
+            {
+                int npages = retval[0].counter / 300 + 1;
+                var requestsSent = new Task<RatingsHistoryFields[]>[npages - 1];
+                for (int i = 2; i <= npages; i++)
+                {
+                    var pagedRequest = CreatePagedRequest<RatingsHistoryRequest>(i);
+                    pagedRequest.sort = 1;
+                    pagedRequest.filter = filter;
+                    requestsSent[i - 2] = PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(pagedRequest, url);
+                }                
+                var result = await Task.WhenAll(requestsSent);
+                foreach (var r in result)                
+                    retval = retval.Concat(r).ToArray();                
+            }
+
+            return retval;
         }
 
 
@@ -354,6 +353,10 @@ namespace RuDataAPI
         }   
         
 
+        public void Dispose()        
+            => _httpClient.Dispose();
+        
+
         /// <summary>
         ///     Private method to send POST request to specified url of EFIR server.
         /// </summary>
@@ -372,8 +375,9 @@ namespace RuDataAPI
             return await response.Content.ReadAsAsync<TResponse>();                        
         }
 
-        public void Dispose()        
-            => _httpClient.Dispose();
+
+        private TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
+            => new TRequest { pageNum = pageNum };
         
     }
 }

@@ -158,6 +158,23 @@ namespace RuDataAPI.Extensions
         }
 
 
+        public static async Task<CreditRating[]> ExGetRaitingHistoryAsync(this EfirClient client, params string[] inns)
+        {
+            // split target sequence into chunks of size 100.
+            string[][] chunks = (inns.Length > 100) 
+                ? inns.Chunk(100).ToArray() 
+                : new string[][] { inns };
+
+            List<CreditRating> history = new(inns.Length);
+
+            foreach (var chunk in chunks)
+            {
+                var data = await client.GetRatingHistoryAsync(chunk);
+                history.AddRange(data.Select(r => CreditRating.ConvertFromEfirRatingsFields(r)));
+            }
+            return history.ToArray();
+        }
+
         /// <summary>
         ///     Returns ratings history for specified issuer or its security.
         /// </summary>
@@ -189,15 +206,20 @@ namespace RuDataAPI.Extensions
         {
             string querystr = query.ToString();
             var securities = await client.FindSecuritiesAsync(querystr);
+
+            var inns = securities
+                .Select(sec => sec.borrowerinn)
+                .Where(inn => inn is not null)
+                .Distinct()
+                .ToArray();
+
+            var raitings = await client.ExGetRaitingHistoryAsync(inns);
             var analogs = new List<EfirSecurity>();
 
             foreach (var rs in securities)
             {
-                if (rs.borrowerinn is null) continue; // <--------------------------------------------------------- PLUG to overcome.
-
                 var sec = EfirSecurity.ConvertFromEfirFields(rs);
-                var raitingshist = await client.ExGetAllRatingsAsync(sec.IssuerInn!);
-                var raiting = RuDataTools.CreateAggregatedRating(raitingshist);
+                var raiting = RuDataTools.CreateAggregatedRating(raitings.Where(r => r.Inn == sec.IssuerInn).ToArray());
 
                 if (query.Big3RatingLow is null)
                 {
@@ -225,14 +247,6 @@ namespace RuDataAPI.Extensions
                 }
 
                 sec.RatingAggregated = raiting;
-
-                var flows = new List<SecurityEvent>();
-                var events = await client.GetEventsCalendarAsync(sec.SecurityId.Value);
-                if (events.Length > 0)
-                    foreach (var coupon in events)
-                        flows.Add(new SecurityEvent(coupon));
-
-                sec.EventsSchedule = flows;
                 analogs.Add(sec);
             }
             return analogs.ToArray();

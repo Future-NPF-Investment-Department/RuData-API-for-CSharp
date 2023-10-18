@@ -122,7 +122,6 @@ namespace RuDataAPI.Extensions
         internal static CreditRatingAggregated CreateAggregatedRating(CreditRating[] ratings)
         {
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
-            const CreditRatingScale INTERNATIONAL = CreditRatingScale.International;
 
             //string issuer = ratings[0].IssuerName;
 

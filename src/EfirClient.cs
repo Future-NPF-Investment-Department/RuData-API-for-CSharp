@@ -46,6 +46,7 @@ namespace RuDataAPI
         /// </summary>
         public bool IsLoggedIn { get; private set; }
 
+
         /// <summary>
         ///     Obtains EfirCredentials from json file. If failed returns empty EfirCredentials.
         /// </summary>
@@ -101,6 +102,7 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<EnumsRequest, EnumsFields[]>(query, url);
         }
 
+
         /// <summary>
         ///     Sends POST request to EFIR Server to get all possible fields for specified enumeration.
         /// </summary>
@@ -150,6 +152,7 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
+
         /// <summary>
         ///     Sends POST request to EFIR Server to find all securities that match specified criteria.
         /// </summary>
@@ -177,6 +180,7 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
         }
 
+
         public async Task<CommonDataFields[]> GetNsdSecuritiesDataAsync(string filter, int pagenum)
         {
             var query = new CommonDataRequest
@@ -189,6 +193,7 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<CommonDataRequest, CommonDataFields[]>(query, url);
         }
 
+
         public async Task<NsdEmitentsFields[]> GetNsdEmitentsDataAsync(string filter)
         {
             var query = new EmitentsRequest
@@ -198,6 +203,7 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/Nsd/Emitents";
             return await PostEfirRequestAsync<EmitentsRequest, NsdEmitentsFields[]>(query, url);
         }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get payments (incl. coupon, notional, etc.) schedule for specified bond.
@@ -221,6 +227,7 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
         }
 
+
         /// <summary>
         ///     Sends POST request to EFIR Server to get security ratings.
         /// </summary>
@@ -241,6 +248,7 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/Rating/SecurityRatingTable";
             return await PostEfirRequestAsync<SecurityRatingsTableRequest, SecurityRatingTableFields[]>(query, url);
         }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get security ratings history.

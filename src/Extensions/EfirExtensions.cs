@@ -24,9 +24,9 @@ namespace RuDataAPI.Extensions
         ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
         ///             MOEX G-Curve reference page</see>.    
         /// </remarks>
-        public static async Task<double> CalculateGcurveForDateAsync(this EfirClient client, double tenor)
+        public static async Task<double> ExCalculateGcurveForDateAsync(this EfirClient client, double tenor)
         {
-            return await client.CalculateGcurveForDateAsync(DateTime.Now, tenor);
+            return await client.ExCalculateGcurveForDateAsync(DateTime.Now, tenor);
         }
 
 
@@ -39,7 +39,7 @@ namespace RuDataAPI.Extensions
         ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
         ///             MOEX G-Curve reference page</see>.    
         /// </remarks>
-        public static async Task<double> CalculateGcurveForDateAsync(this EfirClient client, DateTime date, double tenor)
+        public static async Task<double> ExCalculateGcurveForDateAsync(this EfirClient client, DateTime date, double tenor)
         {
             // caching            
             if (_gcparams.ContainsKey(date) is false)
@@ -131,13 +131,14 @@ namespace RuDataAPI.Extensions
             return Math.Exp(gt / 10000) - 1;
         }
 
+
         /// <summary>
         ///     Fetch static security data from EFIR server.
         /// </summary>
         /// <param name="Isin">Security ISIN code.</param>
         /// <param name="loadCoupons">Flag to load coupons for bond.</param>
         /// <returns><see cref="EfirSecurity"/></returns>
-        public static async Task<EfirSecurity> GetEfirSecurityAsync(this EfirClient client, string Isin, bool loadCoupons = false)
+        public static async Task<EfirSecurity> ExGetEfirSecurityAsync(this EfirClient client, string Isin, bool loadCoupons = false)
         {
             FintoolReferenceDataFields[] data = await client.GetSecurityDataAsync(Isin);
             if (data.Length == 0)
@@ -156,12 +157,13 @@ namespace RuDataAPI.Extensions
             return sec;
         }
 
+
         /// <summary>
         ///     Returns ratings history for specified issuer or its security.
         /// </summary>
         /// <param name="innOrIsin">Issuer INN or its ISIN.</param>
         /// <returns>Array of <see cref="CreditRating"/>.</returns>
-        public static async Task<CreditRating[]> GetAllRatingsAsync(this EfirClient client, string innOrIsin)
+        public static async Task<CreditRating[]> ExGetAllRatingsAsync(this EfirClient client, string innOrIsin)
         {
             if (_ratings.TryGetValue(innOrIsin, out CreditRating[]? ratings))
                 return ratings;
@@ -177,77 +179,24 @@ namespace RuDataAPI.Extensions
             return ratingsNew;
         }
 
+
         /// <summary>
-        /// 
+        ///     Finds securities according to specified parameters (<see cref="EfirSecQueryDetails"/>).
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static async Task<EfirSecurity[]> FindAnalogsAsync(this EfirClient client, EfirSecQueryDetails query)
+        /// <param name="query">Query details.</param>
+        /// <returns>Array of <see cref="EfirSecurity"/> each of which satisfies <see cref="EfirSecQueryDetails"/> object.</returns>
+        public static async Task<EfirSecurity[]> ExFindAnalogsAsync(this EfirClient client, EfirSecQueryDetails query)
         {
-            var sw = Stopwatch.StartNew();
-            Console.WriteLine("creating query strings.");
-            string diststart = query.DistributionStart is not null
-                ? $"begdistdate >= '{query.DistributionStart :dd.MM.yyyy}'" 
-                : string.Empty;
+            string querystr = query.ToString();
+            var securities = await client.FindSecuritiesAsync(querystr);
+            var analogs = new List<EfirSecurity>();
 
-            string distend = query.DistributionEnd is not null
-                ? $"begdistdate <= '{query.DistributionEnd:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string matstart = query.MaturityStart is not null
-                ? $"endmtydate >= '{query.MaturityStart:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string matend = query.MaturityEnd is not null
-                ? $"endmtydate <= '{query.MaturityEnd:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string cur = query.Currency is not null
-                ? $"faceftname = '{query.Currency}'"
-                : string.Empty;
-
-            string country = query.Country is not null
-                ? $"issuercountry = '{query.Country}'"
-                : string.Empty;
-
-            string sectors = string.Empty;
-            if (query.Sectors is not null)            
-                if (query.Sectors.Length is 1) sectors = $"issuersector = '{query.Sectors[0]}'";                
-                else sectors = $"issuersector in ('{string.Join("', '", query.Sectors)}')";
-
-            string status = "status = 'В обращении'";
-            string coupontype = "coupontype in ('Постоянный', 'Переменный', 'Фиксированный')";
-            string sectype = "SecurityType = 'Корп'";
-
-            string[] clauses = new string[] { 
-                sectype,
-                country,
-                status, 
-                coupontype, 
-                diststart, 
-                distend, 
-                matstart, 
-                matend, 
-                sectors, 
-                cur, 
-            };
-
-            string querystr = string.Join(" AND ", clauses.Where(str => !string.IsNullOrEmpty(str)));
-            Console.WriteLine(querystr);
-            Console.WriteLine("extracting efir data.");
-            var rawSecurities = await client.FindSecuritiesAsync(querystr);
-            Console.WriteLine($"{rawSecurities.Length} securities found.");
-            var securities = new List<EfirSecurity>();
-
-            Console.WriteLine("extracting ratings for:");
-            foreach (var rs in rawSecurities)
+            foreach (var rs in securities)
             {
                 if (rs.borrowerinn is null) continue; // <--------------------------------------------------------- PLUG to overcome.
 
-                Console.WriteLine($"\t{rs.nickname} (inn: {rs.borrowerinn}) (isin: {rs.isincode}) ");
                 var sec = EfirSecurity.ConvertFromEfirFields(rs);
-                var raitingshist = await client.GetAllRatingsAsync(sec.IssuerInn!);
+                var raitingshist = await client.ExGetAllRatingsAsync(sec.IssuerInn!);
                 var raiting = RuDataTools.CreateAggregatedRating(raitingshist);
 
                 if (query.Big3RatingLow is null)
@@ -284,22 +233,9 @@ namespace RuDataAPI.Extensions
                         flows.Add(new SecurityEvent(coupon));
 
                 sec.EventsSchedule = flows;
-                securities.Add(sec);
+                analogs.Add(sec);
             }
-
-            //var tasks = new List<Task<CreditRating[]>>();
-            //foreach (var rs in rawSecurities)
-            //{
-            //    //Console.Write($"\t{rs.nickname} (inn: {rs.borrowerinn}) (isin: {rs.isincode}) ");
-            //    var sec = EfirSecurity.ConvertFromEfirFields(rs);
-            //    tasks.Add(client.GetAllRatingsAsync(sec.IssuerInn));
-            //}
-            //CreditRating[][] results = await Task.WhenAll(tasks);
-            //Console.WriteLine("done");
-
-            sw.Stop();
-            Console.WriteLine($"time passed: {sw.ElapsedMilliseconds/1000.0:0.00000} sec.");
-            return securities.ToArray();
+            return analogs.ToArray();
         }
     }
 }

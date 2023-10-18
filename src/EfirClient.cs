@@ -21,6 +21,7 @@ using Efir.DataHub.Models.Requests.V2.Rating;
 using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
 using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
+using System.Linq;
 
 namespace RuDataAPI
 {
@@ -218,16 +219,37 @@ namespace RuDataAPI
         ///     </see>.
         /// </remarks>
         /// <returns></returns>
-        public async Task<TimeTableV2Fields[]> GetEventsCalendarAsync(params long[] secIds)
+        public async Task<TimeTableV2Fields[]> GetEventsCalendarAsync(params string[] isins)
         {
+            if (isins.Length > 100) throw new Exception("No more than 100 ISIN codes are allowed in request.");
+
+            string oper = "TYPEOPERATION NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')";
+            string isin = $"ISINCODE IN ('{string.Join("', '", isins)}')";
+            string filter = string.Join(" AND ", oper, isin);
+
             var query = new CalendarV2Request
             {
-                FintoolIds = secIds,
-                Filter = "TYPEOPERATION NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')"
+                pageNum = 1,
+                Filter = filter
             };
 
             string url = $"{_credentials.Url}/Info/CalendarV2";
-            return await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
+            var retval = await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
+
+            if (retval.Length > 0 && retval[0].counter > 1000)
+            {
+                int npages = retval[0].counter / 1000 + 1;
+                var requestsSent = new Task<TimeTableV2Fields[]>[npages - 1];
+                for (int i = 2; i <= npages; i++)
+                {
+                    var pagedRequest = new CalendarV2Request { pageNum = i, Filter = filter };
+                    requestsSent[i - 2] = PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(pagedRequest, url);
+                }
+                var result = await Task.WhenAll(requestsSent);
+                foreach (var r in result)
+                    retval = retval.Concat(r).ToArray();
+            }            
+            return retval;
         }
 
 
@@ -377,7 +399,7 @@ namespace RuDataAPI
 
 
         private TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
-            => new TRequest { pageNum = pageNum };
+            => new() { pageNum = pageNum };
         
     }
 }

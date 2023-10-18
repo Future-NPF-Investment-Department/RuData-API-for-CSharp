@@ -67,6 +67,11 @@ namespace RuDataAPI.Extensions.Ratings
         public string IssuerName { get; set; } = string.Empty;
 
         /// <summary>
+        ///     Issuer's INN code.
+        /// </summary>
+        public string Inn { get; set; } = null!;
+
+        /// <summary>
         ///     Issuer's ISIN that is subject for credit rating action.
         /// </summary>
         public string Isin { get; set; } = string.Empty;
@@ -92,6 +97,7 @@ namespace RuDataAPI.Extensions.Ratings
                 IssuerName = fields.short_name_org,
                 Isin = fields.isin,
                 PressRelease = fields.press_release,
+                Inn = fields.inn,
                 Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type),
                 Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type),
                 Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur),

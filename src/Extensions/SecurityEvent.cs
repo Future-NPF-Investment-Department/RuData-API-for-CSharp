@@ -10,14 +10,19 @@ namespace RuDataAPI.Extensions
     {
         public SecurityEvent(TimeTableV2Fields fields)
         {
+            Isin = fields.ISINcode;
             StartDate = fields.BeginEventPer;
             EndDate = fields.EventDate;
             PeriodLength = (int?)fields.EventPeriod ?? 0;
             Rate = (double?)fields.Value ?? 0.0;
             Payment = (double?)fields.Pay1Bond ?? 0.0;
-            PaymentType = RuDataTools.MapToEnum<SecurityFlow>(fields.TypeOperation);
+            PaymentType = RuDataTools.MapToEnum<SecurityFlow>(fields.TypeOperation);            
         }
 
+        /// <summary>
+        ///     Security ISIN-code.
+        /// </summary>
+        public string Isin { get; set; }
 
         /// <summary>
         ///     Event period start date. For CPN events - coupon period start date. For MTY - bond distribution date.

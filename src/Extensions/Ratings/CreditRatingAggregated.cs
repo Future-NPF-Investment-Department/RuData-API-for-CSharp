@@ -47,7 +47,6 @@ namespace RuDataAPI.Extensions.Ratings
         /// <summary>
         ///     Provides stylized rating description.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             string head = $"Aggregated rating for '{Issuer}':\n";
@@ -65,8 +64,17 @@ namespace RuDataAPI.Extensions.Ratings
             return head + values + pd + lastRatingsHead + rawratings;
         }
 
-        public string ToShortStringBig3() => RatingBig3.ToRatingString();
-        public string ToShortStringRu() => RatingRu.ToRatingString();
+        /// <summary>
+        ///     Returns stylized rating in BIG3 scale.
+        /// </summary>
+        public string ToShortStringBig3() 
+            => RatingBig3.ToRatingString();
+
+        /// <summary>
+        ///     Returns stylized rating in RU scale.
+        /// </summary>
+        public string ToShortStringRu() 
+            => RatingRu.ToRatingString();
         
             
         

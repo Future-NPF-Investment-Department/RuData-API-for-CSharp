@@ -11,6 +11,7 @@ using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 using Efir.DataHub.Models.Models.Rating;
 using CommonDataFields = Efir.DataHub.Models.Models.Nsd.CommonDataFields;
+using HistoryFullFields = Efir.DataHub.Models.Models.Archive.HistoryFullFields;
 
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
@@ -19,6 +20,7 @@ using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
 using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
+using EndOfDayRequest = Efir.DataHub.Models.Requests.V2.Archive.EndOfDayRequest;
 using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
 using System.Linq;
@@ -374,6 +376,20 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/Bond/g-curve-ofz";
             return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
         }   
+
+
+        public async Task<HistoryFullFields> EndOfDay(string isin, DateTime date)
+        {
+            var query = new EndOfDayRequest
+            {
+                date = date,
+                isin = isin
+            };
+            string url = $"{_credentials.Url}/Archive/EndOfDay";
+            var arr = await PostEfirRequestAsync<EndOfDayRequest, HistoryFullFields[]>(query, url);
+            return arr.Length == 1 ? arr[0] : new HistoryFullFields();
+        }
+
         
 
         public void Dispose()        

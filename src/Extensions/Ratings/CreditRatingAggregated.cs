@@ -65,6 +65,12 @@ namespace RuDataAPI.Extensions.Ratings
             return head + values + pd + lastRatingsHead + rawratings;
         }
 
+        public string ToShortStringBig3() => RatingBig3.ToRatingString();
+        public string ToShortStringRu() => RatingRu.ToRatingString();
+        
+            
+        
+
         public static bool operator <=(CreditRatingAggregated rating1, CreditRatingAggregated rating2)
             => rating1.RatingBig3 <= rating2.RatingBig3;
 

@@ -14,7 +14,7 @@
         /// <summary>
         ///     Call-offer payment.
         /// </summary>
-        [EnumFieldStr("C", "CA", "CM")]
+        [EnumFieldStr("C")]
         CALL,
 
         /// <summary>
@@ -26,13 +26,13 @@
         /// <summary>
         ///     Notional payment.
         /// </summary>
-        [EnumFieldStr("OM")] 
+        [EnumFieldStr("OM", "CM")] 
         MTY,
 
         /// <summary>
         ///     Notional amortization.
         /// </summary>
-        [EnumFieldStr("OA")]
+        [EnumFieldStr("OA", "CA")]
         AMRT,
 
         /// <summary>

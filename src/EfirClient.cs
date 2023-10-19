@@ -245,7 +245,7 @@ namespace RuDataAPI
                 var requestsSent = new Task<TimeTableV2Fields[]>[npages - 1];
                 for (int i = 2; i <= npages; i++)
                 {
-                    var pagedRequest = new CalendarV2Request { pageNum = i, Filter = filter };
+                    var pagedRequest = new CalendarV2Request { pageNum = i, Filter = filter, pageSize = 1000 };
                     requestsSent[i - 2] = PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(pagedRequest, url);
                 }
                 var result = await Task.WhenAll(requestsSent);

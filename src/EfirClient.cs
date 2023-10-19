@@ -230,6 +230,7 @@ namespace RuDataAPI
             var query = new CalendarV2Request
             {
                 pageNum = 1,
+                pageSize = 1000,
                 Filter = filter
             };
 

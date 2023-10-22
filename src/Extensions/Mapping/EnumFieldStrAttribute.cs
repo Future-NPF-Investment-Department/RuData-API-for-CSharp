@@ -8,9 +8,12 @@ namespace RuDataAPI.Extensions.Mapping
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     public class EnumFieldStrAttribute : Attribute
     {
-        public EnumFieldStrAttribute(params string[] stringVal) 
-            => Values = stringVal;
+        public EnumFieldStrAttribute(params string[] strvals) 
+            => Values = new HashSet<string>(strvals);
         
-        public string[] Values { get; set; }
+        /// <summary>
+        ///     Set of possible unique string values.
+        /// </summary>
+        public HashSet<string> Values { get; set; }
     }
 }

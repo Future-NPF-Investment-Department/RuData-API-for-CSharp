@@ -2,6 +2,8 @@
 {
     public enum CouponType
     {
+        None,
+
         /// <summary>
         ///     Нулевой купон, дисконт.
         /// </summary>

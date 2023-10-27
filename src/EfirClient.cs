@@ -144,18 +144,21 @@ namespace RuDataAPI
         /// <returns>
         ///     Array of <see cref="FintoolReferenceDataFields"/>.
         /// </returns>
-        public async Task<FintoolReferenceDataFields[]> GetSecurityDataAsync(string isin)
+        public async Task<FintoolReferenceDataFields> GetSecurityDataAsync(string isin)
         {
             var query = new FintoolReferenceDataRequest
             {
                 id = isin,
-                fields = new string[] { "NickName", "fullname", "FinToolType", "FaceValue", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname",
-                                        "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode",
-                                        "coupontypename_nrd", "begdistdate", "enddistdate", "daysall", "firstcoupondate", "ismatched", "numcoupons" }
+                fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
+                                        "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
+                                        "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "isqualified_nrd","seniority", "seniorityname" }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
-            return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
+            var list =  await PostEfirRequestAsync<FintoolReferenceDataRequest, List<FintoolReferenceDataFields>>(query, url);
+            if (list.Count is 0) throw new Exception($"EFIR: Security with ISIN code {isin} not found.");
+            return list[0];
         }
 
 
@@ -177,9 +180,10 @@ namespace RuDataAPI
             var query = new FintoolReferenceDataRequest
             {
                 filter = filter,
-                fields = new string[] { "NickName", "fullname", "FinToolType", "FaceValue", "CouponType", "CouponTypeName_NRD", "issuername_nrd", "faceftname", "issuercountry",
-                                        "FloatRateName", "EndMtyDate", "Offer_Date", "Status", "SumMarketVal", "IssuerSector", "fintoolid", "isincode", "issuerinn",
-                                        "coupontypename_nrd", "begdistdate", "enddistdate", "daysall", "firstcoupondate", "ismatched", "numcoupons", "borrowerinn" }
+                fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
+                                        "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
+                                        "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "isqualified_nrd", "seniority", "seniorityname" }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
@@ -414,8 +418,13 @@ namespace RuDataAPI
             return await response.Content.ReadAsAsync<TResponse>();                        
         }
 
-
-        private TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
+        /// <summary>
+        ///     Creates request with specified page number (by default 1).
+        /// </summary>
+        /// <typeparam name="TRequest"></typeparam>
+        /// <param name="pageNum">Page number.</param>
+        /// <returns><see cref="PagedRequest"/> instance.</returns>
+        private static TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
             => new() { pageNum = pageNum };
         
     }

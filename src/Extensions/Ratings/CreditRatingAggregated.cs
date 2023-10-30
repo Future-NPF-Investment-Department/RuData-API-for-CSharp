@@ -1,12 +1,12 @@
-﻿#pragma warning disable CS0660, CS0661 // Type defines operator == or operator != but does not override Object.Equals(object o)
-
-namespace RuDataAPI.Extensions.Ratings
+﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Represents issuer's aggregated credit rating.
     /// </summary>
     public class CreditRatingAggregated
     {
+        public static readonly CreditRatingAggregated Default = new();
+
         /// <summary>
         ///     Name of issuer that is subject for credit rating action.
         /// </summary>
@@ -74,39 +74,30 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Returns stylized rating in RU scale.
         /// </summary>
         public string ToShortStringRu() 
-            => RatingRu.ToRatingString();
+            => RatingRu.ToRatingString();        
         
-            
-        
-
-        public static bool operator <=(CreditRatingAggregated rating1, CreditRatingAggregated rating2)
-            => rating1.RatingBig3 <= rating2.RatingBig3;
-
-        public static bool operator >=(CreditRatingAggregated rating1, CreditRatingAggregated rating2)
-            => rating1.RatingBig3 >= rating2.RatingBig3;
-
-        public static bool operator <=(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 <= value;
-
-        public static bool operator >=(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 >= value;
-
+        /// <summary>
+        ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingUS"/> value. Otherwise false.
+        /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 < value;
 
+        /// <summary>
+        ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingUS"/> value. Otherwise false.
+        /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingUS value)
             => rating1.RatingBig3 > value;
 
+        /// <summary>
+        ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingRU"/> value. Otherwise false.
+        /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingRU value)
             => rating1.RatingRu < value;
 
+        /// <summary>
+        ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingRU"/> value. Otherwise false.
+        /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingRU value)
             => rating1.RatingRu > value;
-
-        public static bool operator ==(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 == value;
-
-        public static bool operator !=(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 != value;
     }
 }

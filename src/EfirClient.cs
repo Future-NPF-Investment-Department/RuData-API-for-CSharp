@@ -21,6 +21,7 @@ using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
 using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
 using EndOfDayRequest = Efir.DataHub.Models.Requests.V2.Archive.EndOfDayRequest;
+using FullHistotyRequest = Efir.DataHub.Models.Requests.V2.Archive.HistoryRequest;
 using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
 
@@ -330,6 +331,20 @@ namespace RuDataAPI
             };
             string url = $"{_credentials.Url}/Moex/History";
             return await PostEfirRequestAsync<HistoryRequest, HistoryStockIndexFields[]>(query, url);
+        }
+
+
+        public async Task<HistoryFullFields[]> GetHistoryAsync(DateTime start, DateTime end, string isin)
+        {
+            var query = new FullHistotyRequest
+            {
+                isin = isin,
+                step = "1440",
+                dateFrom = start,
+                dateTo = end
+            };
+            string url = $"{_credentials.Url}/Archive/History";
+            return await PostEfirRequestAsync<FullHistotyRequest, HistoryFullFields[]>(query, url);
         }
 
 

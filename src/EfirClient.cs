@@ -23,7 +23,6 @@ using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
 using EndOfDayRequest = Efir.DataHub.Models.Requests.V2.Archive.EndOfDayRequest;
 using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
-using System.Linq;
 
 namespace RuDataAPI
 {
@@ -47,6 +46,7 @@ namespace RuDataAPI
         ///     EFIR.DataHub server authorization credentials.
         /// </summary>
         public EfirCredentials Credentials => _credentials;
+
         /// <summary>
         ///     EFIR.DataHub server Authorization state.
         /// </summary>
@@ -152,7 +152,7 @@ namespace RuDataAPI
                 fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
                                         "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
                                         "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "isqualified_nrd","seniority", "seniorityname" }
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval" }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
@@ -183,7 +183,7 @@ namespace RuDataAPI
                 fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
                                         "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
                                         "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "isqualified_nrd", "seniority", "seniorityname" }
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval"  }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";

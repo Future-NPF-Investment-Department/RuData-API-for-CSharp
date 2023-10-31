@@ -33,18 +33,6 @@
         public double DefaultProbability { get; init; }
 
         /// <summary>
-        ///     Aggregates ratings 
-        /// </summary>
-        /// <param name="ratings"></param>
-        /// <returns></returns>
-        public static CreditRatingAggregated AggregateFrom(CreditRating[] ratings)
-        {
-            if (ratings.Length is 0)
-                return new CreditRatingAggregated();
-            return  RuDataTools.CreateAggregatedRating(ratings);
-        }
-
-        /// <summary>
         ///     Provides stylized rating description.
         /// </summary>
         public override string ToString()

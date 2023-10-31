@@ -1,8 +1,4 @@
-﻿//#pragma warning disable IDE0017 // Simplify object initialization
-
-using Efir.DataHub.Models.Models.Rating;
-
-namespace RuDataAPI.Extensions.Ratings
+﻿namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Represents credit rating information for particular issuer or security.
@@ -44,7 +40,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// <summary>
         ///     Particular credit rating.
         /// </summary>
-        public string Value { get; set; } = null!;
+        public string Value { get; set; } = string.Empty;
 
         /// <summary>
         ///     Previous credit rating.
@@ -54,7 +50,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// <summary>
         ///     Rating agency name.
         /// </summary>
-        public string Agency { get; set; } = null!;
+        public string Agency { get; set; } = string.Empty;
 
         /// <summary>
         ///     Probability of default (PD) that corresponds to <see cref="AggregatedBig3"/> rating.
@@ -80,31 +76,6 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Reference to agency press-release regarding this credit rating action.
         /// </summary>
         public string PressRelease { get; set; } = null!;
-
-        /// <summary>
-        ///     Creates new rating
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <returns></returns>
-        public static CreditRating ConvertFromEfirRatingsFields(RatingsHistoryFields fields)
-        {
-            return new()
-            {
-                Value = fields.last,
-                Agency = fields.rating_agency,
-                Date = fields.last_dt ?? default,
-                PreviousValue = fields.prev,
-                IssuerName = fields.short_name_org,
-                Isin = fields.isin,
-                PressRelease = fields.press_release,
-                Inn = fields.inn,
-                Object = RuDataTools.MapToEnum<CreditRatingTarget>(fields.rating_object_type),
-                Scale = RuDataTools.MapToEnum<CreditRatingScale>(fields.scale_type),
-                Currency = RuDataTools.MapToEnum<CreditRatingCurrency>(fields.scale_cur),
-                Action = RuDataTools.MapToEnum<CreditRatingAction>(fields.change),
-                Outlook = RuDataTools.MapToEnum<CreditRatingOutlook>(fields.forecast)
-            };
-        }
 
         /// <summary>
         ///     Provides extended stylized rating description.

@@ -1,4 +1,5 @@
 ﻿using Efir.DataHub.Models.Models.Bond;
+using Efir.DataHub.Models.Models.Rating;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
 using System.Reflection;
@@ -10,16 +11,15 @@ namespace RuDataAPI.Extensions
     /// </summary>
     internal static class RuDataTools
     {
-
         /// <summary>
         ///     Maps string value to specified enum field using attributes specified for this field.
         /// </summary>
         /// <typeparam name="TEnum">Enum type.</typeparam>
         /// <param name="strval">value to parse.</param>
         /// <returns>Field of specified enum.</returns>
-        internal static TEnum MapToEnum<TEnum>(string? strval) where TEnum : struct, Enum
+        internal static TEnum MapToEnum<TEnum>(string strval) where TEnum : struct, Enum
         {
-            if (strval is null) return default;
+            if (strval is "") return default;
 
             Type enumType = typeof(TEnum);
             FieldInfo[] fields = enumType.GetFields();
@@ -115,34 +115,40 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     Aggregates raitings.
+        ///     Converts <see cref="RatingsHistoryFields"/> to <see cref="CreditRating"/> with most recent raitings. If ISIN code is specified returns last ratings fot it.
+        /// </summary>
+        /// <returns>Array of <see cref="CreditRating"/></returns>
+        internal static CreditRating[] GetLastRaitings(this RatingsHistoryFields[] rawData, string? isin = null)
+        {
+            var filtered = isin is not null && rawData.Any(d => d.isin == isin) 
+                ? rawData.Where(d => d.isin == isin) 
+                : rawData.Where(d => d.rating_object_type == "Компания");
+
+            return filtered
+                .Select(f => f.ToCreditRaiting())
+                .GroupBy(r => r.Agency)
+                .Select(g => g.MaxBy(r => r.Date)!)
+                .ToArray();
+        }
+
+        /// <summary>
+        ///     Aggregates raitings from array of <see cref="CreditRating"/> objects.
         /// </summary>
         /// <returns><see cref="CreditRatingAggregated"/> object.</returns>
-        internal static CreditRatingAggregated CreateAggregatedRating(CreditRating[] ratings)
+        internal static CreditRatingAggregated AggregateRatings(this CreditRating[] ratings)
         {
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
 
-            //string issuer = ratings[0].IssuerName;
-
-            var filtered = ratings.Any(r => r.Object == CreditRatingTarget.Issuer)
-                ? ratings.Where(r => r.Object == CreditRatingTarget.Issuer)
+            var filtered = ratings.Any(r => r.Object is CreditRatingTarget.Issuer)
+                ? ratings.Where(r => r.Object is CreditRatingTarget.Issuer)
                 : ratings;
 
-            var lastRatings = filtered
-                .GroupBy(r => r.Agency)
-                .Select(g => g.MaxBy(r => r.Date)!)
-                .ToList();
-
             CreditRatingUS usr = filtered.Any() ? filtered
-                .GroupBy(r => r.Agency)
-                .Select(g => g.MaxBy(r => r.Date))
                 .Select(r => ParseRatingUS(r!.Agency, r!.Value))
                 .Max() : default;
 
             CreditRatingRU rur = filtered.Any(r => r.Scale is NATIONAL) ? filtered
                 .Where(r => r.Scale is NATIONAL)
-                .GroupBy(r => r.Agency)
-                .Select(g => g.MaxBy(r => r.Date))
                 .Select(r => ParseRatingRU(r!.Agency, r!.Value))
                 .Max() : default;
 
@@ -154,7 +160,7 @@ namespace RuDataAPI.Extensions
             {
                 RatingBig3 = usr,
                 RatingRu = rur,
-                Ratings = lastRatings,
+                Ratings = ratings,
                 DefaultProbability = pd,
             };
         }
@@ -199,7 +205,7 @@ namespace RuDataAPI.Extensions
         internal static InstrumentFlow ToFlow(this TimeTableV2Fields fields)
         {
             if (fields.TypeOperation is null)
-                throw new Exception($"Intrument flow error: undefined operation type. ISIN: {fields.ISINcode}; FLOWID: {fields.EventID}");
+                throw new EfirFieldNullValueException($"Intrument flow has undefined operation type. ISIN: {fields.ISINcode}; FLOWID: {fields.EventID}");
 
             var flow = new InstrumentFlow()
             {
@@ -212,6 +218,33 @@ namespace RuDataAPI.Extensions
                 PaymentType     = MapToEnum<FlowType>(fields.TypeOperation)
             };
             return flow;
+        }
+
+        /// <summary>
+        ///     Converts <see cref="RatingsHistoryFields"/> object to <see cref="CreditRating"/> object.
+        /// </summary>
+        internal static CreditRating ToCreditRaiting(this RatingsHistoryFields fields)
+        {
+            if (fields.last is null)
+                throw new EfirFieldNullValueException($"Raiting value is null. INN: {fields.inn}; Agency: {fields.rating_agency}");
+
+            var rating = new CreditRating
+            {
+                Value = fields.last,
+                Agency = fields.rating_agency,
+                Date = fields.last_dt ?? default,
+                PreviousValue = fields.prev,
+                IssuerName = fields.short_name_org,
+                Isin = fields.isin,
+                PressRelease = fields.press_release,
+                Inn = fields.inn,
+                Object = MapToEnum<CreditRatingTarget>(fields.rating_object_type),
+                Scale = MapToEnum<CreditRatingScale>(fields.scale_type),
+                Currency = MapToEnum<CreditRatingCurrency>(fields.scale_cur),
+                Action = MapToEnum<CreditRatingAction>(fields.change),
+                Outlook = MapToEnum<CreditRatingOutlook>(fields.forecast ?? string.Empty)
+            };
+            return rating;
         }
     }
 }

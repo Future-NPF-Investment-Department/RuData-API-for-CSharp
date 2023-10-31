@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Efir.DataHub.Models" Version="1.0.230.2" />
+    <PackageReference Include="Iuliia" Version="2.0.4" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
   </ItemGroup>
 

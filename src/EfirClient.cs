@@ -24,6 +24,8 @@ using EndOfDayRequest = Efir.DataHub.Models.Requests.V2.Archive.EndOfDayRequest;
 using FullHistotyRequest = Efir.DataHub.Models.Requests.V2.Archive.HistoryRequest;
 using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RuDataAPI
 {
@@ -92,6 +94,31 @@ namespace RuDataAPI
             IsLoggedIn = true;
         }
 
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get list of Russian holidays for specified year. If year is null current year is used.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Info/Holidays?id=post-holidays">
+        ///         https://docs.efir-net.ru/dh2/#/Info/Holidays?id=post-holidays
+        ///     </see>.
+        /// </remarks>
+        /// <param name="year">Year for which list of holidays is returned.</param>
+        /// <returns>Array of <see cref="HolidaysFields"/>.</returns>
+        public async Task<HolidaysFields[]> GetHolidaysAsync(int? year = null)
+        {
+            var start = year is not null ? new DateTime(year.Value, 1, 1) : new DateTime(DateTime.Now.Year, 1, 1);
+            var end = year is not null ? new DateTime(year.Value, 12, 31) : new DateTime(DateTime.Now.Year, 12, 31);
+
+            var query = new HolidaysRequest
+            {
+                CountryId = 262, // RU code
+                BeginDate = start,
+                EndDate = end,
+                CalendarTypeId = CalendarTypes.Country
+            };
+            var url = $"{_credentials.Url}/Info/Holidays";
+            return await PostEfirRequestAsync<HolidaysRequest, HolidaysFields[]>(query, url);
+        }
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get all possible enumerations.
@@ -101,7 +128,6 @@ namespace RuDataAPI
         ///         https://docs.efir-net.ru/dh2/#/Info/Enums
         ///     </see>.
         /// </remarks>
-        /// <returns></returns>
         public async Task<EnumsFields[]> GetAllEfirEnumerations()
         {
             var query = new EnumsRequest();
@@ -120,7 +146,6 @@ namespace RuDataAPI
         ///         https://docs.efir-net.ru/dh2/#/Info/EnumValues
         ///     </see>.
         /// </remarks>
-        /// <returns></returns>
         public async Task<EnumValuesFields[]> GetEfirEnumValues(string dictionaryName, string enumName)
         {
             var query = new EnumValuesRequest

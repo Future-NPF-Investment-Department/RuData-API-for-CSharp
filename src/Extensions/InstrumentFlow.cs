@@ -1,57 +1,45 @@
-﻿using Efir.DataHub.Models.Models.Bond;
-using RuDataAPI.Extensions.Mapping;
+﻿using RuDataAPI.Extensions.Mapping;
 
 namespace RuDataAPI.Extensions
 {
     /// <summary>
-    ///     Represents coupon period of a bond.
+    ///     Represents instrument particular flow.
     /// </summary>
-    public class SecurityEvent
+    public class InstrumentFlow
     {
-        public SecurityEvent(TimeTableV2Fields fields)
-        {
-            Isin = fields.ISINcode;
-            StartDate = fields.BeginEventPer;
-            EndDate = fields.EventDate;
-            PeriodLength = (int?)fields.EventPeriod ?? 0;
-            Rate = (double?)fields.Value ?? 0.0;
-            Payment = (double?)fields.Pay1Bond ?? 0.0;
-            PaymentType = RuDataTools.MapToEnum<SecurityFlow>(fields.TypeOperation);            
-        }
-
         /// <summary>
         ///     Security ISIN-code.
         /// </summary>
-        public string Isin { get; set; }
+        public string Isin { get; init; } = string.Empty;
 
         /// <summary>
         ///     Event period start date. For CPN events - coupon period start date. For MTY - bond distribution date.
         /// </summary>
-        public DateTime? StartDate { get; set; }
+        public DateTime StartDate { get; init; }
 
         /// <summary>
         ///     Event period end date. For CPN events - coupon period end date. For MTY - bond maturity date.
         /// </summary>
-        public DateTime? EndDate { get; set; }
+        public DateTime EndDate { get; init; }
         
         /// <summary>
         ///     Length of coupon period (for CPN events) or length of bond lifetime (for MTY events) in days.
         /// </summary>        
-        public int PeriodLength { get; set; }
+        public int PeriodLength { get; init; }
 
         /// <summary>
         ///     Annual interest rate established for the coupon period.
         /// </summary>
-        public double Rate { get; set; }
+        public double Rate { get; init; }
 
         /// <summary>
         ///     Payment per bond for this coupon period in units of bond's notional currency.
         /// </summary>
-        public double Payment { get; set; }
+        public double Payment { get; init; }
 
         /// <summary>
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)
         /// </summary>
-        public SecurityFlow PaymentType { get; set; }
+        public SecurityFlow PaymentType { get; init; }
     }
 }

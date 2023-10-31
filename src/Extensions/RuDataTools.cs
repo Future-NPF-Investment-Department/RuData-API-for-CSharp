@@ -115,10 +115,9 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     
+        ///     Aggregates raitings.
         /// </summary>
-        /// <param name="ratings"></param>
-        /// <returns></returns>
+        /// <returns><see cref="CreditRatingAggregated"/> object.</returns>
         internal static CreditRatingAggregated CreateAggregatedRating(CreditRating[] ratings)
         {
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
@@ -161,11 +160,8 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     
+        ///     Returns string representation of <see cref="CreditRatingUS"/> value.
         /// </summary>
-        /// <param name="rating"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         internal static string ToRatingString(this CreditRatingUS rating)
         {
             string fieldName = rating.ToString();
@@ -181,11 +177,8 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     
+        ///     Returns string representation of <see cref="CreditRatingRU"/> value.
         /// </summary>
-        /// <param name="rating"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         internal static string ToRatingString(this CreditRatingRU rating)
         {
             string fieldName = rating.ToString();
@@ -198,6 +191,27 @@ namespace RuDataAPI.Extensions
                 if (attr is not null) return attr.Name;
             }
             throw new Exception($"Cannot parse '{rating}' (RU) to appropriate string.");
-        }        
+        }
+
+        /// <summary>
+        ///     Converts <see cref="TimeTableV2Fields"/> object to <see cref="InstrumentFlow"/> object.
+        /// </summary>
+        internal static InstrumentFlow ToFlow(this TimeTableV2Fields fields)
+        {
+            if (fields.TypeOperation is null)
+                throw new Exception($"Intrument flow error: undefined operation type. ISIN: {fields.ISINcode}; FLOWID: {fields.EventID}");
+
+            var flow = new InstrumentFlow()
+            {
+                Isin            = fields.ISINcode ?? string.Empty,
+                StartDate       = fields.BeginEventPer ?? default,
+                EndDate         = fields.EventDate ?? default,
+                PeriodLength    = fields.EventDate is not null ? (int)fields.EventPeriod! : 0,
+                Rate            = fields.Value is not null ? (double)fields.Value : .0,
+                Payment         = fields.Pay1Bond is not null ? (double)fields.Pay1Bond : .0,
+                PaymentType     = MapToEnum<SecurityFlow>(fields.TypeOperation)
+            };
+            return flow;
+        }
     }
 }

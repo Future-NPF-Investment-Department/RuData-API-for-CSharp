@@ -1,5 +1,4 @@
-﻿
-namespace RuDataAPI.Extensions.Mapping
+﻿namespace RuDataAPI.Extensions.Mapping
 {
     /// <summary>
     ///     Security issue classifications.

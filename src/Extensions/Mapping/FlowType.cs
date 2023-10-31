@@ -3,7 +3,7 @@
     /// <summary>
     ///     Security flow type.
     /// </summary>
-    public enum SecurityFlow
+    public enum FlowType
     {
         /// <summary>
         ///     Coupon payment.

@@ -40,6 +40,6 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)
         /// </summary>
-        public SecurityFlow PaymentType { get; init; }
+        public FlowType PaymentType { get; init; }
     }
 }

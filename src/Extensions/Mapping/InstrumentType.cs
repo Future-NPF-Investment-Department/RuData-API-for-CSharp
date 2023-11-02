@@ -1,43 +1,40 @@
 ﻿namespace RuDataAPI.Extensions.Mapping
 {
-    public enum FinToolType
+    /// <summary>
+    ///     Represents financial intruments classification.
+    /// </summary>
+    public enum InstrumentType
     {
-        None,
+        UNDEFINED,
 
         /// <summary>
         ///     Акции.
         /// </summary>
-        [EnumFieldStr("Акция")]
-        Stock,
-
-        /// <summary>
-        ///     Определенный выпуск акций.
-        /// </summary>
-        [EnumFieldStr("Выпуск акции")]
-        StockIssue,
+        [EnumFieldStr("Акция", "Выпуск акции")]
+        STOCK,
 
         /// <summary>
         ///     Депозитарные расписки.
         /// </summary>        
         [EnumFieldStr("Депозитарная расписка")] 
-        DR,
+        RECEIPT,
 
         /// <summary>
         ///     ИСУ.
         /// </summary>
         [EnumFieldStr("Ипотечный сертификат")] 
-        MortgageNote,
+        MPC,
 
         /// <summary>
         ///     Облигация.
         /// </summary>
         [EnumFieldStr("Облигация")] 
-        Bond,
+        BOND,
 
         /// <summary>
         ///     Фонд (ПИФ, ETF и пр.)
         /// </summary>
         [EnumFieldStr("Фонд")] 
-        Fund
+        FUND
     }
 }

@@ -178,12 +178,12 @@ namespace RuDataAPI
                 fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
                                         "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
                                         "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval" }
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval", "moex_code"}
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
             var list =  await PostEfirRequestAsync<FintoolReferenceDataRequest, List<FintoolReferenceDataFields>>(query, url);
-            if (list.Count is 0) throw new Exception($"EFIR: Security with ISIN code {isin} not found.");
+            if (list.Count is 0) throw new Exception($"EFIR: Security with ISIN code {isin} not found.");            
             return list[0];
         }
 
@@ -209,35 +209,11 @@ namespace RuDataAPI
                 fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
                                         "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
                                         "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval"  }
+                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval", "moex_code" }
 
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
-        }
-
-
-        public async Task<CommonDataFields[]> GetNsdSecuritiesDataAsync(string filter, int pagenum)
-        {
-            var query = new CommonDataRequest
-            {
-                filter = filter,     
-                pageNum = pagenum,
-                pageSize = 100
-            };
-            string url = $"{_credentials.Url}/Nsd/CommonData";
-            return await PostEfirRequestAsync<CommonDataRequest, CommonDataFields[]>(query, url);
-        }
-
-
-        public async Task<NsdEmitentsFields[]> GetNsdEmitentsDataAsync(string filter)
-        {
-            var query = new EmitentsRequest
-            {
-                filter = filter,
-            };
-            string url = $"{_credentials.Url}/Nsd/Emitents";
-            return await PostEfirRequestAsync<EmitentsRequest, NsdEmitentsFields[]>(query, url);
         }
 
 
@@ -359,20 +335,6 @@ namespace RuDataAPI
         }
 
 
-        public async Task<HistoryFullFields[]> GetHistoryAsync(DateTime start, DateTime end, string isin)
-        {
-            var query = new FullHistotyRequest
-            {
-                isin = isin,
-                step = "1440",
-                dateFrom = start,
-                dateTo = end
-            };
-            string url = $"{_credentials.Url}/Archive/History";
-            return await PostEfirRequestAsync<FullHistotyRequest, HistoryFullFields[]>(query, url);
-        }
-
-
         /// <summary> 
         ///     Sends POST request to EFIR Server to get links to emission docs for chosen security.
         /// </summary>
@@ -420,22 +382,11 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/Bond/g-curve-ofz";
             return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
         }   
+      
 
-
-        public async Task<HistoryFullFields> EndOfDay(string isin, DateTime date)
-        {
-            var query = new EndOfDayRequest
-            {
-                date = date,
-                isin = isin
-            };
-            string url = $"{_credentials.Url}/Archive/EndOfDay";
-            var arr = await PostEfirRequestAsync<EndOfDayRequest, HistoryFullFields[]>(query, url);
-            return arr.Length == 1 ? arr[0] : new HistoryFullFields();
-        }
-
-        
-
+        /// <summary>
+        ///     Releases unmanaged resources.
+        /// </summary>
         public void Dispose()        
             => _httpClient.Dispose();
         

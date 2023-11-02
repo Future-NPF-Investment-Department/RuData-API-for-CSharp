@@ -119,7 +119,7 @@ namespace RuDataAPI.Extensions
         ///     Converts <see cref="RatingsHistoryFields"/> to <see cref="CreditRating"/> with most recent raitings. If ISIN code is specified returns last ratings fot it.
         /// </summary>
         /// <returns>Array of <see cref="CreditRating"/></returns>
-        internal static CreditRating[] GetLastRaitings(this RatingsHistoryFields[] rawData, string? isin = null)
+        internal static CreditRating[] GetLastRaitings(IEnumerable<RatingsHistoryFields> rawData, string? isin = null)
         {
             var filtered = isin is not null && rawData.Any(d => d.isin == isin) 
                 ? rawData.Where(d => d.isin == isin) 
@@ -136,7 +136,7 @@ namespace RuDataAPI.Extensions
         ///     Aggregates raitings from array of <see cref="CreditRating"/> objects.
         /// </summary>
         /// <returns><see cref="CreditRatingAggregated"/> object.</returns>
-        internal static CreditRatingAggregated AggregateRatings(this CreditRating[] ratings)
+        internal static CreditRatingAggregated AggregateRatings(CreditRating[] ratings)
         {
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
 

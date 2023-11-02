@@ -3,6 +3,7 @@ using Efir.DataHub.Models.Models.Rating;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace RuDataAPI.Extensions
 {
@@ -245,6 +246,42 @@ namespace RuDataAPI.Extensions
                 Outlook = MapToEnum<CreditRatingOutlook>(fields.forecast ?? string.Empty)
             };
             return rating;
+        }
+
+        /// <summary>
+        ///     Defines if string is ISIN-code.
+        /// </summary>
+        /// <param name="code">Code string.</param>
+        /// <returns>True if string is ISIN code. Otherwise false.</returns>
+        internal static bool IsIsinCode(string code)
+        {
+            /* ISIN code (according to ISO 6166) consists of:
+             *  - 2 alphabetic characters which represents code for the issuing country (ex.: US, XS, RU)
+             *  - 9 alpha-numeric characters which identifies the security
+             *  - 1 numerical check digit */
+
+            string isinPattern = "([A-Z]{2})([A-Z0-9]{9})([0-9]{1})$";
+            return Regex.IsMatch(code, isinPattern);
+        }
+
+        /// <summary>
+        ///     Adds bussiness days to specified date.
+        /// </summary>
+        /// <param name="date">Initial date.</param>
+        /// <param name="days">Number of days to add. Could be negative.</param>
+        /// <param name="holidays">collection of holiday dates.</param>
+        internal static DateTime DateAdd(DateTime date, int days, IEnumerable<DateTime> holidays)
+        {
+            if (days == 0) return date;
+            int dt = days < 0 ? -1 : 1;
+            int period = Math.Abs(days);
+            while (period > 0)            
+            {
+                date += new TimeSpan(dt, 0, 0, 0);
+                if (holidays.Contains(date)) continue;                
+                period--;
+            }
+            return date;
         }
     }
 }

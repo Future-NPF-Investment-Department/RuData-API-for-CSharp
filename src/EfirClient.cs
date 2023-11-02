@@ -320,19 +320,38 @@ namespace RuDataAPI
         /// <returns>
         ///     Array of <see cref="HistoryStockIndexFields"/>.
         /// </returns>
-        public async Task<HistoryStockIndexFields[]> GetMoexIndexHistoryAsync(DateTime start, DateTime end, params string[] tickers)
-        {
-            var query = new HistoryRequest
-            {
-                engine = "stock",
-                market = "index",
-                instruments = tickers,
-                dateFrom = start,
-                dateTo = end
-            };
-            string url = $"{_credentials.Url}/Moex/History";
-            return await PostEfirRequestAsync<HistoryRequest, HistoryStockIndexFields[]>(query, url);
-        }
+        public async Task<HistoryStockIndexFields[]> GetMoexIndexHistoryAsync(DateTime start, DateTime end, params string[] tickers)        
+            => await GetMoexHistoryAsync<HistoryStockIndexFields>(start, end, "index", tickers);
+
+
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get bonds history data.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Moex/History">
+        ///         https://docs.efir-net.ru/dh2/#/Moex/History
+        ///     </see>.
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="HistoryStockBondsFields"/>.
+        /// </returns>
+        public async Task<HistoryStockBondsFields[]> GetMoexBondHistoryAsync(DateTime start, DateTime end, params string[] tickers)        
+            => await GetMoexHistoryAsync<HistoryStockBondsFields>(start, end, "bonds", tickers);
+
+
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get shares history data.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Moex/History">
+        ///         https://docs.efir-net.ru/dh2/#/Moex/History
+        ///     </see>.
+        /// </remarks>
+        /// <returns>
+        ///     Array of <see cref="HistoryStockBondsFields"/>.
+        /// </returns>
+        public async Task<HistoryStockBondsFields[]> GetMoexStockHistoryAsync(DateTime start, DateTime end, params string[] tickers)
+            => await GetMoexHistoryAsync<HistoryStockBondsFields>(start, end, "shares", tickers);
 
 
         /// <summary> 
@@ -389,7 +408,25 @@ namespace RuDataAPI
         /// </summary>
         public void Dispose()        
             => _httpClient.Dispose();
-        
+
+        /// <summary>
+        ///     Returns history data for instrument tarded on MOEX.
+        /// </summary>
+        private async Task<TFields[]> GetMoexHistoryAsync<TFields>(DateTime start, DateTime end, string mkt, params string[] tickers)
+            where TFields : IHistoryFields, new()
+        {
+            var query = new HistoryRequest
+            {
+                engine = "stock",
+                market = mkt,
+                instruments = tickers,
+                dateFrom = start,
+                dateTo = end
+            };
+            string url = $"{_credentials.Url}/Moex/History";
+            return await PostEfirRequestAsync<HistoryRequest, TFields[]>(query, url);
+        }
+
 
         /// <summary>
         ///     Private method to send POST request to specified url of EFIR server.

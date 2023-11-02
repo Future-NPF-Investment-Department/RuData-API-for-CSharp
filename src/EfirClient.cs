@@ -263,7 +263,37 @@ namespace RuDataAPI
 
 
         /// <summary>
-        ///     Sends POST request to EFIR Server to get issuer/security ratings history.
+        ///     Sends POST request to EFIR Server to get issuer ratings history.
+        /// </summary>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory">
+        ///         https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory
+        ///     </see>.
+        /// </remarks>
+        /// <param name="inn">Issuer INN code.</param>
+        /// <param name="sizeLimit"></param>
+        /// <returns></returns>
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string inn, int? sizeLimit = null)
+        {
+            int size = sizeLimit == null || sizeLimit > 300 ? 300 : sizeLimit.Value;
+            string iscr = "IS_CREDIT_RATING = 1";
+            string term = "RATING_TERM = 'Долгосрочный'";
+            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
+            string code = $"INN = '{inn}'";
+            string filter = string.Join(" AND ", iscr, term, ra, code);
+
+            var query = CreatePagedRequest<RatingsHistoryRequest>(1);
+            query.sort = 1;
+            query.filter = filter;
+            query.pageSize = size;
+
+            string url = $"{_credentials.Url}/Rating/RatingsHistory";
+            return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
+        }        
+
+
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get ratings history for list of issuers.
         /// </summary>
         /// <remarks>
         ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory">
@@ -453,7 +483,6 @@ namespace RuDataAPI
         /// <param name="pageNum">Page number.</param>
         /// <returns><see cref="PagedRequest"/> instance.</returns>
         private static TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
-            => new() { pageNum = pageNum };
-        
+            => new() { pageNum = pageNum };        
     }
 }

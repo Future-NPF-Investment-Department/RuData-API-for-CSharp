@@ -19,6 +19,7 @@ using Efir.DataHub.Models.Requests.V2.Rating;
 using Efir.DataHub.Models.Requests.V2;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Efir.DataHub.Models.Models;
 
 namespace RuDataAPI
 {
@@ -36,6 +37,8 @@ namespace RuDataAPI
         {
             _credentials = credentials;
             _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Accept
+                .Add(new MediaTypeWithQualityHeaderValue(MEDIATYPE));
         }
 
         /// <summary>
@@ -84,6 +87,7 @@ namespace RuDataAPI
             string url = $"{_credentials.Url}/account/login";
             LoginResponse res = await PostEfirRequestAsync<LoginRequest, LoginResponse>(query, url);
             _token = res.Token;
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
             IsLoggedIn = true;
         }
 
@@ -222,36 +226,43 @@ namespace RuDataAPI
         /// <returns></returns>
         public async Task<TimeTableV2Fields[]> GetEventsCalendarAsync(params string[] isins)
         {
-            if (isins.Length > 100) throw new Exception("No more than 100 ISIN codes are allowed in request.");
+            if (isins.Length == 0) return Array.Empty<TimeTableV2Fields>();
 
+            // max 100 ISIN codes are allowed in 1 query
+            // split set of inn codes to chunks of size 100.
+            var chunks = isins.Chunk(100);
+            var requests = new List<Task<TimeTableV2Fields[]>>();
+
+            // constructing request elements
             string oper = "TYPEOPERATION NOT IN ('A', 'L', 'V', 'R', 'N', 'M', 'E', 'J', 'T')";
-            string isin = $"ISINCODE IN ('{string.Join("', '", isins)}')";
-            string filter = string.Join(" AND ", oper, isin);
-
-            var query = new CalendarV2Request
-            {
-                pageNum = 1,
-                pageSize = 1000,
-                Filter = filter
-            };
-
             string url = $"{_credentials.Url}/Info/CalendarV2";
-            var retval = await PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(query, url);
 
-            if (retval.Length > 0 && retval[0].counter > 1000)
+            // create and run post requests for each chunk.
+            foreach (string[] chunk in chunks)
             {
-                int npages = retval[0].counter / 1000 + 1;
-                var requestsSent = new Task<TimeTableV2Fields[]>[npages - 1];
-                for (int i = 2; i <= npages; i++)
+                string isin = $"ISINCODE IN ('{string.Join("', '", chunk)}')";
+                string filter = string.Join(" AND ", oper, isin);
+
+                var query = new CalendarV2Request
                 {
-                    var pagedRequest = new CalendarV2Request { pageNum = i, Filter = filter, pageSize = 1000 };
-                    requestsSent[i - 2] = PostEfirRequestAsync<CalendarV2Request, TimeTableV2Fields[]>(pagedRequest, url);
-                }
-                var result = await Task.WhenAll(requestsSent);
-                foreach (var r in result)
-                    retval = retval.Concat(r).ToArray();
-            }            
-            return retval;
+                    pageNum = 1,
+                    pageSize = 1000,
+                    Filter = filter
+                };
+
+                var task = PostEfirPagedRequestAsync<CalendarV2Request, TimeTableV2Fields>(query, url, 1000);
+                requests.Add(task);
+            }
+
+            // wait all requests to be responded by server
+            var responses = await Task.WhenAll(requests);
+
+            // constructing response
+            var response = Enumerable.Empty<TimeTableV2Fields>();
+            foreach (var r in responses)
+                response = response.Concat(r);
+
+            return response.ToArray();
         }
 
 
@@ -268,17 +279,21 @@ namespace RuDataAPI
         /// <returns></returns>
         public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string inn, DateTime? start = null, DateTime? end = null)
         {
+            var from = start is not null ? start.Value : DateTime.Now.AddDays(-365);
+            var to = end is not null ? end.Value : DateTime.Now;
             string iscr = "IS_CREDIT_RATING = 1";
             string term = "RATING_TERM = 'Долгосрочный'";
             string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
             string code = $"INN = '{inn}'";
             string filter = string.Join(" AND ", iscr, term, ra, code);
 
-            var query = CreatePagedRequest<RatingsHistoryRequest>(1);
-            query.sort = 1;
-            query.filter = filter;
-            query.dateFrom = start is not null ? start.Value : DateTime.Now.AddDays(-365);
-            query.dateTo = end is not null ? end.Value : DateTime.Now;
+            var query = new RatingsHistoryRequest
+            {
+                sort = 1,
+                filter = filter,
+                dateFrom = from,
+                dateTo = to
+            };
 
             string url = $"{_credentials.Url}/Rating/RatingsHistory";
             return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
@@ -297,47 +312,49 @@ namespace RuDataAPI
         /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
         public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(DateTime? start = null, DateTime? end = null, params string[] inns)
         {
-            if (inns.Length > 100) throw new Exception("No more than 100 INN codes are allowed in request.");
+            if (inns.Length == 0) return Array.Empty<RatingsHistoryFields>();
 
+            // max 100 INN codes are allowed in 1 query
+            // split set of inn codes to chunks of size 100.
+            var chunks = inns.Chunk(100);
+            var requests = new List<Task<RatingsHistoryFields[]>>();
+
+            // constructing request elements
             var from = start is not null ? start.Value : DateTime.Now.AddDays(-365);
             var to = end is not null ? end.Value : DateTime.Now;
-
             string iscr = "IS_CREDIT_RATING = 1";
             string term = "RATING_TERM = 'Долгосрочный'";
-            string inn = $"INN IN ('{string.Join("', '", inns)}')";
-            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
-            string filter = string.Join(" AND ", iscr, term, ra, inn);
-
-            var query = CreatePagedRequest<RatingsHistoryRequest>(1);
-            query.sort = 1;
-            query.filter = filter;
-            query.dateFrom = from;
-            query.dateTo = to;
-
+            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";            
             string url = $"{_credentials.Url}/Rating/RatingsHistory";
-            var retval = await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
             
-            if (retval.Length > 0 && retval[0].counter > 300) 
+            // create and run post requests for each chunk.
+            foreach (string[] chunk in chunks)
             {
-                int npages = retval[0].counter / 300 + 1;
-                var requests = new Task<RatingsHistoryFields[]>[npages - 1];
-                for (int i = 2; i <= npages; i++)
+                string inn = $"INN IN ('{string.Join("', '", chunk)}')";
+                string filter = string.Join(" AND ", iscr, term, ra, inn);
+                
+                var query = new RatingsHistoryRequest
                 {
-                    var pagedRequest = CreatePagedRequest<RatingsHistoryRequest>(i);
-                    pagedRequest.sort = 1;
-                    pagedRequest.filter = filter;
-                    pagedRequest.dateFrom = from;
-                    pagedRequest.dateTo = to;
-                    requests[i - 2] = PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(pagedRequest, url);                    
-                }                
-                var result = await Task.WhenAll(requests);
-                foreach (var r in result)                
-                    retval = retval.Concat(r).ToArray();                
+                    sort = 1,
+                    filter = filter,
+                    dateFrom = from,
+                    dateTo = to
+                };
+
+                var task = PostEfirPagedRequestAsync<RatingsHistoryRequest, RatingsHistoryFields>(query, url, 300);
+                requests.Add(task);                
             }
 
-            return retval;
-        }
+            // wait all requests to respond by server
+            var responses = await Task.WhenAll(requests);
 
+            // constructing response
+            var response = Enumerable.Empty<RatingsHistoryFields>();            
+            foreach (var r in responses)
+                response = response.Concat(r);
+
+            return response.ToArray();
+        }
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get indexes history data.
@@ -459,30 +476,44 @@ namespace RuDataAPI
 
 
         /// <summary>
-        ///     Private method to send POST request to specified url of EFIR server.
+        ///     Sends POST request to specified url of EFIR server.
         /// </summary>
         private async Task<TResponse> PostEfirRequestAsync<TRequest, TResponse>(TRequest request, string url)
         {
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MEDIATYPE));
-            _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrEmpty(_token) is false
-                ? new AuthenticationHeaderValue("Bearer", _token)
-                : null;
-
             string jsonRequest = JsonSerializer.Serialize(request);
-            HttpResponseMessage response = await _httpClient.PostAsync(url, new StringContent(jsonRequest, Encoding.UTF8, MEDIATYPE));
+            HttpContent content = new StringContent(jsonRequest, Encoding.UTF8, MEDIATYPE);
+            HttpResponseMessage response = await _httpClient.PostAsync(url, content);
+
             if (response.IsSuccessStatusCode is false)            
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync());            
                 
             return await response.Content.ReadAsAsync<TResponse>();                        
         }
 
+
         /// <summary>
-        ///     Creates request with specified page number (by default 1).
+        ///     Sends paged POST request to specified url of EFIR server.
         /// </summary>
-        /// <typeparam name="TRequest"></typeparam>
-        /// <param name="pageNum">Page number.</param>
-        /// <returns><see cref="PagedRequest"/> instance.</returns>
-        private static TRequest CreatePagedRequest<TRequest> (int pageNum = 1) where TRequest : PagedRequest, new()        
-            => new() { pageNum = pageNum };        
+        private async Task<TResponse[]> PostEfirPagedRequestAsync<TRequest, TResponse>(TRequest request, string url, int pageSize)
+            where TRequest : IPagedRequest
+            where TResponse : IPagingBase
+        {
+            TResponse[] response = await PostEfirRequestAsync<TRequest, TResponse[]>(request, url);
+            if (response.Length > 0 && response[0].counter > pageSize)
+            {
+                int npages = response[0].counter / pageSize + 1;
+                var requests = new Task<TResponse[]>[npages - 1];
+                for (int i = 2; i <= npages; i++)
+                {
+                    Console.WriteLine($"posting request for page {i}.");
+                    request.pageNum = i;
+                    requests[i - 2] = PostEfirRequestAsync<TRequest, TResponse[]>(request, url);
+                }
+                var responses = await Task.WhenAll(requests.Where(t => t is not null));
+                foreach (var resp in responses)
+                    response = response.Concat(resp).ToArray();
+            }
+            return response;
+        } 
     }
 }

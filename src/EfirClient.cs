@@ -10,19 +10,12 @@ using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 using Efir.DataHub.Models.Models.Rating;
-using CommonDataFields = Efir.DataHub.Models.Models.Nsd.CommonDataFields;
-using HistoryFullFields = Efir.DataHub.Models.Models.Archive.HistoryFullFields;
 
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
-using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
-using CommonDataRequest = Efir.DataHub.Models.Requests.V2.Nsd.CommonDataRequest;
-using EndOfDayRequest = Efir.DataHub.Models.Requests.V2.Archive.EndOfDayRequest;
-using FullHistotyRequest = Efir.DataHub.Models.Requests.V2.Archive.HistoryRequest;
-using Efir.DataHub.Models.Models.Nsd;
 using Efir.DataHub.Models.Requests.V2;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -273,9 +266,8 @@ namespace RuDataAPI
         /// <param name="inn">Issuer INN code.</param>
         /// <param name="sizeLimit"></param>
         /// <returns></returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string inn, int? sizeLimit = null)
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string inn, DateTime? start = null, DateTime? end = null)
         {
-            int size = sizeLimit == null || sizeLimit > 300 ? 300 : sizeLimit.Value;
             string iscr = "IS_CREDIT_RATING = 1";
             string term = "RATING_TERM = 'Долгосрочный'";
             string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
@@ -285,7 +277,8 @@ namespace RuDataAPI
             var query = CreatePagedRequest<RatingsHistoryRequest>(1);
             query.sort = 1;
             query.filter = filter;
-            query.pageSize = size;
+            query.dateFrom = start is not null ? start.Value : DateTime.Now.AddDays(-365);
+            query.dateTo = end is not null ? end.Value : DateTime.Now;
 
             string url = $"{_credentials.Url}/Rating/RatingsHistory";
             return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
@@ -302,9 +295,12 @@ namespace RuDataAPI
         /// </remarks>
         /// <param name="inns">List of issuer INN codes.</param>
         /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(params string[] inns)
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(DateTime? start = null, DateTime? end = null, params string[] inns)
         {
             if (inns.Length > 100) throw new Exception("No more than 100 INN codes are allowed in request.");
+
+            var from = start is not null ? start.Value : DateTime.Now.AddDays(-365);
+            var to = end is not null ? end.Value : DateTime.Now;
 
             string iscr = "IS_CREDIT_RATING = 1";
             string term = "RATING_TERM = 'Долгосрочный'";
@@ -314,7 +310,9 @@ namespace RuDataAPI
 
             var query = CreatePagedRequest<RatingsHistoryRequest>(1);
             query.sort = 1;
-            query.filter = filter;           
+            query.filter = filter;
+            query.dateFrom = from;
+            query.dateTo = to;
 
             string url = $"{_credentials.Url}/Rating/RatingsHistory";
             var retval = await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
@@ -322,15 +320,17 @@ namespace RuDataAPI
             if (retval.Length > 0 && retval[0].counter > 300) 
             {
                 int npages = retval[0].counter / 300 + 1;
-                var requestsSent = new Task<RatingsHistoryFields[]>[npages - 1];
+                var requests = new Task<RatingsHistoryFields[]>[npages - 1];
                 for (int i = 2; i <= npages; i++)
                 {
                     var pagedRequest = CreatePagedRequest<RatingsHistoryRequest>(i);
                     pagedRequest.sort = 1;
                     pagedRequest.filter = filter;
-                    requestsSent[i - 2] = PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(pagedRequest, url);
+                    pagedRequest.dateFrom = from;
+                    pagedRequest.dateTo = to;
+                    requests[i - 2] = PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(pagedRequest, url);                    
                 }                
-                var result = await Task.WhenAll(requestsSent);
+                var result = await Task.WhenAll(requests);
                 foreach (var r in result)                
                     retval = retval.Concat(r).ToArray();                
             }

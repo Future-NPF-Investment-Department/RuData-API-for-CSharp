@@ -17,8 +17,6 @@ using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
 using Efir.DataHub.Models.Requests.V2;
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Efir.DataHub.Models.Models;
 
 namespace RuDataAPI
@@ -70,7 +68,7 @@ namespace RuDataAPI
         ///     Sends POST reuest to login to EFIR server using preloaded credentials.
         /// </summary>
         /// <remarks>
-        ///     To load credentials from file use static <see cref="GetSecurityDataAsync"/> method.
+        ///     To load credentials from file use static <see cref="GetCredentialsFromFile"/> method.
         ///     <para>
         ///         For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Account/Login">
         ///         https://docs.efir-net.ru/dh2/#/Account/Login
@@ -90,6 +88,7 @@ namespace RuDataAPI
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
             IsLoggedIn = true;
         }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get list of Russian holidays for specified year. If year is null current year is used.
@@ -116,6 +115,7 @@ namespace RuDataAPI
             var url = $"{_credentials.Url}/Info/Holidays";
             return await PostEfirRequestAsync<HolidaysRequest, HolidaysFields[]>(query, url);
         }
+
 
         /// <summary>
         ///     Sends POST request to EFIR Server to get all possible enumerations.
@@ -167,16 +167,12 @@ namespace RuDataAPI
         /// <returns>
         ///     Array of <see cref="FintoolReferenceDataFields"/>.
         /// </returns>
-        public async Task<FintoolReferenceDataFields> GetSecurityDataAsync(string isin)
+        public async Task<FintoolReferenceDataFields> GetFinToolRefDataAsync(string isin, RefDataCols columns = RefDataCols.ALL)
         {
             var query = new FintoolReferenceDataRequest
             {
                 id = isin,
-                fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
-                                        "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
-                                        "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval", "moex_code"}
-
+                fields = GetColumnNames(columns).ToArray()
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
             var list =  await PostEfirRequestAsync<FintoolReferenceDataRequest, List<FintoolReferenceDataFields>>(query, url);
@@ -203,11 +199,7 @@ namespace RuDataAPI
             var query = new FintoolReferenceDataRequest
             {
                 filter = filter,
-                fields = new string[] { "nickname", "fullname_en_nrd", "fintooltype", "facevalue", "coupontype", "coupontypename_nrd", "issuername_nrd", "faceftname",
-                                        "floatratename", "endmtydate", "status", "summarketval", "issuersector", "fintoolid", "isincode", "issuerinn", "borrowerinn",
-                                        "issuercountry", "begdistdate", "enddistdate", "firstcoupondate", "ismatched", "numcoupons", "issubordinated", "basis", "couponrate",
-                                        "bondstructuralpar", "securitization", "issubordinated", "haveindexedfv", "isconvertible", "isguaranteed", "guarantval", "moex_code" }
-
+                fields = GetColumnNames(RefDataCols.ALL).ToArray()
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
             return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
@@ -267,40 +259,6 @@ namespace RuDataAPI
 
 
         /// <summary>
-        ///     Sends POST request to EFIR Server to get issuer ratings history.
-        /// </summary>
-        /// <remarks>
-        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory">
-        ///         https://docs.efir-net.ru/dh2/#/Rating/RatingsHistory
-        ///     </see>.
-        /// </remarks>
-        /// <param name="inn">Issuer INN code.</param>
-        /// <param name="sizeLimit"></param>
-        /// <returns></returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(string inn, DateTime? start = null, DateTime? end = null)
-        {
-            var from = start is not null ? start.Value : DateTime.Now.AddDays(-365);
-            var to = end is not null ? end.Value : DateTime.Now;
-            string iscr = "IS_CREDIT_RATING = 1";
-            string term = "RATING_TERM = 'Долгосрочный'";
-            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
-            string code = $"INN = '{inn}'";
-            string filter = string.Join(" AND ", iscr, term, ra, code);
-
-            var query = new RatingsHistoryRequest
-            {
-                sort = 1,
-                filter = filter,
-                dateFrom = from,
-                dateTo = to
-            };
-
-            string url = $"{_credentials.Url}/Rating/RatingsHistory";
-            return await PostEfirRequestAsync<RatingsHistoryRequest, RatingsHistoryFields[]>(query, url);
-        }        
-
-
-        /// <summary>
         ///     Sends POST request to EFIR Server to get ratings history for list of issuers.
         /// </summary>
         /// <remarks>
@@ -320,8 +278,6 @@ namespace RuDataAPI
             var requests = new List<Task<RatingsHistoryFields[]>>();
 
             // constructing request elements
-            var from = start is not null ? start.Value : DateTime.Now.AddDays(-365);
-            var to = end is not null ? end.Value : DateTime.Now;
             string iscr = "IS_CREDIT_RATING = 1";
             string term = "RATING_TERM = 'Долгосрочный'";
             string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";            
@@ -337,8 +293,8 @@ namespace RuDataAPI
                 {
                     sort = 1,
                     filter = filter,
-                    dateFrom = from,
-                    dateTo = to
+                    dateFrom = start.HasValue ? start.Value : default,
+                    dateTo = end.HasValue ? end.Value : default,
                 };
 
                 var task = PostEfirPagedRequestAsync<RatingsHistoryRequest, RatingsHistoryFields>(query, url, 300);
@@ -514,6 +470,18 @@ namespace RuDataAPI
                     response = response.Concat(resp).ToArray();
             }
             return response;
-        } 
+        }
+
+
+        /// <summary>
+        ///     Transforms <see cref="RefDataCols"/> bitmask to collection of strings.
+        /// </summary>
+        private static IEnumerable<string> GetColumnNames(RefDataCols refDataCols)
+        {
+            var vals = Enum.GetValues<RefDataCols>();
+            foreach (var val in vals) 
+                if (refDataCols.HasFlag(val)) 
+                    yield return val.ToString();
+        }
     }
 }

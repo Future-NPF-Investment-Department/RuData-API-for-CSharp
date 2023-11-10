@@ -40,7 +40,7 @@
         /// <summary>
         ///     Particular credit rating.
         /// </summary>
-        public string Value { get; set; } = string.Empty;
+        public string Value { get; set; } = "NR";
 
         /// <summary>
         ///     Previous credit rating.
@@ -53,7 +53,7 @@
         public string Agency { get; set; } = string.Empty;
 
         /// <summary>
-        ///     Probability of default (PD) that corresponds to <see cref="AggregatedBig3"/> rating.
+        ///     Probability of default (PD) that corresponds to rating.
         /// </summary>
         public double DefaultProbability { get; set; }
 

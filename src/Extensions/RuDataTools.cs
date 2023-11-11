@@ -231,7 +231,7 @@ namespace RuDataAPI.Extensions
 
             var rating = new CreditRating
             {
-                Value = fields.last,
+                Value = fields.last is "Снят" || fields.last is "Приостановлен" ? "NR" : fields.last,
                 Agency = fields.rating_agency,
                 Date = fields.last_dt ?? default,
                 PreviousValue = fields.prev,

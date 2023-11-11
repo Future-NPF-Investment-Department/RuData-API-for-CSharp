@@ -10,8 +10,9 @@ namespace RuDataAPI.Extensions.Ratings
         ///     Rating absence.
         /// </summary>
         [GenericRating("NR")]
-        [AKRA("Снят"), ExpRA("Снят"), NKR("Снят"), NRA("Снят")]
-        [Fitch("Снят")]
+        [AKRA("Снят", "Приостановлен", "NR"), ExpRA("Снят", "Приостановлен", "NR")]
+        [NKR("Снят", "Приостановлен", "NR"), NRA("Снят", "Приостановлен", "NR")]
+        [Fitch("Снят", "Приостановлен", "NR")]
         NR = 0,
 
         /// <summary>

@@ -36,10 +36,5 @@
         ///     Yield for the last trade of the day.
         /// </summary>
         public double Yield { get; set; }
-
-        /// <summary>
-        ///     Name of instrument.
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Efir.DataHub.Models.Models.Bond;
+using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.Rating;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
@@ -246,6 +247,66 @@ namespace RuDataAPI.Extensions
                 Outlook = MapToEnum<CreditRatingOutlook>(fields.forecast ?? string.Empty)
             };
             return rating;
+        }
+
+        /// <summary>
+        ///     Converts <see cref="HistoryStockIndexFields"/> object to <see cref="InstrumentHistoryRecord"/> object.
+        /// </summary>
+        internal static InstrumentHistoryRecord ToHistoryRecord(this HistoryStockIndexFields fields)
+        {
+            if (fields.tradedate is null)
+                throw new EfirFieldNullValueException($"Trade date is null. MOEXCODE: {fields.secid}.");
+
+            return new InstrumentHistoryRecord
+            {
+                Date = fields.tradedate.Value,
+                Open = fields.open is null ? default : (double)fields.open,
+                High = fields.high is null ? default : (double)fields.high,
+                Low = fields.low is null ? default : (double)fields.low,
+                Close = fields.close is null ? default : (double)fields.close,
+                Volume = fields.value is null ? default : (double)fields.value,
+                Yield = fields.yield is null ? default : (double)fields.yield
+            };
+        }
+
+        /// <summary>
+        ///     Converts <see cref="HistoryStockBondsFields"/> object to <see cref="InstrumentHistoryRecord"/> object.
+        /// </summary>
+        internal static InstrumentHistoryRecord ToHistoryRecord(this HistoryStockBondsFields fields)
+        {
+            if (fields.tradedate is null)
+                throw new EfirFieldNullValueException($"Trade date is null. MOEXCODE: {fields.isin}.");
+
+            return new InstrumentHistoryRecord
+            {
+                Date = fields.tradedate.Value,
+                Open = fields.open is null ? default : (double)fields.open,
+                High = fields.high is null ? default : (double)fields.high,
+                Low = fields.low is null ? default : (double)fields.low,
+                Close = fields.close is null ? default : (double)fields.close,
+                Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
+                Yield = fields.yieldclose is null ? default : (double)fields.yieldclose
+            };
+        }
+
+        /// <summary>
+        ///     Converts <see cref="HistoryStockSharesFields"/> object to <see cref="InstrumentHistoryRecord"/> object.
+        /// </summary>
+        internal static InstrumentHistoryRecord ToHistoryRecord(this HistoryStockSharesFields fields)
+        {
+            if (fields.tradedate is null)
+                throw new EfirFieldNullValueException($"Trade date is null. MOEXCODE: {fields.isin}.");
+
+            return new InstrumentHistoryRecord
+            {
+                Date = fields.tradedate.Value,
+                Open = fields.open is null ? default : (double)fields.open,
+                High = fields.high is null ? default : (double)fields.high,
+                Low = fields.low is null ? default : (double)fields.low,
+                Close = fields.close is null ? default : (double)fields.close,
+                Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
+                Yield = .0
+            };
         }
 
         /// <summary>

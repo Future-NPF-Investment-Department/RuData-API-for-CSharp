@@ -51,6 +51,13 @@ namespace RuDataAPI
 
 
         /// <summary>
+        ///     Releases unmanaged resources.
+        /// </summary>
+        public void Dispose()        
+            => _httpClient.Dispose();
+
+
+        /// <summary>
         ///     Obtains EfirCredentials from json file. If failed returns empty EfirCredentials.
         /// </summary>
         /// <param name="credentialsFilePath">Path to file that contains credentials to login Efir server.</param>
@@ -293,8 +300,8 @@ namespace RuDataAPI
                 {
                     sort = 1,
                     filter = filter,
-                    dateFrom = start.HasValue ? start.Value : default,
-                    dateTo = end.HasValue ? end.Value : default,
+                    dateFrom = start ?? default,
+                    dateTo = end ?? default,
                 };
 
                 var task = PostEfirPagedRequestAsync<RatingsHistoryRequest, RatingsHistoryFields>(query, url, 300);
@@ -353,8 +360,8 @@ namespace RuDataAPI
         /// <returns>
         ///     Array of <see cref="HistoryStockBondsFields"/>.
         /// </returns>
-        public async Task<HistoryStockBondsFields[]> GetMoexStockHistoryAsync(DateTime start, DateTime end, params string[] tickers)
-            => await GetMoexHistoryAsync<HistoryStockBondsFields>(start, end, "shares", tickers);
+        public async Task<HistoryStockSharesFields[]> GetMoexStockHistoryAsync(DateTime start, DateTime end, params string[] tickers)
+            => await GetMoexHistoryAsync<HistoryStockSharesFields>(start, end, "shares", tickers);
 
 
         /// <summary> 
@@ -403,20 +410,14 @@ namespace RuDataAPI
 
             string url = $"{_credentials.Url}/Bond/g-curve-ofz";
             return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
-        }   
-      
+        }         
 
-        /// <summary>
-        ///     Releases unmanaged resources.
-        /// </summary>
-        public void Dispose()        
-            => _httpClient.Dispose();
 
         /// <summary>
         ///     Returns history data for instrument tarded on MOEX.
         /// </summary>
         private async Task<TFields[]> GetMoexHistoryAsync<TFields>(DateTime start, DateTime end, string mkt, params string[] tickers)
-            where TFields : IHistoryFields, new()
+            where TFields : HistoryBaseFields, new()
         {
             var query = new HistoryRequest
             {
@@ -427,7 +428,7 @@ namespace RuDataAPI
                 dateTo = end
             };
             string url = $"{_credentials.Url}/Moex/History";
-            return await PostEfirRequestAsync<HistoryRequest, TFields[]>(query, url);
+            return await PostEfirPagedRequestAsync2<HistoryRequest, TFields>(query, url, 1000);
         }
 
 
@@ -461,7 +462,35 @@ namespace RuDataAPI
                 var requests = new Task<TResponse[]>[npages - 1];
                 for (int i = 2; i <= npages; i++)
                 {
-                    Console.WriteLine($"posting request for page {i}.");
+                    request.pageNum = i;
+                    requests[i - 2] = PostEfirRequestAsync<TRequest, TResponse[]>(request, url);
+                }
+                var responses = await Task.WhenAll(requests.Where(t => t is not null));
+                foreach (var resp in responses)
+                    response = response.Concat(resp).ToArray();
+            }
+            return response;
+        }
+
+
+        /// <summary>
+        ///     Sends paged POST request to specified url of EFIR server. 
+        /// </summary>
+        /// <remarks>
+        ///     This method uses <see cref="ICounterBase"/> constraint for <typeparamref name="TResponse"/> instead of 
+        ///     <see cref="IPagingBase"/> as in <see cref="PostEfirPagedRequestAsync"/> method.
+        /// </remarks>
+        private async Task<TResponse[]> PostEfirPagedRequestAsync2<TRequest, TResponse>(TRequest request, string url, int pageSize)
+            where TRequest : IPagedRequest
+            where TResponse : ICounterBase
+        {
+            TResponse[] response = await PostEfirRequestAsync<TRequest, TResponse[]>(request, url);
+            if (response.Length > 0 && response[0].counter > pageSize)
+            {
+                int npages = response[0].counter!.Value / pageSize + 1;
+                var requests = new Task<TResponse[]>[npages - 1];
+                for (int i = 2; i <= npages; i++)
+                {
                     request.pageNum = i;
                     requests[i - 2] = PostEfirRequestAsync<TRequest, TResponse[]>(request, url);
                 }

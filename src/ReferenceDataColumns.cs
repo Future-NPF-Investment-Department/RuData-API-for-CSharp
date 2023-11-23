@@ -6,39 +6,39 @@
     [Flags]
     public enum RefDataCols : int
     {
-        ALL                 = 0x7FFFFFFF,
-        ALLCODES            = 0x1F,
+        ALL                   = 0x7FFFFFFF,   // ВСЕ ПОЛЯ
+        ALLCODES              = 0x1F,         // ВСЕ КОДЫ (FINTOOLID, ISINCODE, MOEX_CODE, ISSUERINN, BORROWERINN)
 
-        FINTOOLID           = 1 << 0, 
-        ISINCODE            = 1 << 1, 
-        MOEX_CODE           = 1 << 2,
-        ISSUERINN           = 1 << 3,
-        BORROWERINN         = 1 << 4,
-        NICKNAME            = 1 << 5,
-        ISSUERNAME_NRD      = 1 << 6,
-        FINTOOLTYPE         = 1 << 7,
-        STATUS              = 1 << 8,
-        FACEVALUE           = 1 << 9,
-        FACEFTNAME          = 1 << 10,
-        SUMMARKETVAL        = 1 << 11,
-        COUPONTYPE          = 1 << 12,
-        COUPONRATE          = 1 << 13,
-        FIRSTCOUPONDATE     = 1 << 14,
-        COUPONTYPENAME_NRD  = 1 << 15,
-        FLOATRATENAME       = 1 << 16,
-        NUMCOUPONS          = 1 << 17,
-        BASIS               = 1 << 18,    
-        ISSUERSECTOR        = 1 << 19,
-        ISSUERCOUNTRY       = 1 << 20,
-        ENDMTYDATE          = 1 << 21,
-        BEGDISTDATE         = 1 << 22,
-        ENDDISTDATE         = 1 << 23,
-        ISSUBORDINATED      = 1 << 24,
-        BONDSTRUCTURALPAR   = 1 << 25,
-        SECURITIZATION      = 1 << 26,
-        HAVEINDEXEDFV       = 1 << 27,
-        ISCONVERTIBLE       = 1 << 28,
-        ISGUARANTEED        = 1 << 29,
-        GUARANTVAL          = 1 << 30          
+        FINTOOLID             = 1 << 0,       // Идентификатор финансового инструмента в базе Интерфакс
+        ISINCODE              = 1 << 1,       // ISIN-код финансового инструмента
+        MOEX_CODE             = 1 << 2,       // Идентификатор инструмента на Московской бирже (SECID)
+        ISSUERINN             = 1 << 3,       // ИНН / TIN оператора выпуска финансового инструмента
+        BORROWERINN           = 1 << 4,       // ИНН / TIN реального заемщика(эмитента) облигаций
+        NICKNAME              = 1 << 5,       // Краткое наименование финансового инструмента
+        ISSUERNAME_NRD        = 1 << 6,       // Название оператора выпуска финансового инструмента по базе НРД
+        FINTOOLTYPE           = 1 << 7,       // Тип финансового инструмента (наименование)
+        STATUS                = 1 << 8,       // Состояние выпуска финансового инструмента
+        CURRENTFACEVALUE_NRD  = 1 << 9,       // Текущий номинал облигации с учетом амортизации по базе НРД
+        FACEFTNAME            = 1 << 10,      // Валюта номинала финансового инструмента
+        SUMMARKETVAL          = 1 << 11,      // Объем в обращении в валюте номинала
+        COUPONTYPE            = 1 << 12,      // Вид купона
+        COUPONRATE            = 1 << 13,      // Ставка текущего купона
+        FIRSTCOUPONDATE       = 1 << 14,      // Дата начала первого купонного периода
+        COUPONTYPENAME_NRD    = 1 << 15,      // Наименование типа купонного периода
+        FLOATRATENAME         = 1 << 16,      // Определение плавающей процентной ставки по купону
+        NUMCOUPONS            = 1 << 17,      // Количество купонов всего
+        BASIS                 = 1 << 18,      // Базис НКД по базе Интерфакс
+        ISSUERSECTOR          = 1 << 19,      // Сектор эмитента
+        ISSUERCOUNTRY         = 1 << 20,      // Страна эмитента
+        ENDMTYDATE            = 1 << 21,      // Дата погашения финансового инструмента
+        BEGDISTDATE           = 1 << 22,      // Дата начала размещения
+        ENDDISTDATE           = 1 << 23,      // Дата окончания размещения
+        ISSUBORDINATED        = 1 << 24,      // Признак субординированных облигаций (1 - да)
+        BONDSTRUCTURALPAR     = 1 << 25,      // Структурный параметр облигации
+        SECURITIZATION        = 1 << 26,      // Секьюритизация
+        HAVEINDEXEDFV         = 1 << 27,      // Облигация с индексируемым номиналом
+        ISCONVERTIBLE         = 1 << 28,      // Наличие возможности конвертации / осуществленная конвертация в другой инструмент (1 - да)
+        ISGUARANTEED          = 1 << 29,      // Признак наличия по выпуску гарантии (1-да)
+        GUARANTVAL            = 1 << 30       // Гарантированная сумма
     }
 }

@@ -25,7 +25,7 @@
         /// <summary>
         ///     Agencies ratings used to 
         /// </summary>
-        public IReadOnlyList<CreditRating>? Ratings { get; internal set; }        
+        public IEnumerable<CreditRating>? Ratings { get; internal set; }        
 
         /// <summary>
         ///     Probability of default (PD) that corresponds to <see cref="AggregatedBig3"/> rating.

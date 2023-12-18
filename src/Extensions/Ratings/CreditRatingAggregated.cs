@@ -10,27 +10,27 @@
         /// <summary>
         ///     Name of issuer that is subject for credit rating action.
         /// </summary>
-        public string Issuer { get; init; } = "Unknown issuer";
+        public string Issuer { get; internal set; } = "Unknown issuer";
 
         /// <summary>
         ///     International aggregated credit rating value. Based on BIG3 (FITCH, SnP, Moodys) rating scale.
         /// </summary>
-        public CreditRatingUS RatingBig3 { get; init; }
+        public CreditRatingUS RatingBig3 { get; internal set; }
 
         /// <summary>
         ///     National (RU) aggregated credit rating value.
         /// </summary>
-        public CreditRatingRU RatingRu { get; init; }
+        public CreditRatingRU RatingRu { get; internal set; }
 
         /// <summary>
         ///     Agencies ratings used to 
         /// </summary>
-        public IReadOnlyList<CreditRating>? Ratings { get; init; }
+        public IReadOnlyList<CreditRating>? Ratings { get; internal set; }        
 
         /// <summary>
         ///     Probability of default (PD) that corresponds to <see cref="AggregatedBig3"/> rating.
         /// </summary>
-        public double DefaultProbability { get; init; }
+        public double DefaultProbability { get; internal set; } = double.NaN;
 
         /// <summary>
         ///     Provides stylized rating description.
@@ -68,24 +68,35 @@
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingUS"/> value. Otherwise false.
         /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 < value;
+            => GetRatingBits(rating1.RatingBig3).Min() < value;
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingUS"/> value. Otherwise false.
         /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingUS value)
-            => rating1.RatingBig3 > value;
+            => GetRatingBits(rating1.RatingBig3).Max() > value;
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingRU"/> value. Otherwise false.
         /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingRU value)
-            => rating1.RatingRu < value;
+            => GetRatingBits(rating1.RatingRu).Min() < value;
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingRU"/> value. Otherwise false.
         /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingRU value)
-            => rating1.RatingRu > value;
+            => GetRatingBits(rating1.RatingRu).Max() > value;
+
+        /// <summary>
+        ///     Gets collection of bit flags from <see cref="CreditRatingUS"/> or <see cref="CreditRatingRU"/> enumerations.
+        /// </summary>
+        private static IEnumerable<TRating> GetRatingBits<TRating>(TRating bitmask) where TRating : struct, Enum
+        {
+            var vals = Enum.GetValues<TRating>();
+            foreach (var val in vals) 
+                if (bitmask.HasFlag(val)) 
+                    yield return val;
+        }
     }
 }

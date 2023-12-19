@@ -55,15 +55,24 @@
         /// <summary>
         ///     Returns stylized rating in BIG3 scale.
         /// </summary>
-        public string ToShortStringBig3() 
-            => RatingBig3.ToRatingString();
+        public string ToShortStringBig3()
+        {
+            var bitRatings = GetRatingBits(RatingBig3);
+            var strings = bitRatings.Select(br => br.ToRatingString()).Where(s => s is not "NR");
+            return string.Join(", ", strings);
+        }  
+            
 
         /// <summary>
         ///     Returns stylized rating in RU scale.
         /// </summary>
-        public string ToShortStringRu() 
-            => RatingRu.ToRatingString();        
-        
+        public string ToShortStringRu()
+        {
+            var bitRatings = GetRatingBits(RatingRu);
+            var strings = bitRatings.Select(br => br.ToRatingString()).Where(s => s is not "NR");
+            return string.Join(", ", strings);
+        }
+
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingUS"/> value. Otherwise false.
         /// </summary>

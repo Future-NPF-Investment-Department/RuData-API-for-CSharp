@@ -1,4 +1,5 @@
-﻿namespace RuDataAPI.Extensions.Ratings
+﻿
+namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Represents issuer's aggregated credit rating.
@@ -60,8 +61,7 @@
             var bitRatings = GetRatingBits(RatingBig3);
             var strings = bitRatings.Select(br => br.ToRatingString()).Where(s => s is not "NR");
             return string.Join(", ", strings);
-        }  
-            
+        }              
 
         /// <summary>
         ///     Returns stylized rating in RU scale.
@@ -77,25 +77,38 @@
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingUS"/> value. Otherwise false.
         /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingUS value)
-            => GetRatingBits(rating1.RatingBig3).Min() < value;
+            => GetRatingBits(rating1.RatingBig3).Max() < value;
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingUS"/> value. Otherwise false.
         /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingUS value)
-            => GetRatingBits(rating1.RatingBig3).Max() > value;
+        {
+            var allvals = GetRatingBits(rating1.RatingBig3);
+            var min = allvals.Where(r => r != CreditRatingUS.NR).Any()
+                ? allvals.Where(r => r != CreditRatingUS.NR).Min()
+                : default;
+            return min > value;
+        }
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is lower than <see cref="CreditRatingRU"/> value. Otherwise false.
         /// </summary>
         public static bool operator <(CreditRatingAggregated rating1, CreditRatingRU value)
-            => GetRatingBits(rating1.RatingRu).Min() < value;
+            => GetRatingBits(rating1.RatingRu).Max() < value;
 
         /// <summary>
         ///     Returns true if <see cref="CreditRatingAggregated"/> value is greater than <see cref="CreditRatingRU"/> value. Otherwise false.
         /// </summary>
         public static bool operator >(CreditRatingAggregated rating1, CreditRatingRU value)
-            => GetRatingBits(rating1.RatingRu).Max() > value;
+        {
+            var allvals = GetRatingBits(rating1.RatingRu);
+            var min = allvals.Where(r => r != CreditRatingRU.NR).Any()
+                ? allvals.Where(r => r != CreditRatingRU.NR).Min()
+                : default;
+            return min > value;
+        }
+        
 
         /// <summary>
         ///     Gets collection of bit flags from <see cref="CreditRatingUS"/> or <see cref="CreditRatingRU"/> enumerations.

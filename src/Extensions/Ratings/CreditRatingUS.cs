@@ -5,7 +5,11 @@ namespace RuDataAPI.Extensions.Ratings
     ///     International (US) generic rating scale values. 
     ///     Serves as global rating scale to which other rating scales can be reduced.
     /// </summary>
-    public enum CreditRatingUS
+    /// <remarks>
+    ///     <see cref="CreditRatingUS"/> is a bitmask for the cases when one object can have different ratings from different agencies.
+    /// </remarks>
+    [Flags]
+    public enum CreditRatingUS : int
     {
         /// <summary>
         ///     Rating absence.
@@ -13,7 +17,7 @@ namespace RuDataAPI.Extensions.Ratings
         [GenericRating("NR")]
         [Fitch("Снят", "Приостановлен", "NR"), SnP("Снят", "Приостановлен", "NR"), Moodys("Снят", "Приостановлен", "NR")]
         [AKRA("Снят", "Приостановлен", "NR"), ExpRA("Снят", "Приостановлен", "NR"), NKR("Снят", "Приостановлен", "NR"), NRA("Снят", "Приостановлен", "NR")]
-        NR = 0,
+        NR                                                                                                  = 0x0,
 
         /// <summary>
         ///     AAA generic rating. Corresponds to AAA rating from FITCH or SnP and Aaa rating from Moody's.
@@ -23,7 +27,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("AAA"), SnP("AAA"), Moodys("Aaa")]
         [AKRA("AAA")]
         [ExpRA("AAA")]
-        AAA = 22,
+        AAA                                                                                                 = 1 << 21,
 
         /// <summary>
         ///     AA+ generic rating. Corresponds to AA+ rating from FITCH or SnP and Aa1 rating from Moody's.
@@ -33,7 +37,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("AA+"), SnP("AA+"), Moodys("Aa1")]
         [AKRA("AA+")]
         [ExpRA("AA+")]
-        AAplus = 21,
+        AAplus                                                                                              = 1 << 20,
 
         /// <summary>
         ///     AA generic rating. Corresponds to AA rating from FITCH or SnP and Aa2 rating from Moody's.
@@ -43,7 +47,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("AA"), SnP("AA"), Moodys("Aa2")]
         [AKRA("AA")]
         [ExpRA("AA")]
-        AA = 20,
+        AA                                                                                                  = 1 << 19,
 
         /// <summary>
         ///     AA- generic rating. Corresponds to AA- rating from FITCH or SnP and Aa3 rating from Moody's.
@@ -53,7 +57,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("AA-"), SnP("AA-"), Moodys("Aa3")]
         [AKRA("AA-")]
         [ExpRA("AA-")]
-        AAminus = 19,
+        AAminus                                                                                             = 1 << 18,
 
         /// <summary>
         ///     A+ generic rating. Corresponds to A rating from FITCH or SnP and A1 rating from Moody's.
@@ -63,7 +67,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("A+"), SnP("A+"), Moodys("A1")]
         [AKRA("A+")]
         [ExpRA("A+")]
-        Aplus = 18,
+        Aplus                                                                                               = 1 << 17,
 
         /// <summary>
         ///     A generic rating. Corresponds to A rating from FITCH or SnP and A2 rating from Moody's.
@@ -73,7 +77,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("A"), SnP("A"), Moodys("A2")]
         [AKRA("A")]
         [ExpRA("A")]
-        A = 17,
+        A                                                                                                   = 1 << 16,
 
         /// <summary>
         ///     A- generic rating. Corresponds to A- rating from FITCH or SnP and A3 rating from Moody's.
@@ -83,7 +87,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("A-"), SnP("A-"), Moodys("A3")]
         [AKRA("A-")]
         [ExpRA("A-")]
-        Aminus = 16,
+        Aminus                                                                                              = 1 << 15,
 
         /// <summary>
         ///     BBB+ generic rating. Corresponds to BBB+ rating from FITCH or SnP and Baa1 rating from Moody's.
@@ -93,7 +97,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("BBB+"), SnP("BBB+"), Moodys("Baa1")]
         [AKRA("BBB+")]
         [ExpRA("BBB+")]
-        BBBplus = 15,
+        BBBplus                                                                                             = 1 << 14,
 
         /// <summary>
         ///     BBB generic rating. Corresponds to BBB rating from FITCH or SnP and Baa2 rating from Moody's.
@@ -103,7 +107,7 @@ namespace RuDataAPI.Extensions.Ratings
         [Fitch("BBB"), SnP("BBB"), Moodys("Baa2")]
         [AKRA("BBB")]
         [ExpRA("BBB")]
-        BBB = 14,
+        BBB                                                                                                 = 1 << 13,
 
         /// <summary>
         ///     BBB- generic rating. Corresponds to BBB rating from FITCHor SnP, Baa3 rating from Moody's, 
@@ -115,7 +119,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AAA(RU)", "eAAA(RU)", "AAA(ru.sf)", "eAAA(ru.sf)", "BBB-")]
         [ExpRA("ruAAA", "ruAAA(EXP)", "ruAAA.sf", "ruAAA.sf(EXP)", "A++", "BBB-")]
         [NKR("AAA.ru"), NRA("AAA|ru|")]
-        BBBminus = 13,
+        BBBminus                                                                                            = 1 << 12,
 
         /// <summary>
         ///     BB+ generic rating. Corresponds to BB+ rating from FITCH or SnP, Ba1 rating from Moody's, AA+(ru) or AA(RU) ratings 
@@ -127,7 +131,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AA+(RU)", "AA(RU)", "eAA+(RU)", "eAA(RU)", "AA+(ru.sf)", "AA(ru.sf)", "eAA+(ru.sf)", "eAA(ru.sf)", "BB+")] 
         [ExpRA("ruAA+", "ruAA", "ruAA+(EXP)", "ruAA(EXP)", "ruAA+.sf", "ruAA.sf", "ruAA+.sf(EXP)", "ruAA.sf(EXP)", "BB+")]
         [NKR("AA+.ru", "AA.ru"), NRA("AA+|ru|", "AA|ru|")]
-        BBplus = 12,
+        BBplus                                                                                              = 1 << 11,
 
         /// <summary>
         ///     BB generic rating. Corresponds to BB rating from FITCH or SnP, Ba2 rating from Moody's, AA-(ru) or A+(RU) ratings 
@@ -139,7 +143,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("AA-(RU)", "A+(RU)", "eAA-(RU)", "eA+(RU)", "AA-(ru.sf)", "A+(ru.sf)", "eAA-(ru.sf)", "eA+(ru.sf)", "BB")]
         [ExpRA("ruAA-", "ruA+", "ruAA-(EXP)", "ruA+(EXP)", "ruAA-.sf", "ruA+.sf", "ruAA-.sf(EXP)", "ruA+.sf(EXP)", "A+ (I)", "A+ (II)", "BB")]
         [NKR("AA-.ru", "A+.ru"), NRA("AA-|ru|", "A+|ru|")]
-        BB = 11,
+        BB                                                                                                  = 1 << 10,
 
         /// <summary>
         ///     BB- generic rating. Corresponds to BB- rating from FITCH or SnP, Ba3 rating from Moody's, A(ru) or A-(RU) ratings 
@@ -151,7 +155,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("A(RU)", "A-(RU)", "eA(RU)", "eA-(RU)", "A(ru.sf)", "A-(ru.sf)", "eA(ru.sf)", "eA-(ru.sf)", "BB-")]
         [ExpRA("ruA", "ruA-", "ruA(EXP)", "ruA-(EXP)", "ruA.sf", "ruA-.sf", "ruA.sf(EXP)", "ruA-.sf(EXP)", "A+ (III)", "BB-")]
         [NKR("A.ru", "A-.ru"), NRA("A|ru|", "A-|ru|")]
-        BBminus = 10,
+        BBminus                                                                                             = 1 << 9,
 
         /// <summary>   
         ///     B+ generic rating. Corresponds to B+ rating from FITCH or SnP, B1 rating from Moody's, BBB+(ru) or BBB(RU) ratings 
@@ -163,7 +167,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB+(RU)", "BBB(RU)", "eBBB+(RU)", "eBBB(RU)", "BBB+(ru.sf)", "BBB(ru.sf)", "eBBB+(ru.sf)", "eBBB(ru.sf)", "B+")]
         [ExpRA("ruBBB+", "ruBBB", "ruBBB+(EXP)", "ruBBB(EXP)", "ruBBB+.sf", "ruBBB.sf", "ruBBB+.sf(EXP)", "ruBBB.sf(EXP)", "A (I)", "A (II)", "B+")]
         [NKR("BBB+.ru", "BBB.ru"), NRA("BBB+|ru|", "BBB|ru|")]
-        Bplus = 9,
+        Bplus                                                                                               = 1 << 8,
 
         /// <summary>   
         ///     B generic rating. Corresponds to B rating from FITCH or SnP, B2 rating from Moody's, BBB-(ru) or BB+(RU) ratings 
@@ -175,7 +179,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BBB-(RU)", "BB+(RU)", "eBBB-(RU)", "eBB+(RU)", "BBB-(ru.sf)", "BB+(ru.sf)", "eBBB-(ru.sf)", "eBB+(ru.sf)", "B")]
         [ExpRA("ruBBB-", "ruBB+", "ruBBB-(EXP)", "ruBB+(EXP)", "ruBBB-.sf", "ruBB+.sf", "ruBBB-.sf(EXP)", "ruBB+.sf(EXP)", "B")]
         [NKR("BBB-.ru", "BB+.ru"), NRA("BBB-|ru|", "BB+|ru|")]
-        B = 8,
+        B                                                                                                   = 1 << 7,
 
         /// <summary>   
         ///     B- generic rating. Corresponds to B- rating from FITCH or SnP, B3 rating from Moody's, BB(ru) rating
@@ -187,7 +191,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BB(RU)", "eBB(RU)", "BB(ru.sf)", "eBB(ru.sf)", "B-")]
         [ExpRA("ruBB", "ruBB(EXP)", "ruBB.sf", "ruBB.sf(EXP)", "A (III)", "B-")]
         [NKR("BB.ru"), NRA("BB|ru|")]
-        Bminus = 7,
+        Bminus                                                                                              = 1 << 6,
 
         /// <summary> 
         ///     CCC+ generic rating. Corresponds to CCC+ rating from FITCH or SnP, Caa1 rating from Moody's, BB-(ru) rating
@@ -199,7 +203,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("BB-(RU)", "eBB-(RU)", "BB-(ru.sf)", "eBB-(ru.sf)")]
         [ExpRA("ruBB-", "ruBB-(EXP)", "ruBB-.sf", "ruBB-.sf(EXP)")]
         [NKR("BB-.ru"), NRA("BB-|ru|")]
-        CCCplus = 6,
+        CCCplus                                                                                             = 1 << 5,
 
         /// <summary> 
         ///     CCC generic rating. Corresponds to CCC rating from FITCH or SnP, Caa2 rating from Moody's, B+(ru) rating
@@ -211,7 +215,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B+(RU)", "eB+(RU)", "B+(ru.sf)", "eB+(ru.sf)", "CCC")]
         [ExpRA("ruB+", "ruB+(EXP)", "ruB+.sf", "ruB+.sf(EXP)", "B++", "CCC")]
         [NKR("B+.ru"), NRA("B+|ru|")]
-        CCC = 5,
+        CCC                                                                                                 = 1 << 4,
 
         /// <summary> 
         ///     CCC- generic rating. Corresponds to CCC- rating from FITCH or SnP, Caa3 rating from Moody's, B(ru) rating
@@ -223,7 +227,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B(RU)", "eB(RU)", "B(ru.sf)", "eB(ru.sf)")]
         [ExpRA("ruB", "ruB(EXP)", "ruB.sf", "ruB(EXP).sf")]
         [NKR("B.ru"), NRA("B|ru|")]
-        CCCminus = 4,
+        CCCminus                                                                                            = 1 << 3,
 
         /// <summary> 
         ///     CC generic rating. Corresponds to CC rating from FITCH or SnP, Ca rating from Moody's, B-(ru) rating
@@ -235,7 +239,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("B-(RU)", "eB-(RU)", "B-(ru.sf)", "eB-(ru.sf)", "CC")]
         [ExpRA("ruB-", "ruB-(EXP)", "ruB-.sf", "ruB-.sf(EXP)", "B+", "CC")]
         [NKR("B-.ru"), NRA("B-|ru|")]
-        CC = 3,
+        CC                                                                                                  = 1 << 2,
 
         /// <summary>   
         ///     C generic rating. Corresponds to C rating from FITCH or SnP, C rating from Moody's, CCC(ru) or CC(RU) or C(RU) ratings 
@@ -247,7 +251,7 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("CCC(RU)", "CC(RU)", "C(RU)", "eCCC(RU)", "eCC(RU)", "eC(RU)", "CCC(ru.sf)", "CC(ru.sf)", "C(ru.sf)", "eCCC(ru.sf)", "eCC(ru.sf)", "eC(ru.sf)", "C")]
         [ExpRA("ruCCC", "ruCC", "ruC", "ruCCC(EXP)", "ruCC(EXP)", "ruC(EXP)", "ruCCC.sf", "ruCC.sf", "ruC,sf", "ruCCC.sf(EXP)", "ruCC.sf(EXP)", "ruC.sf(EXP)", "C++", "C+", "C")]
         [NKR("CCC.ru", "CC.ru", "C.ru"), NRA("CCC|ru|", "CC|ru|", "C|ru|")]
-        C = 2,
+        C                                                                                                   = 1 << 1,
 
         /// <summary> 
         ///     D generic rating. Corresponds to D rating from FITCH or SnP, D(ru) rating
@@ -259,6 +263,6 @@ namespace RuDataAPI.Extensions.Ratings
         [AKRA("D(RU)", "eD(RU)", "D(ru.sf)", "eD(ru.sf)", "D", "RD", "SD")]
         [ExpRA("ruD", "ruD(EXP)", "ruD.sf", "ruD.sf(EXP)", "C", "D", "RD")]
         [NKR("D.ru"), NRA("D|ru|")]
-        D = 1,
+        D                                                                                                   = 1 << 0,
     }
 }

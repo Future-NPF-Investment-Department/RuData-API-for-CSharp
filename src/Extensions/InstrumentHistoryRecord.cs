@@ -33,8 +33,18 @@
         public double Volume { get; set; }
 
         /// <summary>
-        ///     Yield for the last trade of the day.
+        ///     Face value for the last trade of the day.
         /// </summary>
-        public double Yield { get; set; }
+        public double FaceValue { get; set; }
+
+        /// <summary>
+        ///     ISIN-code.
+        /// </summary>
+        public string Isin { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     Exhange name.
+        /// </summary>
+        public string ExchangeName { get; set; } = string.Empty;
     }
 }

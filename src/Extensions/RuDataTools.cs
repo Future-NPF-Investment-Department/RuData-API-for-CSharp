@@ -1,10 +1,13 @@
 ﻿using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.Rating;
+using Efir.DataHub.Models.Models.Archive;
 using RuDataAPI.Extensions.Mapping;
 using RuDataAPI.Extensions.Ratings;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Iuliia;
+using Efir.DataHub.Models.Models.Info;
 
 namespace RuDataAPI.Extensions
 {
@@ -31,7 +34,23 @@ namespace RuDataAPI.Extensions
                 if (attr is not null && attr.Values.Contains(strval))
                     return Enum.Parse<TEnum>(field.Name);
             }
-            throw new Exception($"Cannot map '{strval}' to {enumType.Name}.");
+            return default;
+        }
+
+        internal static string GetEnumPrintStrig<TEnum>(TEnum value) where TEnum : struct, Enum
+        {
+            Type enumType = typeof(TEnum);
+            FieldInfo[] fields = enumType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name == value.ToString())
+                {
+                    var attr = field.GetCustomAttribute<EnumFieldStrAttribute>();
+                    if (attr is not null)
+                        return attr.PrintString;
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -41,7 +60,7 @@ namespace RuDataAPI.Extensions
         /// <param name="rating">Rating agency's rating.</param>
         /// <returns><see cref="CreditRatingRU"/> value that represents credit rating from generic RU credit scale.</returns>
         /// <exception cref="Exception">is thrown if parse operation is unavailable.</exception>
-        internal static CreditRatingRU ParseRatingRU(string agency, string rating)
+        internal static CreditRatingRU ParseRatingRU(RatingAgency agency, string rating)
         {
             Type enumType = typeof(CreditRatingRU);
             FieldInfo[] fields = enumType.GetFields();
@@ -62,7 +81,7 @@ namespace RuDataAPI.Extensions
         /// <param name="rating">Rating agency's rating.</param>
         /// <returns><see cref="CreditRatingUS"/> value that represents credit rating from generic RU credit scale.</returns>
         /// <exception cref="Exception">is thrown if parse operation is unavailable.</exception>
-        internal static CreditRatingUS ParseRatingUS(string agency, string rating)
+        internal static CreditRatingUS ParseRatingUS(RatingAgency agency, string rating)
         {
             Type enumType = typeof(CreditRatingUS);
             FieldInfo[] fields = enumType.GetFields();
@@ -91,7 +110,7 @@ namespace RuDataAPI.Extensions
             {
                 if (field.Name != fieldName) continue;
                 var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                pd = (attr is not null) ? attr.PD : default;
+                pd = (attr is not null) ? attr.PD : double.NaN;
             }
             return pd;
         }
@@ -111,60 +130,116 @@ namespace RuDataAPI.Extensions
             {
                 if (field.Name != fieldName) continue;
                 var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                pd = (attr is not null) ? attr.PD : default;
+                pd = (attr is not null) ? attr.PD : double.NaN;
             }
             return pd;
         }
 
         /// <summary>
-        ///     Converts <see cref="RatingsHistoryFields"/> to <see cref="CreditRating"/> with most recent raitings. If ISIN code is specified returns last ratings fot it.
+        ///     Creates default ratings set for specified INN code. All ratings are NR.
+        /// </summary>
+        /// <param name="inn">INN code</param>
+        /// <returns>Array of <see cref="CreditRating"/>.</returns>
+        internal static CreditRating[] CreateDefaultRatings(string inn)
+        {
+            return new CreditRating[7]
+            {
+                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.FITCH    },
+                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.MOODYS   },
+                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.SNP      },
+                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.AKRA     },
+                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.RAEX     },
+                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NKR      },
+                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NRA      }
+            };
+        }
+
+        /// <summary>
+        ///     Selects last ratings for particular ratings history. 
+        ///     This method support history for multiple INN codes.
         /// </summary>
         /// <returns>Array of <see cref="CreditRating"/></returns>
-        internal static CreditRating[] GetLastRaitings(IEnumerable<RatingsHistoryFields> rawData, string? isin = null)
+        internal static CreditRating[] GetLastRatings(IEnumerable<CreditRating> history)
         {
-            var filtered = isin is not null && rawData.Any(d => d.isin == isin) 
-                ? rawData.Where(d => d.isin == isin) 
-                : rawData.Where(d => d.rating_object_type == "Компания");
+            // count number of unique inn codes
+            int uniqueInnCodesNumber = history.DistinctBy(r => r.Inn)
+                .Select(r => r.Inn).Count();
 
-            return filtered
-                .Select(f => f.ToCreditRaiting())
-                .GroupBy(r => r.Agency)
+            // if only 1 inn code then group history by agency
+            // and find max rating date in each group
+            if (uniqueInnCodesNumber == 1)            
+                return history.GroupBy(r => r.Agency)
                 .Select(g => g.MaxBy(r => r.Date)!)
+                .ToArray();
+
+            // if multiple inn codes then group history by unique inn codes
+            // then in each group find last ratings for each agency
+            return history
+                .GroupBy(r => r.Inn)
+                .SelectMany(g1 => g1.GroupBy(r => r.Agency).Select(g2 => g2.MaxBy(r => r.Date)!))
                 .ToArray();
         }
 
         /// <summary>
-        ///     Aggregates raitings from array of <see cref="CreditRating"/> objects.
+        ///     Aggregates ratings using specified metod.
         /// </summary>
-        /// <returns><see cref="CreditRatingAggregated"/> object.</returns>
-        internal static CreditRatingAggregated AggregateRatings(CreditRating[] ratings)
+        /// <param name="ratings"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        internal static CreditRatingAggregated AggregateRatings(IEnumerable<CreditRating> ratings, RatingAggregationMethod method = default)
         {
+            // ratings should be only for single INN-code.
+            // ratings could be issuer-targeted or isin-targeted.
+            // if they are both targeted issuer-targeted are selected.
+
             const CreditRatingScale NATIONAL = CreditRatingScale.National;
+
+            if (ratings.Any() is false) return CreditRatingAggregated.Default;
 
             var filtered = ratings.Any(r => r.Object is CreditRatingTarget.Issuer)
                 ? ratings.Where(r => r.Object is CreditRatingTarget.Issuer)
                 : ratings;
 
-            CreditRatingUS usr = filtered.Any() ? filtered
-                .Select(r => ParseRatingUS(r!.Agency, r!.Value))
-                .Max() : default;
+            var aggrrat = new CreditRatingAggregated();
+            IEnumerable<CreditRatingUS> usRatings = filtered.Select(r => ParseRatingUS(r.Agency, r.Value));
+            IEnumerable<CreditRatingRU> ruRatings = filtered.Any(r => r.Scale is NATIONAL)
+                ? filtered.Where(r => r.Scale is NATIONAL).Select(r => ParseRatingRU(r.Agency, r.Value))
+                : filtered.Select(r => ParseRatingRU(r.Agency, r.Value));
 
-            CreditRatingRU rur = filtered.Any(r => r.Scale is NATIONAL) ? filtered
-                .Where(r => r.Scale is NATIONAL)
-                .Select(r => ParseRatingRU(r!.Agency, r!.Value))
-                .Max() : default;
-
-            double pd = usr is not CreditRatingUS.NR
-                ? GetDefaultProbality(usr)
-                : GetDefaultProbality(rur);
-
-            return new CreditRatingAggregated
+            // all possible ratings are used for aggregation
+            if (method is RatingAggregationMethod.Any)
             {
-                RatingBig3 = usr,
-                RatingRu = rur,
-                Ratings = ratings,
-                DefaultProbability = pd,
-            };
+                aggrrat.RatingRu = ruRatings.Aggregate((rur1, rur2) => rur1 | rur2);
+                aggrrat.RatingBig3 = usRatings.Aggregate((rur1, rur2) => rur1 | rur2);
+                aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
+                ? GetDefaultProbality(usRatings.Min())
+                : GetDefaultProbality(ruRatings.Min());
+            }
+
+            // minimum rating is selected
+            if (method is RatingAggregationMethod.Min)
+            {
+                aggrrat.RatingRu = ruRatings.Min();
+                aggrrat.RatingBig3 = usRatings.Min();
+                aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
+                ? GetDefaultProbality(aggrrat.RatingRu)
+                : GetDefaultProbality(aggrrat.RatingBig3);
+            }
+
+            // maximum rating is selected
+            if (method is RatingAggregationMethod.Max)
+            {
+                aggrrat.RatingRu = ruRatings.Max();
+                aggrrat.RatingBig3 = usRatings.Max();
+                aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
+                ? GetDefaultProbality(aggrrat.RatingRu)
+                : GetDefaultProbality(aggrrat.RatingBig3);
+            }
+
+            aggrrat.Ratings = filtered;
+            aggrrat.Issuer = filtered.First().IssuerName;
+
+            return aggrrat;
         }
 
         /// <summary>
@@ -214,7 +289,7 @@ namespace RuDataAPI.Extensions
                 Isin            = fields.ISINcode ?? string.Empty,
                 StartDate       = fields.BeginEventPer ?? default,
                 EndDate         = fields.EventDate ?? default,
-                PeriodLength    = fields.EventDate is not null ? (int)fields.EventPeriod! : 0,
+                PeriodLength    = fields.EventPeriod is not null ? (int)fields.EventPeriod! : 0,
                 Rate            = fields.Value is not null ? (double)fields.Value : .0,
                 Payment         = fields.Pay1Bond is not null ? (double)fields.Pay1Bond : .0,
                 PaymentType     = MapToEnum<FlowType>(fields.TypeOperation)
@@ -233,11 +308,11 @@ namespace RuDataAPI.Extensions
             var rating = new CreditRating
             {
                 Value = fields.last is "Снят" || fields.last is "Приостановлен" ? "NR" : fields.last,
-                Agency = fields.rating_agency,
-                Date = fields.last_dt ?? default,
+                Agency = MapToEnum<RatingAgency>(fields.rating_agency),
+                Date = fields.dt ?? default,
                 PreviousValue = fields.prev,
-                IssuerName = fields.short_name_org,
-                Isin = fields.isin,
+                IssuerName = IuliiaTranslator.Translate(fields.short_name_org, Schemas.Mosmetro),
+                Isin = fields.isin ?? string.Empty,
                 PressRelease = fields.press_release,
                 Inn = fields.inn,
                 Object = MapToEnum<CreditRatingTarget>(fields.rating_object_type),
@@ -250,22 +325,24 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     Converts <see cref="HistoryStockIndexFields"/> object to <see cref="InstrumentHistoryRecord"/> object.
+        ///     Converts <see cref="EndOfDayOnExchangeFields"/> object to <see cref="InstrumentHistoryRecord"/> object.
         /// </summary>
-        internal static InstrumentHistoryRecord ToHistoryRecord(this HistoryStockIndexFields fields)
+        internal static InstrumentHistoryRecord ToHistoryRecord(this EndOfDayOnExchangeFields fields)
         {
-            if (fields.tradedate is null)
-                throw new EfirFieldNullValueException($"Trade date is null. MOEXCODE: {fields.secid}.");
+            if (fields.time is null)
+                throw new EfirFieldNullValueException($"Trade date is null. ISIN: {fields.isin}.");
 
             return new InstrumentHistoryRecord
             {
-                Date = fields.tradedate.Value,
+                Date = fields.time.Value,
                 Open = fields.open is null ? default : (double)fields.open,
                 High = fields.high is null ? default : (double)fields.high,
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.close is null ? default : (double)fields.close,
-                Volume = fields.value is null ? default : (double)fields.value,
-                Yield = fields.yield is null ? default : (double)fields.yield
+                Volume = fields.val_acc is null ? default : (double)fields.val_acc,
+                FaceValue = fields.facevalue is null ? default : (double)fields.facevalue,
+                Isin = fields.isin is null ? string.Empty : fields.isin,
+                ExchangeName = fields.exch is null? string.Empty : fields.exch
             };
         }
 
@@ -285,7 +362,6 @@ namespace RuDataAPI.Extensions
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.close is null ? default : (double)fields.close,
                 Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
-                Yield = fields.yieldclose is null ? default : (double)fields.yieldclose
             };
         }
 
@@ -305,7 +381,6 @@ namespace RuDataAPI.Extensions
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.close is null ? default : (double)fields.close,
                 Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
-                Yield = .0
             };
         }
 
@@ -326,12 +401,25 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
+        ///     Checks specified input for bad ISIN codes.
+        /// </summary>
+        /// <param name="isins">Collection of ISIN-codes to check.</param>
+        /// <returns>First bad ISIN found, otherwise null.</returns>
+        internal static string? FindFirstBadIsin(params string[] isins)
+        {
+            foreach (var isin in isins)
+                if (IsIsinCode(isin) is false)
+                    return isin;
+            return null;
+        }
+
+        /// <summary>
         ///     Adds bussiness days to specified date.
         /// </summary>
         /// <param name="date">Initial date.</param>
         /// <param name="days">Number of days to add. Could be negative.</param>
         /// <param name="holidays">collection of holiday dates.</param>
-        internal static DateTime DateAdd(DateTime date, int days, IEnumerable<DateTime> holidays)
+        internal static DateTime AddBusinessDays(this DateTime date, int days, IEnumerable<DateTime> holidays)
         {
             if (days == 0) return date;
             int dt = days < 0 ? -1 : 1;
@@ -344,5 +432,68 @@ namespace RuDataAPI.Extensions
             }
             return date;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="secData"></param>
+        /// <param name="flows"></param>
+        /// <param name="history"></param>
+        /// <param name="ratings"></param>
+        /// <returns></returns>
+        internal static InstrumentInfo CreateInstrumentInfo(FintoolReferenceDataFields secData, IEnumerable<InstrumentFlow>? flows, IEnumerable<InstrumentHistoryRecord>? history, IEnumerable<CreditRating>? ratings)
+        {
+            InstrumentInfo sec = new()
+            {
+                IfaxSecId = secData.fintoolid ?? default,
+                MoexSecId = secData.moex_code ?? string.Empty,
+                Name = IuliiaTranslator.Translate(secData.nickname ?? string.Empty, Schemas.Mosmetro),
+                Isin = secData.isincode ?? string.Empty,
+                Issuer = IuliiaTranslator.Translate(secData.issuername_nrd ?? string.Empty, Schemas.Mosmetro),
+                Borrower = IuliiaTranslator.Translate(secData.borrowername ?? string.Empty, Schemas.Mosmetro),
+                IssuerInn = secData.issuerinn ?? string.Empty,
+                BorrowerInn = secData.borrowerinn ?? string.Empty,
+                PlacementDate = secData.begdistdate ?? default,
+                MaturityDate = secData.endmtydate ?? default,
+                Currency = secData.faceftname ?? string.Empty,
+                CouponReference = IuliiaTranslator.Translate(secData.floatratename ?? string.Empty, Schemas.Mosmetro),
+                CouponType = MapToEnum<CouponType>(secData.coupontype),
+                CouponLength = MapToEnum<CouponPeriodType>(secData.coupontypename_nrd),
+                Basis = MapToEnum<CouponBasis>(secData.basis),
+                Status = MapToEnum<InstrumentStatus>(secData.status),
+                AssetClass = MapToEnum<InstrumentType>(secData.fintooltype),
+                MarketVolume = secData.summarketval is not null ? (double)secData.summarketval : default,
+                IssuerSector = MapToEnum<IssuerSector>(secData.issuersector),
+                BorrowerSector = MapToEnum<IssuerSector>(secData.borrowersector),
+                FaceValue = secData.currentfacevalue_nrd is not null ? (double)secData.currentfacevalue_nrd : default,
+                GuaranteedValue = secData.guarantval is not null ? (double)secData.guarantval : default                
+            };
+
+            if (secData.issubordinated is 1)
+                sec.Flags |= InstrumentFlags.Subordinated;
+            if (secData.bondstructuralpar is not null)
+                sec.Flags |= InstrumentFlags.Structured;
+            if (secData.securitization is not null)
+                sec.Flags |= InstrumentFlags.Secured;
+            if (secData.haveindexedfv is true)
+                sec.Flags |= InstrumentFlags.Linker;
+            if (secData.isconvertible is 1)
+                sec.Flags |= InstrumentFlags.Convertible;
+            if (secData.isguaranteed is 1)
+                sec.Flags |= InstrumentFlags.Guaranteed;
+
+
+            if (flows is not null)
+                sec.Flows = flows;
+
+            if (history is not null)
+                sec.TradeHistory = history;
+
+            if (ratings is not null)            
+                sec.RatingAggregated = AggregateRatings(ratings);           
+
+            return sec;
+        }
+
     }
 }

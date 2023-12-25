@@ -100,8 +100,9 @@ namespace RuDataAPI.Extensions
             string status = "status = 'В обращении'";
             string coupontype = "coupontype in ('Постоянный', 'Переменный', 'Фиксированный')";
             string sectype = "SecurityType = 'Корп'";
+            string isin = "ISINCODE IS NOT NULL";
 
-            string[] clauses = new string[] { sectype, country, status, diststart,
+            string[] clauses = new string[] { isin, sectype, country, status, diststart,
                 coupontype, distend, matstart, matend, sectors, cur };
 
             return string.Join(" AND ", clauses.Where(str => !string.IsNullOrEmpty(str)));

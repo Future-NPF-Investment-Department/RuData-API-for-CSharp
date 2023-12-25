@@ -4,20 +4,23 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
+using Efir.DataHub.Models.Models;
 using Efir.DataHub.Models.Models.Account;
 using Efir.DataHub.Models.Models.Info;
 using Efir.DataHub.Models.Models.Bond;
 using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 using Efir.DataHub.Models.Models.Rating;
+using Efir.DataHub.Models.Models.Archive;
 
+using Efir.DataHub.Models.Requests.V2;
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
-using Efir.DataHub.Models.Requests.V2;
-using Efir.DataHub.Models.Models;
+using Efir.DataHub.Models.Requests.V2.Archive;
+using System.Diagnostics;
 
 namespace RuDataAPI
 {
@@ -48,7 +51,6 @@ namespace RuDataAPI
         ///     EFIR.DataHub server Authorization state.
         /// </summary>
         public bool IsLoggedIn { get; private set; }
-
 
         /// <summary>
         ///     Releases unmanaged resources.
@@ -205,11 +207,12 @@ namespace RuDataAPI
         {
             var query = new FintoolReferenceDataRequest
             {
+                pager = new Efir.DataHub.Models.Requests.V2.Info.Pager() { Page = 1, Size = 1000 },
                 filter = filter,
                 fields = GetColumnNames(RefDataCols.ALL).ToArray()
             };
             string url = $"{_credentials.Url}/Info/fintoolReferenceData";
-            return await PostEfirRequestAsync<FintoolReferenceDataRequest, FintoolReferenceDataFields[]>(query, url);
+            return await PostEfirPagedRequestAsync<FintoolReferenceDataFields>(query, url, 1000);
         }
 
 
@@ -364,6 +367,52 @@ namespace RuDataAPI
             => await GetMoexHistoryAsync<HistoryStockSharesFields>(start, end, "shares", tickers);
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="isins"></param>
+        /// <returns></returns>
+        public async Task<EndOfDayOnExchangeFields[]> GetTradeHistoryAsync(DateTime start, DateTime end, params string[] isins)
+        {
+            // max 20 ISIN codes are allowed in 1 query
+            // split set of inn codes to chunks of size 100.
+            var chunks = isins.Chunk(20);
+            var requests = new List<Task<EndOfDayOnExchangeFields[]>>();
+            string url = $"{_credentials.Url}/Archive/EndOfDayOnExchanges";
+
+            // create and run post requests for each chunk.
+            foreach (string[] chunk in chunks)
+            {
+                var query = new EndOfDayOnExchangesRequest
+                {
+                    Codes = chunk,
+                    DateFrom = start,
+                    DateTo = end,
+                    Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", 
+                                     "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid" },
+                    UseDefaultTradeSite = true,
+                    //BoardIds = new[] { "last", "open", "high", "low", "facevalue", "val_acc",
+                    //                 "mcap", "isin", "time", "exch", "deal_acc", "counter" },
+                };
+
+                var task = PostEfirPagedRequestAsync2<EndOfDayOnExchangesRequest, EndOfDayOnExchangeFields>(query, url, 100);
+                requests.Add(task);
+            }
+
+            // wait all requests to respond by server
+            var responses = await Task.WhenAll(requests);
+
+            // constructing response
+            var response = Enumerable.Empty<EndOfDayOnExchangeFields>();
+            foreach (var r in responses)
+                response = response.Concat(r);
+
+            return response.ToArray();
+        }
+
+
         /// <summary> 
         ///     Sends POST request to EFIR Server to get links to emission docs for chosen security.
         /// </summary>
@@ -376,14 +425,14 @@ namespace RuDataAPI
         ///         https://docs.efir-net.ru/dh2/#/Info/EmissionDocs
         ///     </see>.
         /// </remarks>
-        public async Task<EmissionDocsResponse> GetEmissionDocsAsync(string isin)
+        public async Task<EmissionDocsResponse> GetEmissionDocsAsync(params string[] isins)
         {
-            var query = new Efir.DataHub.Models.Requests.V2.Info.EmissionDocsRequest
+            var query = new EmissionDocsRequest
             {
-                ids = new string[] { isin },
+                ids = isins,
             };
             string url = $"{_credentials.Url}/Info/EmissionDocs";
-            return await PostEfirRequestAsync<Efir.DataHub.Models.Requests.V2.Info.EmissionDocsRequest, EmissionDocsResponse>(query, url);
+            return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
         }
 
 
@@ -419,7 +468,7 @@ namespace RuDataAPI
         private async Task<TFields[]> GetMoexHistoryAsync<TFields>(DateTime start, DateTime end, string mkt, params string[] tickers)
             where TFields : HistoryBaseFields, new()
         {
-            var query = new HistoryRequest
+            var query = new Efir.DataHub.Models.Requests.V2.Moex.HistoryRequest
             {
                 engine = "stock",
                 market = mkt,
@@ -428,7 +477,7 @@ namespace RuDataAPI
                 dateTo = end
             };
             string url = $"{_credentials.Url}/Moex/History";
-            return await PostEfirPagedRequestAsync2<HistoryRequest, TFields>(query, url, 1000);
+            return await PostEfirPagedRequestAsync2<Efir.DataHub.Models.Requests.V2.Moex.HistoryRequest, TFields>(query, url, 1000);
         }
 
 
@@ -473,12 +522,33 @@ namespace RuDataAPI
         }
 
 
+        private async Task<TResponse[]> PostEfirPagedRequestAsync<TResponse>(IFXFintoolRefDataRequest request, string url, int pageSize)
+            where TResponse : IPagingBase
+        {
+            TResponse[] response = await PostEfirRequestAsync<IFXFintoolRefDataRequest, TResponse[]>(request, url);
+            if (response.Length > 0 && response[0].counter > pageSize)
+            {
+                int npages = response[0].counter / pageSize + 1;
+                var requests = new Task<TResponse[]>[npages - 1];
+                for (int i = 2; i <= npages; i++)
+                {
+                    request.pager.Page = i;
+                    requests[i - 2] = PostEfirRequestAsync<IFXFintoolRefDataRequest, TResponse[]>(request, url);
+                }
+                var responses = await Task.WhenAll(requests.Where(t => t is not null));
+                foreach (var resp in responses)
+                    response = response.Concat(resp).ToArray();
+            }
+            return response;
+        }
+
+
         /// <summary>
         ///     Sends paged POST request to specified url of EFIR server. 
         /// </summary>
         /// <remarks>
         ///     This method uses <see cref="ICounterBase"/> constraint for <typeparamref name="TResponse"/> instead of 
-        ///     <see cref="IPagingBase"/> as in <see cref="PostEfirPagedRequestAsync"/> method.
+        ///     <see cref="IPagingBase"/> as in <see cref="PostEfirPagedRequestAsync{TRequest,TResponse}"/> method.
         /// </remarks>
         private async Task<TResponse[]> PostEfirPagedRequestAsync2<TRequest, TResponse>(TRequest request, string url, int pageSize)
             where TRequest : IPagedRequest
@@ -507,10 +577,10 @@ namespace RuDataAPI
         /// </summary>
         private static IEnumerable<string> GetColumnNames(RefDataCols refDataCols)
         {
-            var vals = Enum.GetValues<RefDataCols>();
-            foreach (var val in vals) 
-                if (refDataCols.HasFlag(val)) 
-                    yield return val.ToString();
+            var fields = Enum.GetNames<RefDataCols>();
+            foreach (var f in fields) 
+                if (refDataCols.HasFlag(Enum.Parse<RefDataCols>(f))) 
+                    yield return f.ToString();
         }
     }
 }

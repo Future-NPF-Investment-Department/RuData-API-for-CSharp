@@ -4,9 +4,9 @@
     ///     Column names bitmask for EFIR FintoolReferenceData method response.     
     /// </summary>
     [Flags]
-    public enum RefDataCols : int
+    public enum RefDataCols : long
     {
-        ALL                   = 0x7FFFFFFF,   // ВСЕ ПОЛЯ
+        ALL                   = 0x1FFFFFFFF,  // ВСЕ ПОЛЯ
         ALLCODES              = 0x1F,         // ВСЕ КОДЫ (FINTOOLID, ISINCODE, MOEX_CODE, ISSUERINN, BORROWERINN)
 
         FINTOOLID             = 1 << 0,       // Идентификатор финансового инструмента в базе Интерфакс
@@ -39,6 +39,8 @@
         HAVEINDEXEDFV         = 1 << 27,      // Облигация с индексируемым номиналом
         ISCONVERTIBLE         = 1 << 28,      // Наличие возможности конвертации / осуществленная конвертация в другой инструмент (1 - да)
         ISGUARANTEED          = 1 << 29,      // Признак наличия по выпуску гарантии (1-да)
-        GUARANTVAL            = 1 << 30       // Гарантированная сумма
+        GUARANTVAL            = 1 << 30,      // Гарантированная сумма
+        BORROWERNAME          = 1 << 31,      // Название реального заемщика (эмитента) облигаций
+        BORROWERSECTOR        = 1 << 32,
     }
 }

@@ -3,6 +3,11 @@
     public enum IssuerSector
     {
         /// <summary>
+        ///     Не определен.
+        /// </summary>
+        Undefined,
+
+        /// <summary>
         ///     Банки.
         /// </summary>
         [EnumFieldStr("Банки")]

@@ -1,5 +1,8 @@
 ﻿namespace RuDataAPI.Extensions.Mapping
 {
+    /// <summary>
+    ///     Coupon period.
+    /// </summary>
     public enum CouponPeriodType
     {
         [EnumFieldStr("Не применимо")]
@@ -27,6 +30,6 @@
         OncePerTwoYears,
 
         [EnumFieldStr("Иной")]
-        Other
+        Nonstandard
     }
 }

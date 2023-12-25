@@ -11,43 +11,43 @@
         /// <summary>
         ///     Купонные платежи всегда одинаковые.
         /// </summary>
-        [EnumFieldStr("act/act")]
+        [EnumFieldStr("act/act", PrintString = "ACT/ACT")]
         ACTACT,
 
         /// <summary>
         ///     (Кол-во дней попавших на високосный год) / 366 + (Кол-во дней приходящихся на не високосный год) / 365.
         /// </summary>
-        [EnumFieldStr("act/act ISDA")]
+        [EnumFieldStr("act/act ISDA", PrintString = "ACT/ACT ISDA")]
         ACTACTISDA,
 
         /// <summary>
         ///     Фактическое количество дней в расчетном периоде (без поправок) делится на 360.
         /// </summary>
-        [EnumFieldStr("act/360")]
+        [EnumFieldStr("act/360", PrintString = "ACT/360")]
         ACT360,
 
         /// <summary>
         ///     Фактическое количество дней в расчетном периоде (без поправок) делится на 365.
         /// </summary>
-        [EnumFieldStr("act/365")]
+        [EnumFieldStr("act/365", PrintString = "ACT/365")]
         ACT365,
 
         /// <summary>
         ///     366, если дата окончания периода попадает в високосный год, иначе делим на 365.
         /// </summary>
-        [EnumFieldStr("act/365L")]
+        [EnumFieldStr("act/365L", PrintString = "ACT/365 L")]
         ACT365L,
 
         /// <summary>
         ///     Фактическое количество дней в расчетном периоде (без поправок) делится на 366.
         /// </summary>
-        [EnumFieldStr("act/366")]
+        [EnumFieldStr("act/366", PrintString = "ACT/366")]
         ACT366,
 
         /// <summary>
         ///     Вычитается 1, если 29 февраля попадает в период. Базис расчета НКД = 365.
         /// </summary>
-        [EnumFieldStr("NL/365")]
+        [EnumFieldStr("NL/365", PrintString = "NL/365")]
         NL365,
 
         /// <summary>
@@ -57,7 +57,7 @@
         ///     <para>Если D1 = 31, то D1 = 30</para> 
         ///     <para>Если D2 = 31, то D2 = 30</para>
         /// </remarks>
-        [EnumFieldStr("30E/360")]
+        [EnumFieldStr("30E/360", PrintString = "30E/360")]
         _30E360,
 
         /// <summary>
@@ -67,13 +67,13 @@
         ///     <para>Если D1 = 31, то D1 = 30.</para> 
         ///     <para>Если D2 = 31 и D1 > 29, то D2 = 30</para>
         /// </remarks>
-        [EnumFieldStr("30/360")]
+        [EnumFieldStr("30/360", PrintString = "30/360")]
         _30360,
 
         /// <summary>
         ///     Если D1=31, то D1=30; если D2=31, то D2=30; если D1-посл. день фев., то D1=30, если D2 - посл. Д
         /// </summary>
-        [EnumFieldStr("30/360 German")]
+        [EnumFieldStr("30/360 German", PrintString = "30/360 German")]
         _30360German
     }
 }

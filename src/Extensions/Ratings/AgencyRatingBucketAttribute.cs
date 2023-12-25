@@ -1,4 +1,6 @@
-﻿namespace RuDataAPI.Extensions.Ratings
+﻿using RuDataAPI.Extensions.Mapping;
+
+namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Represents abstract rating bucket for rating agency.
@@ -7,16 +9,16 @@
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public abstract class AgencyRatingBucketAttribute : Attribute
     {
-        // these constants are taken from EFIR raings agencies classification.
-        protected const string FITCH = "Fitch Ratings";
-        protected const string MOODYS = "Moody's";
-        protected const string SNP = "Standard & Poor's";
-        protected const string AKRA = "АКРА";
-        protected const string EXPRA = "Эксперт РА";
-        protected const string NKR = "НКР";
-        protected const string NRA = "НРА";
+        // rating agencies names constants
+        protected const RatingAgency FITCH      = RatingAgency.FITCH;              
+        protected const RatingAgency MOODYS     = RatingAgency.MOODYS;      
+        protected const RatingAgency SNP        = RatingAgency.SNP;            
+        protected const RatingAgency AKRA       = RatingAgency.AKRA;          
+        protected const RatingAgency EXPRA      = RatingAgency.RAEX;         
+        protected const RatingAgency NKR        = RatingAgency.NKR;            
+        protected const RatingAgency NRA        = RatingAgency.NRA;            
 
-        private protected readonly string _agency;
+        private protected readonly RatingAgency _agency;
         private protected readonly string[] _bucket;
 
         /// <summary>
@@ -25,7 +27,7 @@
         /// </summary>
         /// <param name="agency">Rating agency.</param>
         /// <param name="ratingsBucket">Set of ratings that determines this particular bucket.</param>
-        public AgencyRatingBucketAttribute(string agency, string[] ratingsBucket)
+        public AgencyRatingBucketAttribute(RatingAgency agency, string[] ratingsBucket)
         {
             _agency = agency;
             _bucket = ratingsBucket;
@@ -37,7 +39,7 @@
         /// <param name="agency">Rating agency.</param>
         /// <param name="rating">Credit rating value.</param>
         /// <returns>True if specified agency rating belongs to this bucket, otherwise false.</returns>
-        internal bool ContainsAgencyRating(string agency, string rating)
+        internal bool ContainsAgencyRating(RatingAgency agency, string rating)
             => _agency == agency && _bucket.Contains(rating);
     }
 }

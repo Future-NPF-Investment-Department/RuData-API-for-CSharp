@@ -1,4 +1,6 @@
-﻿namespace RuDataAPI.Extensions.Ratings
+﻿using RuDataAPI.Extensions.Mapping;
+
+namespace RuDataAPI.Extensions.Ratings
 {
     /// <summary>
     ///     Represents credit rating information for particular issuer or security.
@@ -50,7 +52,7 @@
         /// <summary>
         ///     Rating agency name.
         /// </summary>
-        public string Agency { get; set; } = string.Empty;
+        public RatingAgency Agency { get; set; }
 
         /// <summary>
         ///     Probability of default (PD) that corresponds to rating.
@@ -95,6 +97,10 @@
         ///     Provides short stylized rating description.
         /// </summary>
         public string ToShortString()
-            => $"{Date.ToShortDateString()} {(Value is "Снят" ? "NR" : Value)} by {Agency} ({Action})";        
+        {
+            const string ACNT = "\x1b[38;5;210m";    
+            const string RST = "\x1b[0m";            
+            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {ACNT}{(Value is "Снят" ? "NR" : Value)}{RST} ({Action} {Date.ToShortDateString()})";
+        }
     }
 }

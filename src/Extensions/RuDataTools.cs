@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Iuliia;
 using Efir.DataHub.Models.Models.Info;
+using Efir.DataHub.Models.Models.RuData;
 
 namespace RuDataAPI.Extensions
 {
@@ -37,6 +38,9 @@ namespace RuDataAPI.Extensions
             return default;
         }
 
+        /// <summary>
+        ///     Get representation string for specified enum-mapping value.
+        /// </summary>
         internal static string GetEnumPrintStrig<TEnum>(TEnum value) where TEnum : struct, Enum
         {
             Type enumType = typeof(TEnum);
@@ -434,14 +438,10 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        /// 
+        ///     Creates InstrumentInfo using FinToolRefData, flows, trade history and last ratings
         /// </summary>
-        /// <param name="secData"></param>
-        /// <param name="flows"></param>
-        /// <param name="history"></param>
-        /// <param name="ratings"></param>
-        /// <returns></returns>
-        internal static InstrumentInfo CreateInstrumentInfo(FintoolReferenceDataFields secData, IEnumerable<InstrumentFlow>? flows, IEnumerable<InstrumentHistoryRecord>? history, IEnumerable<CreditRating>? ratings)
+        internal static InstrumentInfo CreateInstrumentInfo(FintoolReferenceDataFields secData, IEnumerable<InstrumentFlow>? flows, 
+            IEnumerable<InstrumentHistoryRecord>? history, IEnumerable<CreditRating>? ratings)
         {
             InstrumentInfo sec = new()
             {
@@ -493,6 +493,92 @@ namespace RuDataAPI.Extensions
                 sec.RatingAggregated = AggregateRatings(ratings);           
 
             return sec;
+        }
+
+        /// <summary>
+        ///     Calculates G-Curve rate from using specified G-Curve parameters.
+        /// </summary>
+        /// <param name="gcparams">G-Curve parameters.</param>
+        /// <param name="tenor">G-Curve tenor</param>
+        internal static double CalculateGCurveRateFromParams(GCurveOFZResponse gcparams, double tenor)
+        {
+            // these constants are specified according to MOEX (https://www.moex.com/s2532)
+            double k = 1.6, a1 = .0, a2 = .6;
+
+            double beta0 = gcparams.beta0val.HasValue
+                ? (double)gcparams.beta0val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double beta1 = gcparams.beta1val.HasValue
+                ? (double)gcparams.beta1val!.Value
+                : throw new Exception($"GCurve BETA1 param is null when trying to calculate G-Curve value.");
+
+            double beta2 = gcparams.beta2val.HasValue
+                ? (double)gcparams.beta2val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double tau = gcparams.tauval.HasValue
+                ? (double)gcparams.tauval!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g1 = gcparams.g1val.HasValue
+            ? (double)gcparams.g1val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g2 = gcparams.g2val.HasValue
+                ? (double)gcparams.g2val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g3 = gcparams.g3val.HasValue
+                ? (double)gcparams.g3val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g4 = gcparams.g4val.HasValue
+                ? (double)gcparams.g4val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g5 = gcparams.g5val.HasValue
+                ? (double)gcparams.g5val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g6 = gcparams.g6val.HasValue
+                ? (double)gcparams.g6val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g7 = gcparams.g7val.HasValue
+                ? (double)gcparams.g7val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g8 = gcparams.g8val.HasValue
+                ? (double)gcparams.g8val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+            double g9 = gcparams.g9val.HasValue
+                ? (double)gcparams.g9val!.Value
+                : throw new Exception($"GCurve BETA0 param is null when trying to calculate G-Curve value.");
+
+
+            double[] aCoeffs = new double[9] { a1, a2, .0, .0, .0, .0, .0, .0, .0 }; // array of a's
+            double[] bCoeffs = new double[9] { a2, .0, .0, .0, .0, .0, .0, .0, .0 }; // array of b's
+            double[] gCoeffs = new double[9] { g1, g2, g3, g4, g5, g6, g7, g8, g9 }; // array of g's
+
+            // filling adjust coefficients
+            for (int i = 2; i <= 8; i++)
+                aCoeffs[i] = aCoeffs[i - 1] + a2 * Math.Pow(k, i - 1);
+            
+            for (int i = 1; i <= 8; i++)            
+                bCoeffs[i] = bCoeffs[i - 1] * k;            
+
+            // original Nelson-Siegel formula:
+            double gt = beta0
+                + (beta1 + beta2) * tau / tenor * (1 - Math.Exp(-tenor / tau))
+                - beta2 * Math.Exp(-tenor / tau);
+
+            // adding adjustment components to Nelson-Siegel original formaula:
+            for (int i = 0; i <= 8; i++)            
+                gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));            
+
+            return Math.Exp(gt / 10000) - 1;
         }
 
     }

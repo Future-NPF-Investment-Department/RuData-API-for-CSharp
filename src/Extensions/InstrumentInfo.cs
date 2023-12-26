@@ -141,13 +141,6 @@ namespace RuDataAPI.Extensions
         /// </summary>
         public CreditRatingAggregated RatingAggregated { get; set; } = CreditRatingAggregated.Default;
 
-        [Obsolete]
-        public static InstrumentInfo ConvertFromEfirFields___OBSOLETE___(FintoolReferenceDataFields finref)
-        {
-            var sec = new InstrumentInfo();
-            return sec;
-        }
-
         public override string ToString()
         {
             const string ACNT   = "\x1b[38;5;210m";     // yellow color accent 

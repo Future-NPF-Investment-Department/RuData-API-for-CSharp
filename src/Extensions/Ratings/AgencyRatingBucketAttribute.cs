@@ -41,5 +41,10 @@ namespace RuDataAPI.Extensions.Ratings
         /// <returns>True if specified agency rating belongs to this bucket, otherwise false.</returns>
         internal bool ContainsAgencyRating(RatingAgency agency, string rating)
             => _agency == agency && _bucket.Contains(rating);
+
+        /// <summary>
+        ///     Returns rating bucket.
+        /// </summary>
+        internal string[] GetBucket() => _bucket;
     }
 }

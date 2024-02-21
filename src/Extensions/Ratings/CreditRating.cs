@@ -84,13 +84,16 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public override string ToString()
         {
-            string head = $"RATING for {IssuerName} (ISIN: {Isin})\n";
-            string rating = $"{Value} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
+            const string ACNT = "\x1b[38;5;210m";       // color accent 
+            const string RST = "\x1b[0m";               // normal color accent
+            const string UNDSCR = "\x1b[4m";            // underscore accent
+
+            string head = $"{UNDSCR}RATING for {IssuerName} (INN: {ACNT}{Inn}{RST})\n";
+            string rating = $"{ACNT}{Value}{RST} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
             string scale = $"Scale: {Scale} in {Currency} currency\n";
             string action = $"Outlook: {Outlook}\n";
             string release = $"Press release: {PressRelease}\n";
-            string pd = $"Probability of default: {DefaultProbability:0.00%}\n";
-            return head + rating + scale + action + release + pd;
+            return head + rating + scale + action + release;
         }
 
         /// <summary>
@@ -98,9 +101,9 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public string ToShortString()
         {
-            const string ACNT = "\x1b[38;5;210m";    
-            const string RST = "\x1b[0m";            
-            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {ACNT}{(Value is "Снят" ? "NR" : Value)}{RST} ({Action} {Date.ToShortDateString()})";
+            const string ACNT = "\x1b[38;5;210m";              // color accent 
+            const string RST = "\x1b[0m";                      // normal color accent
+            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {ACNT}{(Value is "Снят" ? "NR" : Value)}{RST} ({Action} {Date.ToShortDateString()} | {Outlook})";
         }
     }
 }

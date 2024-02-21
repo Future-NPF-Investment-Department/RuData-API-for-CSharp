@@ -278,48 +278,19 @@ namespace RuDataAPI
         /// </remarks>
         /// <param name="inns">List of issuer INN codes.</param>
         /// <returns>Array of <see cref="RatingsHistoryFields"/>.</returns>
-        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(DateTime? start = null, DateTime? end = null, params string[] inns)
+        public async Task<RatingsHistoryFields[]> GetRatingHistoryAsync(DateTime start, DateTime end, string filter)
         {
-            if (inns.Length == 0) return Array.Empty<RatingsHistoryFields>();
-
-            // max 100 INN codes are allowed in 1 query
-            // split set of inn codes to chunks of size 100.
-            var chunks = inns.Chunk(100);
-            var requests = new List<Task<RatingsHistoryFields[]>>();
-
-            // constructing request elements
-            string iscr = "IS_CREDIT_RATING = 1";
-            string term = "RATING_TERM = 'Долгосрочный'";
-            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";            
-            string url = $"{_credentials.Url}/Rating/RatingsHistory";
-            
-            // create and run post requests for each chunk.
-            foreach (string[] chunk in chunks)
+            var query = new RatingsHistoryRequest
             {
-                string inn = $"INN IN ('{string.Join("', '", chunk)}')";
-                string filter = string.Join(" AND ", iscr, term, ra, inn);
-                
-                var query = new RatingsHistoryRequest
-                {
-                    sort = 1,
-                    filter = filter,
-                    dateFrom = start ?? default,
-                    dateTo = end ?? default,
-                };
+                sort = 1,
+                filter = filter,
+                dateFrom = start,
+                dateTo = end,
+            };
 
-                var task = PostEfirPagedRequestAsync<RatingsHistoryRequest, RatingsHistoryFields>(query, url, 300);
-                requests.Add(task);                
-            }
-
-            // wait all requests to respond by server
-            var responses = await Task.WhenAll(requests);
-
-            // constructing response
-            var response = Enumerable.Empty<RatingsHistoryFields>();            
-            foreach (var r in responses)
-                response = response.Concat(r);
-
-            return response.ToArray();
+            string url = $"{_credentials.Url}/Rating/RatingsHistory";
+            var res = await PostEfirPagedRequestAsync<RatingsHistoryRequest, RatingsHistoryFields>(query, url, 300);
+            return res.ToArray();
         }
 
         /// <summary>

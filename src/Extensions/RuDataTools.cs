@@ -57,86 +57,39 @@ namespace RuDataAPI.Extensions
             return string.Empty;
         }
 
-        /// <summary>
-        ///     Parses string pair of agency and its rating to generic RU credit rating scale.
-        /// </summary>
-        /// <param name="agency">Rating agency name.</param>
-        /// <param name="rating">Rating agency's rating.</param>
-        /// <returns><see cref="CreditRatingRU"/> value that represents credit rating from generic RU credit scale.</returns>
-        /// <exception cref="Exception">is thrown if parse operation is unavailable.</exception>
-        internal static CreditRatingRU ParseRatingRU(RatingAgency agency, string rating)
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
+
+
+
+
+        public static string[] GetRatingRangeStrings(CreditRatingRU[] range)
         {
-            Type enumType = typeof(CreditRatingRU);
-            FieldInfo[] fields = enumType.GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                var attrs = field.GetCustomAttributes<AgencyRatingBucketAttribute>();
-                foreach (var attr in attrs)
-                    if (attr.ContainsAgencyRating(agency, rating))
-                        return Enum.Parse<CreditRatingRU>(field.Name);
-            }
-            return CreditRatingRU.NR;
+            List<string> ret = new();
+            foreach (var rating in range)
+                ret.AddRange(Rating.ExtractUnderlyingRatings(rating));
+            return ret.ToArray();
         }
 
-        /// <summary>
-        ///     Parses string pair of agency and its rating to generic BIG3 credit rating scale.
-        /// </summary>
-        /// <param name="agency">Rating agency name.</param>
-        /// <param name="rating">Rating agency's rating.</param>
-        /// <returns><see cref="CreditRatingUS"/> value that represents credit rating from generic RU credit scale.</returns>
-        /// <exception cref="Exception">is thrown if parse operation is unavailable.</exception>
-        internal static CreditRatingUS ParseRatingUS(RatingAgency agency, string rating)
-        {
-            Type enumType = typeof(CreditRatingUS);
-            FieldInfo[] fields = enumType.GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                var attrs = field.GetCustomAttributes<AgencyRatingBucketAttribute>();
-                foreach (var attr in attrs)
-                    if (attr.ContainsAgencyRating(agency, rating))
-                        return Enum.Parse<CreditRatingUS>(field.Name);
-            }
-            throw new Exception($"Cannot parse '{rating}' credit rating (US) of {agency}.");
-        }
 
-        /// <summary>
-        ///     Obtains default of probility implied by specified aggregated rating in Big3 scale.
-        /// </summary>
-        /// <param name="rating">Rating aggregated.</param>
-        /// <returns>Probability of default.</returns>
-        internal static double GetDefaultProbality(CreditRatingUS rating)
+        internal static string CreateRatingFilter(string[] items, string fieldName)
         {
-            string fieldName = rating.ToString();
-            Type enumType = typeof(CreditRatingUS);
-            FieldInfo[] fields = enumType.GetFields();
-            double pd = default;
-            foreach (FieldInfo field in fields)
-            {
-                if (field.Name != fieldName) continue;
-                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                pd = (attr is not null) ? attr.PD : double.NaN;
-            }
-            return pd;
-        }
-
-        /// <summary>
-        ///     Obtains default of probility implied by specified aggregated rating in Big3 scale.
-        /// </summary>
-        /// <param name="rating">Rating aggregated.</param>
-        /// <returns>Probability of default.</returns>
-        internal static double GetDefaultProbality(CreditRatingRU rating)
-        {
-            string fieldName = rating.ToString();
-            Type enumType = typeof(CreditRatingRU);
-            FieldInfo[] fields = enumType.GetFields();
-            double pd = default;
-            foreach (FieldInfo field in fields)
-            {
-                if (field.Name != fieldName) continue;
-                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                pd = (attr is not null) ? attr.PD : double.NaN;
-            }
-            return pd;
+            string iscr = "IS_CREDIT_RATING = 1";
+            string term = "RATING_TERM = 'Долгосрочный'";
+            string ra = "RATING_AGENCY IN ('Moody''s', 'Standard & Poor''s', 'Fitch Ratings', 'АКРА', 'Эксперт РА', 'НКР', 'НРА')";
+            string inn = $"{fieldName} IN ('{string.Join("', '", items)}')";
+            return string.Join(" AND ", iscr, term, ra, inn);
         }
 
         /// <summary>
@@ -205,10 +158,10 @@ namespace RuDataAPI.Extensions
                 : ratings;
 
             var aggrrat = new CreditRatingAggregated();
-            IEnumerable<CreditRatingUS> usRatings = filtered.Select(r => ParseRatingUS(r.Agency, r.Value));
+            IEnumerable<CreditRatingUS> usRatings = filtered.Select(r => Rating.ParseRatingUS(r.Value, r.Agency));
             IEnumerable<CreditRatingRU> ruRatings = filtered.Any(r => r.Scale is NATIONAL)
-                ? filtered.Where(r => r.Scale is NATIONAL).Select(r => ParseRatingRU(r.Agency, r.Value))
-                : filtered.Select(r => ParseRatingRU(r.Agency, r.Value));
+                ? filtered.Where(r => r.Scale is NATIONAL).Select(r => Rating.ParseRatingRU(r.Value, r.Agency))
+                : filtered.Select(r => Rating.ParseRatingRU(r.Value, r.Agency));
 
             // all possible ratings are used for aggregation
             if (method is RatingAggregationMethod.Any)
@@ -216,8 +169,8 @@ namespace RuDataAPI.Extensions
                 aggrrat.RatingRu = ruRatings.Aggregate((rur1, rur2) => rur1 | rur2);
                 aggrrat.RatingBig3 = usRatings.Aggregate((rur1, rur2) => rur1 | rur2);
                 aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
-                ? GetDefaultProbality(usRatings.Min())
-                : GetDefaultProbality(ruRatings.Min());
+                ? Rating.GetDefaultProbality(usRatings.Min())
+                : Rating.GetDefaultProbality(ruRatings.Min());
             }
 
             // minimum rating is selected
@@ -226,8 +179,8 @@ namespace RuDataAPI.Extensions
                 aggrrat.RatingRu = ruRatings.Min();
                 aggrrat.RatingBig3 = usRatings.Min();
                 aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
-                ? GetDefaultProbality(aggrrat.RatingRu)
-                : GetDefaultProbality(aggrrat.RatingBig3);
+                ? Rating.GetDefaultProbality(aggrrat.RatingRu)
+                : Rating.GetDefaultProbality(aggrrat.RatingBig3);
             }
 
             // maximum rating is selected
@@ -236,48 +189,14 @@ namespace RuDataAPI.Extensions
                 aggrrat.RatingRu = ruRatings.Max();
                 aggrrat.RatingBig3 = usRatings.Max();
                 aggrrat.DefaultProbability = aggrrat.RatingBig3 is not CreditRatingUS.NR
-                ? GetDefaultProbality(aggrrat.RatingRu)
-                : GetDefaultProbality(aggrrat.RatingBig3);
+                ? Rating.GetDefaultProbality(aggrrat.RatingRu)
+                : Rating.GetDefaultProbality(aggrrat.RatingBig3);
             }
 
             aggrrat.Ratings = filtered;
             aggrrat.Issuer = filtered.First().IssuerName;
 
             return aggrrat;
-        }
-
-        /// <summary>
-        ///     Returns string representation of <see cref="CreditRatingUS"/> value.
-        /// </summary>
-        internal static string ToRatingString(this CreditRatingUS rating)
-        {
-            string fieldName = rating.ToString();
-            Type enumType = typeof(CreditRatingUS);
-            FieldInfo[] fields = enumType.GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                if (field.Name != fieldName) continue;
-                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                if (attr is not null) return attr.Name; 
-            }
-            throw new Exception($"Cannot parse '{rating}' (Big 3) to appropriate string.");
-        }
-
-        /// <summary>
-        ///     Returns string representation of <see cref="CreditRatingRU"/> value.
-        /// </summary>
-        internal static string ToRatingString(this CreditRatingRU rating)
-        {
-            string fieldName = rating.ToString();
-            Type enumType = typeof(CreditRatingUS);
-            FieldInfo[] fields = enumType.GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                if (field.Name != fieldName) continue;
-                var attr = field.GetCustomAttribute<GenericRatingAttribute>();
-                if (attr is not null) return attr.Name;
-            }
-            throw new Exception($"Cannot parse '{rating}' (RU) to appropriate string.");
         }
 
         /// <summary>
@@ -304,7 +223,7 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Converts <see cref="RatingsHistoryFields"/> object to <see cref="CreditRating"/> object.
         /// </summary>
-        internal static CreditRating ToCreditRaiting(this RatingsHistoryFields fields)
+        internal static CreditRating ToCreditRating(this RatingsHistoryFields fields)
         {
             if (fields.last is null)
                 throw new EfirFieldNullValueException($"Raiting value is null. INN: {fields.inn}; Agency: {fields.rating_agency}");
@@ -579,6 +498,51 @@ namespace RuDataAPI.Extensions
                 gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));            
 
             return Math.Exp(gt / 10000) - 1;
+        }
+
+        internal static string CreateQueryString(EfirSecQueryDetails details)
+        {
+            string status = "STATUS = 'В обращении'";
+            string coupontype = "COUPONTYPE in ('Постоянный', 'Переменный', 'Фиксированный')";
+            string sectype = "SECURITYTYPE = 'Корп'";
+            string isin = "ISINCODE IS NOT NULL";
+
+            string diststart = details.DistributionStart is not null
+                ? $"BEGDISTDATE >= '{details.DistributionStart:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string distend = details.DistributionEnd is not null
+                ? $"BEGDISTDATE <= '{details.DistributionEnd:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string matstart = details.MaturityStart is not null
+                ? $"ENDMTYDATE >= '{details.MaturityStart:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string matend = details.MaturityEnd is not null
+                ? $"ENDMTYDATE <= '{details.MaturityEnd:dd.MM.yyyy}'"
+                : string.Empty;
+
+            string cur = details.Currency is not null
+                ? $"FACEFTNAME = '{details.Currency}'"
+            : string.Empty;
+
+            string country = details.Country is not null
+                ? $"ISSUERCOUNTRY = '{details.Country}'"
+                : string.Empty;
+
+            string sectors = string.Empty;
+            if (details.Sectors is not null)
+                if (details.Sectors.Length is 1) sectors = $"ISSUERSECTOR = '{details.Sectors[0]}'";
+                else sectors = $"ISSUERSECTOR in ('{string.Join("', '", details.Sectors)}')";
+            
+            
+
+
+            string[] clauses = new string[] { isin, sectype, country, status, diststart,
+                coupontype, distend, matstart, matend, sectors, cur };
+
+            return string.Join(" AND ", clauses.Where(str => !string.IsNullOrEmpty(str)));
         }
 
     }

@@ -39,7 +39,7 @@ namespace RuDataAPI.Extensions.Ratings
         public override string ToString()
         {
             string head = $"Aggregated rating for '{Issuer}':\n";
-            string values = $"National scale: {RatingRu.ToRatingString()}\nInternational scale: {RatingBig3.ToRatingString()}\n";
+            string values = $"National scale: {Rating.ConvertToString(RatingRu)}\nInternational scale: {Rating.ConvertToString(RatingBig3)}\n";
             string pd = $"Probability of default: {DefaultProbability:0.00%}\n";
             string lastRatingsHead = string.Empty;
             string rawratings = string.Empty;
@@ -59,7 +59,7 @@ namespace RuDataAPI.Extensions.Ratings
         public string ToShortStringBig3()
         {
             var bitRatings = GetRatingBits(RatingBig3);
-            var strings = bitRatings.Select(br => br.ToRatingString()).Where(s => s is not "NR");
+            var strings = bitRatings.Select(br => br.ToString()).Where(s => s is not "NR");
             return string.Join(", ", strings);
         }              
 
@@ -69,7 +69,7 @@ namespace RuDataAPI.Extensions.Ratings
         public string ToShortStringRu()
         {
             var bitRatings = GetRatingBits(RatingRu);
-            var strings = bitRatings.Select(br => br.ToRatingString()).Where(s => s is not "NR");
+            var strings = bitRatings.Select(br => br.ToString()).Where(s => s is not "NR");
             return string.Join(", ", strings);
         }
 

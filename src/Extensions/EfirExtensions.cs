@@ -1,5 +1,26 @@
-﻿using Efir.DataHub.Models.Models.RuData;
+﻿using Efir.DataHub.Models.Models.Bond;
+using Efir.DataHub.Models.Models.Info;
+using Efir.DataHub.Models.Models.RuData;
 using RuDataAPI.Extensions.Ratings;
+using System.Collections.Concurrent;
+
+
+// CreditRating -> CreditRatingAction
+// in this file rename methods:
+//      ExGetLastRatingsByInnAsync,  
+//      ExGetLastRatingsByIsinAsync
+//
+// update GetLastRatings method in RuDataTools:
+//      можно обойтись бес пересчета кол-ва ИНН
+//      и без первых 2 блоков кода
+//
+// подумать над тем нужно ли использовать params в методах
+// 
+// RuDataTools.GetLastRatings мб должен возвращать ienumerable?
+
+
+
+
 
 
 namespace RuDataAPI.Extensions
@@ -59,20 +80,34 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<CreditRating>> ExGetRatingHistoryAsync(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] inns)
+        public static async Task<IEnumerable<CreditRating>> ExGetRatingActionsByInns(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] inns)
         {
             var end = endDate is not null ? endDate.Value : DateTime.Now;
             var start = startDate is not null ? startDate.Value : end.AddDays(-365);
 
-            var historyRaw = await client.GetRatingHistoryAsync(start, end, inns);
+            var filter = RuDataTools.CreateRatingFilter(inns, "INN");
+            var historyRaw = await client.GetRatingHistoryAsync(start, end, filter);
             var missingInnCodes = inns.Except(historyRaw.Select(ratHist => ratHist.inn));
-            var retval = historyRaw.Select(r => r.ToCreditRaiting());
+            var retval = historyRaw.Select(r => r.ToCreditRating());
 
-            foreach (var inn in missingInnCodes)            
-                retval = retval.Concat(RuDataTools.CreateDefaultRatings(inn));
+            foreach (var inncode in missingInnCodes)            
+                retval = retval.Concat(RuDataTools.CreateDefaultRatings(inncode));
 
             return retval;
         }
+
+
+        public static async Task<IEnumerable<CreditRating>> ExGetRatingActionsByRatings(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] ratings)
+        {
+            var end = endDate is not null ? endDate.Value : DateTime.Now;
+            var start = startDate is not null ? startDate.Value : end.AddDays(-365);
+
+            var filter = RuDataTools.CreateRatingFilter(ratings, "LAST");
+            var historyRaw = await client.GetRatingHistoryAsync(start, end, filter);           
+
+            return historyRaw.Select(r => r.ToCreditRating()).Where(s => !string.IsNullOrEmpty(s.Inn));
+        }
+
 
 
         public static async Task<IEnumerable<CreditRating>> ExGetLastRatingsByInnAsync(this EfirClient client, DateTime? date = null, params string[] inns)
@@ -87,7 +122,7 @@ namespace RuDataAPI.Extensions
             // otherwise get data for missing inn codes from EFIR server
             var end = date is not null? date.Value : DateTime.Now;
             var start = date is not null ? date.Value.AddDays(-365) : DateTime.Now.AddDays(-365); 
-            var hist = await client.ExGetRatingHistoryAsync(start, end, missingInns);
+            var hist = await client.ExGetRatingActionsByInns(start, end, missingInns);
             var last = RuDataTools.GetLastRatings(hist);
 
             // add missing data to cache
@@ -113,7 +148,7 @@ namespace RuDataAPI.Extensions
             var end = date is not null ? date.Value : DateTime.Now;
             var start = date is not null ? date.Value.AddDays(-365) : DateTime.Now.AddDays(-365);
 
-            var hist = await client.ExGetRatingHistoryAsync(start, end, secinfo.issuerinn);
+            var hist = await client.ExGetRatingActionsByInns(start, end, secinfo.issuerinn);
             var histForIsin = hist.Any(r => r.Isin == isin)
                 ? hist.Where(r=> r.Isin == isin)
                 : hist;
@@ -122,6 +157,15 @@ namespace RuDataAPI.Extensions
             _ratings.Add(isin, last);
             _ratings.TryAdd(secinfo.issuerinn, last);
             return last;
+        }
+
+
+        public static async Task<IEnumerable<CreditRating>> ExGetLastRatingsActionsByRating(this EfirClient client, DateTime? date = null, params string[] ratings)
+        {
+            var end = date is not null ? date.Value : DateTime.Now;
+            var start = end.AddDays(-365);
+            var hist = await client.ExGetRatingActionsByRatings(start, end, ratings);
+            return RuDataTools.GetLastRatings(hist);
         }
 
 
@@ -211,8 +255,39 @@ namespace RuDataAPI.Extensions
             // create query string
             string querystr = query.ToString();
 
-            // get securities data that satisfies specified criteria
-            var secs = await client.FindSecuritiesAsync(querystr);
+            // construct string representation for ratings
+            string[] ratingStrings = Array.Empty<string>();
+            if (query.RuRatingLow != null || query.RuRatingHigh != null)
+            {
+                var range = Rating.GetRatingRange(query.RuRatingLow, query.RuRatingHigh);
+                ratingStrings = RuDataTools.GetRatingRangeStrings(range);
+            }
+            else if (query.Big3RatingLow != null || query.Big3RatingHigh != null)
+            {
+                var range = Rating.GetRatingRange(query.Big3RatingLow, query.Big3RatingHigh);
+                ratingStrings = RuDataTools.GetRatingRangeStrings(range);
+            }
+
+            // получаем все уникальные ИНН у которых хоть когда за последний год был рейтинг из массива ratingStrings
+            var ratings = await client.ExGetRatingActionsByRatings(null, null, ratingStrings);
+            var innCodesChunks = ratings.Select(ra => ra.Inn).Distinct().Chunk(100);
+            
+            var tasks = new List<Task<FintoolReferenceDataFields[]>>();
+            foreach (string[] chunk in innCodesChunks)
+            {
+                // по полученным ИНН выстаскиваем последние имеющиеся ретйинги на сегодня
+                ratings = await client.ExGetLastRatingsByInnAsync(null, chunk);
+                var innCodes = ratings.Select(r => r.Inn).Distinct();
+
+                string fullQueryString = querystr + $" AND ISSUERINN in ('{string.Join("', '", innCodes)}')";
+
+                // get securities data that satisfies specified criteria
+                var chunkTask = client.FindSecuritiesAsync(fullQueryString);
+                tasks.Add(chunkTask);
+            }
+
+            var secTasksResult = await Task.WhenAll(tasks);
+            var secs = secTasksResult.SelectMany(s => s);
 
             // extract ISIN codes from data received
             var isins = secs.Select(sec => sec.isincode).ToArray();
@@ -221,44 +296,40 @@ namespace RuDataAPI.Extensions
             var histTask = client.ExGetHistoryAsync(start, end, isins);
             var flowsTask = client.ExGetSecurityFlowsAsync(isins);
 
-            // extract INN codes while tasks running asynchronous 
-            var inns = secs.Select(sec => sec.issuerinn ?? sec.borrowerinn).Distinct().ToArray();
-
-            // waiting to get ratings data and tasks started befire
-            var ratings = await client.ExGetLastRatingsByInnAsync(null, inns);
+            // waiting for tasks started before
             var hist = await histTask;
             var flows = await flowsTask;
 
             // create buffer for resulting collection
-            var result = new List<InstrumentInfo>(secs.Length);
-            
+            var result = new List<InstrumentInfo>();
+
             // fill in the buffer 
-            for (int i = 0; i < secs.Length; i++)
+            foreach (var sec in secs)
             {
                 // filter isin-specific flows, hist and ratings
-                var secflows = flows.Where(f => f.Isin == secs[i].isincode).Any()
-                    ? flows.Where(f => f.Isin == secs[i].isincode)
+                var secflows = flows.Where(f => f.Isin == sec.isincode).Any()
+                    ? flows.Where(f => f.Isin == sec.isincode)
                     : null;
 
-                var sechist = hist.Where(h => h.Isin == secs[i].isincode).Any()
-                    ? hist.Where(h => h.Isin == secs[i].isincode)
+                var sechist = hist.Where(h => h.Isin == sec.isincode).Any()
+                    ? hist.Where(h => h.Isin == sec.isincode)
                     : null;
-                
-                var secratings = ratings.Where(r => r.Isin == secs[i].isincode).Any() 
-                    ? ratings.Where(r => r.Isin == secs[i].isincode) 
-                    : ratings.Where(r => r.Inn == secs[i].issuerinn);
+
+                var secratings = ratings.Where(r => r.Isin == sec.isincode).Any()
+                    ? ratings.Where(r => r.Isin == sec.isincode)
+                    : ratings.Where(r => r.Inn == sec.issuerinn);
 
                 // constructing InstrumentInfo instance
-                var sec = RuDataTools.CreateInstrumentInfo(secs[i], secflows, sechist, secratings);
+                var si = RuDataTools.CreateInstrumentInfo(sec, secflows, sechist, secratings);
 
                 // if rating boundaries do exist and are violated then go next
-                if (query.RuRatingLow != null && sec.RatingAggregated < query.RuRatingLow.Value) continue;
-                if (query.RuRatingHigh != null && sec.RatingAggregated > query.RuRatingHigh.Value) continue;
-                if (query.Big3RatingLow != null && sec.RatingAggregated < query.Big3RatingLow.Value) continue;
-                if (query.Big3RatingHigh != null && sec.RatingAggregated > query.Big3RatingHigh.Value) continue;
+                if (query.RuRatingLow != null && si.RatingAggregated < query.RuRatingLow.Value) continue;
+                if (query.RuRatingHigh != null && si.RatingAggregated > query.RuRatingHigh.Value) continue;
+                if (query.Big3RatingLow != null && si.RatingAggregated < query.Big3RatingLow.Value) continue;
+                if (query.Big3RatingHigh != null && si.RatingAggregated > query.Big3RatingHigh.Value) continue;
 
                 // otherwise add to result collection
-                result.Add(sec);
+                result.Add(si);
             }
 
             // cast to array and return
@@ -292,6 +363,11 @@ namespace RuDataAPI.Extensions
                 data = data.Concat(cache[key]);
             return data;
         }
+
+
+
+
+        
 
     }
 }

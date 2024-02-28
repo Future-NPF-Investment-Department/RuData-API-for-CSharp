@@ -55,11 +55,6 @@ namespace RuDataAPI.Extensions.Ratings
         public RatingAgency Agency { get; set; }
 
         /// <summary>
-        ///     Probability of default (PD) that corresponds to rating.
-        /// </summary>
-        public double DefaultProbability { get; set; }
-
-        /// <summary>
         ///     Name of issuer that is subject for credit rating action.
         /// </summary>
         public string IssuerName { get; set; } = string.Empty;

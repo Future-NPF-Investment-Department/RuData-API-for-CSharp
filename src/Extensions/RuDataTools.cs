@@ -57,17 +57,23 @@ namespace RuDataAPI.Extensions
             return string.Empty;
         }
 
-        
 
-        
 
-        
 
-        
 
-        
 
-        
+
+
+
+
+
+        public static string[] GetRatingRangeStrings(CreditRatingUS[] range)
+        {
+            List<string> ret = new();
+            foreach (var rating in range)
+                ret.AddRange(Rating.ExtractUnderlyingRatings(rating));
+            return ret.ToArray();
+        }
 
 
 
@@ -500,50 +506,7 @@ namespace RuDataAPI.Extensions
             return Math.Exp(gt / 10000) - 1;
         }
 
-        internal static string CreateQueryString(EfirSecQueryDetails details)
-        {
-            string status = "STATUS = 'В обращении'";
-            string coupontype = "COUPONTYPE in ('Постоянный', 'Переменный', 'Фиксированный')";
-            string sectype = "SECURITYTYPE = 'Корп'";
-            string isin = "ISINCODE IS NOT NULL";
-
-            string diststart = details.DistributionStart is not null
-                ? $"BEGDISTDATE >= '{details.DistributionStart:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string distend = details.DistributionEnd is not null
-                ? $"BEGDISTDATE <= '{details.DistributionEnd:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string matstart = details.MaturityStart is not null
-                ? $"ENDMTYDATE >= '{details.MaturityStart:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string matend = details.MaturityEnd is not null
-                ? $"ENDMTYDATE <= '{details.MaturityEnd:dd.MM.yyyy}'"
-                : string.Empty;
-
-            string cur = details.Currency is not null
-                ? $"FACEFTNAME = '{details.Currency}'"
-            : string.Empty;
-
-            string country = details.Country is not null
-                ? $"ISSUERCOUNTRY = '{details.Country}'"
-                : string.Empty;
-
-            string sectors = string.Empty;
-            if (details.Sectors is not null)
-                if (details.Sectors.Length is 1) sectors = $"ISSUERSECTOR = '{details.Sectors[0]}'";
-                else sectors = $"ISSUERSECTOR in ('{string.Join("', '", details.Sectors)}')";
-            
-            
-
-
-            string[] clauses = new string[] { isin, sectype, country, status, diststart,
-                coupontype, distend, matstart, matend, sectors, cur };
-
-            return string.Join(" AND ", clauses.Where(str => !string.IsNullOrEmpty(str)));
-        }
+        
 
     }
 }

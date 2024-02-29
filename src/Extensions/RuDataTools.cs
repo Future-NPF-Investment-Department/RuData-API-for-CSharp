@@ -102,18 +102,18 @@ namespace RuDataAPI.Extensions
         ///     Creates default ratings set for specified INN code. All ratings are NR.
         /// </summary>
         /// <param name="inn">INN code</param>
-        /// <returns>Array of <see cref="CreditRating"/>.</returns>
-        internal static CreditRating[] CreateDefaultRatings(string inn)
+        /// <returns>Array of <see cref="CreditRatingAction"/>.</returns>
+        internal static CreditRatingAction[] CreateDefaultRatings(string inn)
         {
-            return new CreditRating[7]
+            return new CreditRatingAction[7]
             {
-                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.FITCH    },
-                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.MOODYS   },
-                new CreditRating() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.SNP      },
-                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.AKRA     },
-                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.RAEX     },
-                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NKR      },
-                new CreditRating() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NRA      }
+                new CreditRatingAction() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.FITCH    },
+                new CreditRatingAction() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.MOODYS   },
+                new CreditRatingAction() { Scale = CreditRatingScale.International,   Inn = inn,   Agency = RatingAgency.SNP      },
+                new CreditRatingAction() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.AKRA     },
+                new CreditRatingAction() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.RAEX     },
+                new CreditRatingAction() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NKR      },
+                new CreditRatingAction() { Scale = CreditRatingScale.National,        Inn = inn,   Agency = RatingAgency.NRA      }
             };
         }
 
@@ -121,8 +121,8 @@ namespace RuDataAPI.Extensions
         ///     Selects last ratings for particular ratings history. 
         ///     This method support history for multiple INN codes.
         /// </summary>
-        /// <returns>Array of <see cref="CreditRating"/></returns>
-        internal static CreditRating[] GetLastRatings(IEnumerable<CreditRating> history)
+        /// <returns>Array of <see cref="CreditRatingAction"/></returns>
+        internal static CreditRatingAction[] GetLastRatings(IEnumerable<CreditRatingAction> history)
         {
             // count number of unique inn codes
             int uniqueInnCodesNumber = history.DistinctBy(r => r.Inn)
@@ -149,7 +149,7 @@ namespace RuDataAPI.Extensions
         /// <param name="ratings"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        internal static CreditRatingAggregated AggregateRatings(IEnumerable<CreditRating> ratings, RatingAggregationMethod method = default)
+        internal static CreditRatingAggregated AggregateRatings(IEnumerable<CreditRatingAction> ratings, RatingAggregationMethod method = default)
         {
             // ratings should be only for single INN-code.
             // ratings could be issuer-targeted or isin-targeted.
@@ -227,14 +227,14 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     Converts <see cref="RatingsHistoryFields"/> object to <see cref="CreditRating"/> object.
+        ///     Converts <see cref="RatingsHistoryFields"/> object to <see cref="CreditRatingAction"/> object.
         /// </summary>
-        internal static CreditRating ToCreditRating(this RatingsHistoryFields fields)
+        internal static CreditRatingAction ToCreditRating(this RatingsHistoryFields fields)
         {
             if (fields.last is null)
                 throw new EfirFieldNullValueException($"Raiting value is null. INN: {fields.inn}; Agency: {fields.rating_agency}");
 
-            var rating = new CreditRating
+            var rating = new CreditRatingAction
             {
                 Value = fields.last is "Снят" || fields.last is "Приостановлен" ? "NR" : fields.last,
                 Agency = MapToEnum<RatingAgency>(fields.rating_agency),
@@ -247,7 +247,7 @@ namespace RuDataAPI.Extensions
                 Object = MapToEnum<CreditRatingTarget>(fields.rating_object_type),
                 Scale = MapToEnum<CreditRatingScale>(fields.scale_type),
                 Currency = MapToEnum<CreditRatingCurrency>(fields.scale_cur),
-                Action = MapToEnum<CreditRatingAction>(fields.change),
+                Action = MapToEnum<RatingAction>(fields.change),
                 Outlook = MapToEnum<CreditRatingOutlook>(fields.forecast ?? string.Empty)
             };
             return rating;
@@ -366,7 +366,7 @@ namespace RuDataAPI.Extensions
         ///     Creates InstrumentInfo using FinToolRefData, flows, trade history and last ratings
         /// </summary>
         internal static InstrumentInfo CreateInstrumentInfo(FintoolReferenceDataFields secData, IEnumerable<InstrumentFlow>? flows, 
-            IEnumerable<InstrumentHistoryRecord>? history, IEnumerable<CreditRating>? ratings)
+            IEnumerable<InstrumentHistoryRecord>? history, IEnumerable<CreditRatingAction>? ratings)
         {
             InstrumentInfo sec = new()
             {

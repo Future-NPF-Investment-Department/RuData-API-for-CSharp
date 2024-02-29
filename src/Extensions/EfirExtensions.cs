@@ -35,7 +35,7 @@ namespace RuDataAPI.Extensions
     {
         #region Cache
         private static readonly Dictionary<DateTime, GCurveOFZResponse> _gcparams = new();
-        private static readonly Dictionary<string, CreditRating[]> _ratings = new();
+        private static readonly Dictionary<string, CreditRatingAction[]> _ratings = new();
         private static readonly Dictionary<string, InstrumentFlow[]> _flows = new();
         private static readonly Dictionary<string, InstrumentHistoryRecord[]> _hist = new();
         #endregion
@@ -83,7 +83,7 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<CreditRating>> ExGetRatingActionsByInns(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] inns)
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetRatingActionsByInns(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] inns)
         {
             var end = endDate is not null ? endDate.Value : DateTime.Now;
             var start = startDate is not null ? startDate.Value : end.AddDays(-365);
@@ -100,7 +100,7 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<CreditRating>> ExGetRatingActionsByRatings(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] ratings)
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetRatingActionsByRatings(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] ratings)
         {
             var end = endDate is not null ? endDate.Value : DateTime.Now;
             var start = startDate is not null ? startDate.Value : end.AddDays(-365);
@@ -113,7 +113,7 @@ namespace RuDataAPI.Extensions
 
 
 
-        public static async Task<IEnumerable<CreditRating>> ExGetLastRatingsByInnAsync(this EfirClient client, DateTime? date = null, params string[] inns)
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingsByInnAsync(this EfirClient client, DateTime? date = null, params string[] inns)
         {
             // check cache for previuosly added data 
             var (missingInns, foundRecords) = CheckCache(inns, _ratings);
@@ -138,12 +138,12 @@ namespace RuDataAPI.Extensions
         }        
 
 
-        public static async Task<CreditRating[]> ExGetLastRatingsByIsinAsync(this EfirClient client, string isin, DateTime? date = null)
+        public static async Task<CreditRatingAction[]> ExGetLastRatingsByIsinAsync(this EfirClient client, string isin, DateTime? date = null)
         {
             if (RuDataTools.IsIsinCode(isin) is false)
                 throw new Exception($"Not an ISIN: {isin}.");
 
-            if (_ratings.TryGetValue(isin, out CreditRating[]? value))
+            if (_ratings.TryGetValue(isin, out CreditRatingAction[]? value))
                 return value;
 
             var secinfo = await client.GetFinToolRefDataAsync(isin, RefDataCols.ALLCODES);
@@ -163,7 +163,7 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<CreditRating>> ExGetLastRatingsActionsByRating(this EfirClient client, DateTime? date = null, params string[] ratings)
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingsActionsByRating(this EfirClient client, DateTime? date = null, params string[] ratings)
         {
             var end = date is not null ? date.Value : DateTime.Now;
             var start = end.AddDays(-365);
@@ -274,7 +274,7 @@ namespace RuDataAPI.Extensions
             // получаем все уникальные ИНН у которых хоть когда за последний год был рейтинг из массива ratingStrings
             var ratings = await client.ExGetRatingActionsByRatings(null, null, ratingStrings);
             var innCodesChunks = ratings.Select(ra => ra.Inn).Distinct().Chunk(100);
-            var allRatings = Enumerable.Empty<CreditRating>();
+            var allRatings = Enumerable.Empty<CreditRatingAction>();
             
             var tasks = new List<Task<FintoolReferenceDataFields[]>>();
             foreach (string[] chunk in innCodesChunks)

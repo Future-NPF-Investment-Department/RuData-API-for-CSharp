@@ -17,6 +17,9 @@ using System.Collections.Concurrent;
 // подумать над тем нужно ли использовать params в методах
 // 
 // RuDataTools.GetLastRatings мб должен возвращать ienumerable?
+//
+// поменять CreditRatinAggregation - убрать бит маску
+//      и изменить метод ToString
 
 
 
@@ -271,13 +274,15 @@ namespace RuDataAPI.Extensions
             // получаем все уникальные ИНН у которых хоть когда за последний год был рейтинг из массива ratingStrings
             var ratings = await client.ExGetRatingActionsByRatings(null, null, ratingStrings);
             var innCodesChunks = ratings.Select(ra => ra.Inn).Distinct().Chunk(100);
+            var allRatings = Enumerable.Empty<CreditRating>();
             
             var tasks = new List<Task<FintoolReferenceDataFields[]>>();
             foreach (string[] chunk in innCodesChunks)
             {
                 // по полученным ИНН выстаскиваем последние имеющиеся ретйинги на сегодня
-                ratings = await client.ExGetLastRatingsByInnAsync(null, chunk);
-                var innCodes = ratings.Select(r => r.Inn).Distinct();
+                var chunkRatings = await client.ExGetLastRatingsByInnAsync(null, chunk);
+                allRatings = allRatings.Concat(chunkRatings);
+                var innCodes = chunkRatings.Select(r => r.Inn).Distinct();
 
                 string fullQueryString = querystr + $" AND ISSUERINN in ('{string.Join("', '", innCodes)}')";
 
@@ -315,9 +320,9 @@ namespace RuDataAPI.Extensions
                     ? hist.Where(h => h.Isin == sec.isincode)
                     : null;
 
-                var secratings = ratings.Where(r => r.Isin == sec.isincode).Any()
-                    ? ratings.Where(r => r.Isin == sec.isincode)
-                    : ratings.Where(r => r.Inn == sec.issuerinn);
+                var secratings = allRatings.Where(r => r.Isin == sec.isincode).Any()
+                    ? allRatings.Where(r => r.Isin == sec.isincode)
+                    : allRatings.Where(r => r.Inn == sec.issuerinn);
 
                 // constructing InstrumentInfo instance
                 var si = RuDataTools.CreateInstrumentInfo(sec, secflows, sechist, secratings);

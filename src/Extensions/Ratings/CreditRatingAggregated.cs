@@ -107,8 +107,7 @@ namespace RuDataAPI.Extensions.Ratings
                 ? allvals.Where(r => r != CreditRatingRU.NR).Min()
                 : default;
             return min > value;
-        }
-        
+        }        
 
         /// <summary>
         ///     Gets collection of bit flags from <see cref="CreditRatingUS"/> or <see cref="CreditRatingRU"/> enumerations.

@@ -5,11 +5,6 @@ using RuDataAPI.Extensions.Ratings;
 using System.Collections.Concurrent;
 
 
-// CreditRating -> CreditRatingAction
-// in this file rename methods:
-//      ExGetLastRatingsByInnAsync,  
-//      ExGetLastRatingsByIsinAsync
-//
 // update GetLastRatings method in RuDataTools:
 //      можно обойтись бес пересчета кол-ва ИНН
 //      и без первых 2 блоков кода
@@ -40,18 +35,20 @@ namespace RuDataAPI.Extensions
         private static readonly Dictionary<string, InstrumentHistoryRecord[]> _hist = new();
         #endregion
 
+
         /// <summary>
         ///     Calculates current MOEX G-Curve rate for specified tenor.
         /// </summary>
         /// <param name="tenor">MOEX yield curve tenor in years.</param>
         /// <remarks>
         ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
-        ///             MOEX G-Curve reference page</see>.    
+        ///     MOEX G-Curve reference page</see>.    
         /// </remarks>
-        public static async Task<double> ExCalculateGcurveForDateAsync(this EfirClient client, double tenor)
+        public static async Task<double> ExCalculateGcurveValues(this EfirClient client, double tenor)
         {
-            return await client.ExCalculateGcurveForDateAsync(DateTime.Now, tenor);
+            return await client.ExCalculateGcurveValues(DateTime.Now, tenor);
         }
+
 
         /// <summary>
         ///     Calculates MOEX G-Curve rate for specified tenor and date.
@@ -60,29 +57,40 @@ namespace RuDataAPI.Extensions
         /// <param name="tenor">MOEX yield curve tenor in years.</param>
         /// <remarks>
         ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
-        ///             MOEX G-Curve reference page</see>.    
+        ///     MOEX G-Curve reference page</see>.    
         /// </remarks>
-        public static async Task<double> ExCalculateGcurveForDateAsync(this EfirClient client, DateTime date, double tenor)
+        public static async Task<double> ExCalculateGcurveValues(this EfirClient client, DateTime date, double tenor)
         {
             // caching            
             if (_gcparams.ContainsKey(date) is false)
                 _gcparams.Add(date, await client.GetGcurveParametersAsync(date.Date));
 
-            return ExCalculateGcurveForDateAsync(_gcparams[date], tenor);
+            return ExCalculateGcurveValues(_gcparams[date], tenor);
         }
+
 
         /// <summary>
         ///     Calculates MOEX G-Curve rate for specified tenor and G-Curve parameters.
         /// </summary>
         /// <param name="gcparams">MOEX G-Curve parameters.</param>
         /// <param name="tenor">MOEX yield curve tenor in years.</param>
-        /// <returns></returns>
-        public static double ExCalculateGcurveForDateAsync(GCurveOFZResponse gcparams, double tenor)
+        /// <remarks>
+        ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
+        ///     MOEX G-Curve reference page</see>.    
+        /// </remarks>
+        public static double ExCalculateGcurveValues(GCurveOFZResponse gcparams, double tenor)
         {
             return RuDataTools.CalculateGCurveRateFromParams(gcparams, tenor);
         }
 
 
+        /// <summary>
+        ///     Extracts history of rating actions for specified collection of INN codes.
+        /// </summary>
+        /// <param name="startDate">Search period start date. If null, calculated as start date minus 365 days.</param>
+        /// <param name="endDate">Search period end date. If null, TODAY is used.</param>
+        /// <param name="inns">Collection of INN codes.</param>
+        /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
         public static async Task<IEnumerable<CreditRatingAction>> ExGetRatingActionsByInns(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] inns)
         {
             var end = endDate is not null ? endDate.Value : DateTime.Now;
@@ -100,6 +108,13 @@ namespace RuDataAPI.Extensions
         }
 
 
+        /// <summary>
+        ///     Extracts history of rating actions for specified collection of ratings. Ratings provided must be on one of the known scales. For example ruAAA, AAA(RU), AAA.ru, AAA|ru|.
+        /// </summary>
+        /// <param name="startDate">Search period start date. If null, calculated as start date minus 365 days.</param>
+        /// <param name="endDate">Search period end date. If null, TODAY is used.</param>
+        /// <param name="ratings">Collection of ratings in string format.</param>
+        /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
         public static async Task<IEnumerable<CreditRatingAction>> ExGetRatingActionsByRatings(this EfirClient client, DateTime? startDate = null, DateTime? endDate = null, params string[] ratings)
         {
             var end = endDate is not null ? endDate.Value : DateTime.Now;
@@ -112,8 +127,13 @@ namespace RuDataAPI.Extensions
         }
 
 
-
-        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingsByInnAsync(this EfirClient client, DateTime? date = null, params string[] inns)
+        /// <summary>
+        ///     Extracts last known rating actions for specified collection of INN codes.
+        /// </summary>
+        /// <param name="date">Date as of which the latest known rating actions are searched.</param>
+        /// <param name="inns">Collection of INN codes.</param>
+        /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingActionsByInn(this EfirClient client, DateTime? date = null, params string[] inns)
         {
             // check cache for previuosly added data 
             var (missingInns, foundRecords) = CheckCache(inns, _ratings);
@@ -135,10 +155,17 @@ namespace RuDataAPI.Extensions
 
             // return data from cache
             return GetFromCache(inns, _ratings);
-        }        
+        }
 
 
-        public static async Task<CreditRatingAction[]> ExGetLastRatingsByIsinAsync(this EfirClient client, string isin, DateTime? date = null)
+        /// <summary>
+        ///     Extracts last known rating actions for specified ISIN-code.
+        /// </summary>
+        /// <param name="date">Date as of which the latest known rating actions are searched.</param>
+        /// <param name="isin">Security ISIN-code.</param>
+        /// <param name="date">Date as of which the latest known rating actions are searched.</param>
+        /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
+        public static async Task<CreditRatingAction[]> ExGetLastRatingActionsByIsin(this EfirClient client, string isin, DateTime? date = null)
         {
             if (RuDataTools.IsIsinCode(isin) is false)
                 throw new Exception($"Not an ISIN: {isin}.");
@@ -163,7 +190,13 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingsActionsByRating(this EfirClient client, DateTime? date = null, params string[] ratings)
+        /// <summary>
+        ///     Extracts last known rating actions for specified collection of ratings. Ratings provided must be on one of the known scales. For example ruAAA, AAA(RU), AAA.ru, AAA|ru|.
+        /// </summary>
+        /// <param name="date">Date as of which the latest known rating actions are searched.</param>
+        /// <param name="ratings">Collection of ratings in string format.</param>
+        /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
+        public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingActionsByRatings(this EfirClient client, DateTime? date = null, params string[] ratings)
         {
             var end = date is not null ? date.Value : DateTime.Now;
             var start = end.AddDays(-365);
@@ -172,7 +205,14 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<InstrumentHistoryRecord>> ExGetHistoryAsync(this EfirClient client, DateTime startDate, DateTime endDate, params string[] isins)
+        /// <summary>
+        ///     Exctract history of trade history for specified collection of ISIN-codes.
+        /// </summary>
+        /// <param name="startDate">Trade history search start date.</param>
+        /// <param name="endDate">Trade history search end date</param>
+        /// <param name="isins">Collection of ISIN-codes.</param>
+        /// <returns>Collection of <see cref="InstrumentHistoryRecord"/>.</returns>
+        public static async Task<IEnumerable<InstrumentHistoryRecord>> ExGetTradeHistory(this EfirClient client, DateTime startDate, DateTime endDate, params string[] isins)
         {
             // all values from input are assumed to be good ISIN codes.
             // check for bad ISIN-codes is not performed here.
@@ -200,7 +240,12 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<IEnumerable<InstrumentFlow>> ExGetSecurityFlowsAsync(this EfirClient client, params string[] isins)
+        /// <summary>
+        ///     Exctract flows for specified collection of ISIN-codes.
+        /// </summary>
+        /// <param name="isins">Collection of ISIN-codes.</param>
+        /// <returns>Collection of <see cref="InstrumentFlow"/>.</returns>
+        public static async Task<IEnumerable<InstrumentFlow>> ExGetInstrumentFlows(this EfirClient client, params string[] isins)
         {
             // all values from input are assumed to be good ISIN codes.
             // check for bad ISIN-codes is not performed here.
@@ -227,7 +272,13 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<InstrumentInfo> ExGetInstrumentInfoAsync(this EfirClient client, string isin)
+        /// <summary>
+        ///     Exctracts all info for specified INN-code, including main parameters, flows, trade history and last rating actions.
+        /// </summary>
+        /// <param name="isin">ISIN-code.</param>
+        /// <returns><see cref="InstrumentInfo"/> instance.</returns>
+        /// <exception cref="Exception">is thrown if bad ISIN code provided.</exception>
+        public static async Task<InstrumentInfo> ExGetInstrumentInfo(this EfirClient client, string isin)
         {
             if (!RuDataTools.IsIsinCode(isin))
                 throw new Exception($"Not an ISIN: {isin}.");
@@ -236,12 +287,12 @@ namespace RuDataAPI.Extensions
             var start = end.AddDays(-30);
             
             var secTask = client.GetFinToolRefDataAsync(isin);
-            var histTask = client.ExGetHistoryAsync(start, end, isin);
-            var flowsTask = client.ExGetSecurityFlowsAsync(isin);
+            var histTask = client.ExGetTradeHistory(start, end, isin);
+            var flowsTask = client.ExGetInstrumentFlows(isin);
 
 
             var sec = await secTask;
-            var ratings = await client.ExGetLastRatingsByInnAsync(null, sec.issuerinn);
+            var ratings = await client.ExGetLastRatingActionsByInn(null, sec.issuerinn);
             var flows = await flowsTask;
             var hist = await histTask;
 
@@ -249,7 +300,12 @@ namespace RuDataAPI.Extensions
         }
 
 
-        public static async Task<InstrumentInfo[]> ExGetBondsAlike(this EfirClient client, EfirSecQueryDetails query)
+        /// <summary>
+        ///     Search bond analogs by criteria provided. 
+        /// </summary>
+        /// <param name="query">Search criteria info.</param>
+        /// <returns>Collection of <see cref="InstrumentInfo"/>.</returns>
+        public static async Task<InstrumentInfo[]> ExSearchBonds(this EfirClient client, EfirSecQueryDetails query)
         {
             // define time period for history 
             var end = DateTime.Now.Date.AddDays(-1);
@@ -280,7 +336,7 @@ namespace RuDataAPI.Extensions
             foreach (string[] chunk in innCodesChunks)
             {
                 // по полученным ИНН выстаскиваем последние имеющиеся ретйинги на сегодня
-                var chunkRatings = await client.ExGetLastRatingsByInnAsync(null, chunk);
+                var chunkRatings = await client.ExGetLastRatingActionsByInn(null, chunk);
                 allRatings = allRatings.Concat(chunkRatings);
                 var innCodes = chunkRatings.Select(r => r.Inn).Distinct();
 
@@ -298,8 +354,8 @@ namespace RuDataAPI.Extensions
             var isins = secs.Select(sec => sec.isincode).ToArray();
 
             // start tasks to get history records and flows for extracted ISIN codes
-            var histTask = client.ExGetHistoryAsync(start, end, isins);
-            var flowsTask = client.ExGetSecurityFlowsAsync(isins);
+            var histTask = client.ExGetTradeHistory(start, end, isins);
+            var flowsTask = client.ExGetInstrumentFlows(isins);
 
             // waiting for tasks started before
             var hist = await histTask;
@@ -341,6 +397,13 @@ namespace RuDataAPI.Extensions
             return result.ToArray();
         }
 
+
+        /// <summary>
+        ///     Checks specified cache for data.
+        /// </summary>
+        /// <param name="keys">Collection of keys.</param>
+        /// <param name="cache">Cache dictionary.</param>
+        /// <returns>Tuple of keys not found and collection of found records.</returns>
         private static (string[] MissingKeys, IEnumerable<TCache> FoundRecords) CheckCache<TCache>(string[] keys, Dictionary<string, TCache[]> cache)  
         {
             var retval = Enumerable.Empty<TCache>();
@@ -361,6 +424,13 @@ namespace RuDataAPI.Extensions
         }
 
 
+        /// <summary>
+        ///     Gets data from cache.
+        /// </summary>
+        /// <typeparam name="TData">Cache data type.</typeparam>
+        /// <param name="keys">Collection of keys.</param>
+        /// <param name="cache">Cache dictionary.</param>
+        /// <returns>Collection of data records.</returns>
         private static IEnumerable<TData> GetFromCache<TData>(string[] keys, Dictionary<string, TData[]> cache)
         {
             var data = Enumerable.Empty<TData>();
@@ -368,11 +438,5 @@ namespace RuDataAPI.Extensions
                 data = data.Concat(cache[key]);
             return data;
         }
-
-
-
-
-        
-
     }
 }

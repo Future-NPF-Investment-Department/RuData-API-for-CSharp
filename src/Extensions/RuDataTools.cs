@@ -267,7 +267,7 @@ namespace RuDataAPI.Extensions
                 Open = fields.open is null ? default : (double)fields.open,
                 High = fields.high is null ? default : (double)fields.high,
                 Low = fields.low is null ? default : (double)fields.low,
-                Close = fields.close is null ? default : (double)fields.close,
+                Close = fields.last is null ? default : (double)fields.last,
                 Volume = fields.val_acc is null ? default : (double)fields.val_acc,
                 FaceValue = fields.facevalue is null ? default : (double)fields.facevalue,
                 Isin = fields.isin is null ? string.Empty : fields.isin,

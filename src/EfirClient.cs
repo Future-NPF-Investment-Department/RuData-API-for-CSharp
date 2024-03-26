@@ -361,7 +361,7 @@ namespace RuDataAPI
                     Codes = chunk,
                     DateFrom = start,
                     DateTo = end,
-                    Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", 
+                    Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", "lclose",
                                      "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid" },
                     UseDefaultTradeSite = true,
                     //BoardIds = new[] { "last", "open", "high", "low", "facevalue", "val_acc",

@@ -29,59 +29,21 @@ namespace RuDataAPI.Extensions
     public static class EfirExtensions
     {
         #region Cache
-        private static readonly Dictionary<DateTime, GCurveOFZResponse> _gcparams = new();
         private static readonly Dictionary<string, CreditRatingAction[]> _ratings = new();
         private static readonly Dictionary<string, InstrumentFlow[]> _flows = new();
         private static readonly Dictionary<string, InstrumentHistoryRecord[]> _hist = new();
         #endregion
 
-
         /// <summary>
-        ///     Calculates current MOEX G-Curve rate for specified tenor.
+        ///     Extracts G-Curve for specified date.
         /// </summary>
-        /// <param name="tenor">MOEX yield curve tenor in years.</param>
-        /// <remarks>
-        ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
-        ///     MOEX G-Curve reference page</see>.    
-        /// </remarks>
-        public static async Task<double> ExCalculateGcurveValues(this EfirClient client, double tenor)
+        /// <param name="date">G-Curve date.</param>
+        /// <param name="provider">G-Curve provider.</param>
+        public static async Task<YieldCurve> GetGCurve(this EfirClient client, DateTime date, CurveProvider provider) => provider switch
         {
-            return await client.ExCalculateGcurveValues(DateTime.Now, tenor);
-        }
-
-
-        /// <summary>
-        ///     Calculates MOEX G-Curve rate for specified tenor and date.
-        /// </summary>
-        /// <param name="date">date of MOEX yield curve.</param>
-        /// <param name="tenor">MOEX yield curve tenor in years.</param>
-        /// <remarks>
-        ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
-        ///     MOEX G-Curve reference page</see>.    
-        /// </remarks>
-        public static async Task<double> ExCalculateGcurveValues(this EfirClient client, DateTime date, double tenor)
-        {
-            // caching            
-            if (_gcparams.ContainsKey(date) is false)
-                _gcparams.Add(date, await client.GetGcurveParametersAsync(date.Date));
-
-            return ExCalculateGcurveValues(_gcparams[date], tenor);
-        }
-
-
-        /// <summary>
-        ///     Calculates MOEX G-Curve rate for specified tenor and G-Curve parameters.
-        /// </summary>
-        /// <param name="gcparams">MOEX G-Curve parameters.</param>
-        /// <param name="tenor">MOEX yield curve tenor in years.</param>
-        /// <remarks>
-        ///     For more details about GCurve construction methodology see <see href="https://www.moex.com/s2532">
-        ///     MOEX G-Curve reference page</see>.    
-        /// </remarks>
-        public static double ExCalculateGcurveValues(GCurveOFZResponse gcparams, double tenor)
-        {
-            return RuDataTools.CalculateGCurveRateFromParams(gcparams, tenor);
-        }
+            CurveProvider.MOEX => (await client.GetGcurveParametersAsync(date)).ToYieldCurve(date),
+            _ => new YieldCurve()
+        };      
 
 
         /// <summary>

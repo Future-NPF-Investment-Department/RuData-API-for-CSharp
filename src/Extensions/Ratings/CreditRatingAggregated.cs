@@ -59,7 +59,7 @@ namespace RuDataAPI.Extensions.Ratings
         public string ToShortStringBig3()
         {
             var bitRatings = GetRatingBits(RatingBig3);
-            var strings = bitRatings.Select(br => br.ToString()).Where(s => s is not "NR");
+            var strings = bitRatings.Select(Rating.ConvertToString).Where(s => s is not "NR");
             return string.Join(", ", strings);
         }              
 
@@ -69,7 +69,7 @@ namespace RuDataAPI.Extensions.Ratings
         public string ToShortStringRu()
         {
             var bitRatings = GetRatingBits(RatingRu);
-            var strings = bitRatings.Select(br => br.ToString()).Where(s => s is not "NR");
+            var strings = bitRatings.Select(Rating.ConvertToString).Where(s => s is not "NR");
             return string.Join(", ", strings);
         }
 

@@ -38,6 +38,11 @@
         public double FaceValue { get; set; }
 
         /// <summary>
+        ///     Bonds accrued coupon interest.
+        /// </summary>
+        public double AccruedInterest { get; set; }
+
+        /// <summary>
         ///     ISIN-code.
         /// </summary>
         public string Isin { get; set; } = string.Empty;

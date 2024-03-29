@@ -362,7 +362,7 @@ namespace RuDataAPI
                     DateFrom = start,
                     DateTo = end,
                     Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", "lclose",
-                                     "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid" },
+                                     "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid", "accruedint" },
                     UseDefaultTradeSite = true,
                     //BoardIds = new[] { "last", "open", "high", "low", "facevalue", "val_acc",
                     //                 "mcap", "isin", "time", "exch", "deal_acc", "counter" },

@@ -270,6 +270,7 @@ namespace RuDataAPI.Extensions
                 Close = fields.last is null ? default : (double)fields.last,
                 Volume = fields.val_acc is null ? default : (double)fields.val_acc,
                 FaceValue = fields.facevalue is null ? default : (double)fields.facevalue,
+                AccruedInterest = fields.accruedint is null ? default : (double)fields.accruedint,
                 Isin = fields.isin is null ? string.Empty : fields.isin,
                 ExchangeName = fields.exch is null? string.Empty : fields.exch
             };

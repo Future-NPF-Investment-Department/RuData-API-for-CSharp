@@ -391,7 +391,8 @@ namespace RuDataAPI.Extensions
                 MarketVolume = secData.summarketval is not null ? (double)secData.summarketval : default,
                 IssuerSector = MapToEnum<IssuerSector>(secData.issuersector),
                 BorrowerSector = MapToEnum<IssuerSector>(secData.borrowersector),
-                FaceValue = secData.currentfacevalue_nrd is not null ? (double)secData.currentfacevalue_nrd : default,
+                CurrentFaceValue = secData.currentfacevalue_nrd is not null ? (double)secData.currentfacevalue_nrd : default,
+                InitialFaceValue = secData.facevalue is not null ? (double)secData.facevalue : default,
                 GuaranteedValue = secData.guarantval is not null ? (double)secData.guarantval : default                
             };
 

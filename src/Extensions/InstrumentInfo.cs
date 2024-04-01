@@ -65,12 +65,17 @@ namespace RuDataAPI.Extensions
         ///     Security currency
         /// </summary>
         public string Currency { get; set; } = string.Empty;
-        
+
         /// <summary>
-        ///     Security notional.
+        ///     Current notional of security.
         /// </summary>
-        public double FaceValue { get; set; }
-        
+        public double CurrentFaceValue { get; set; }
+
+        /// <summary>
+        ///     Initial notional of security.
+        /// </summary>
+        public double InitialFaceValue { get; set; }
+
         /// <summary>
         ///     Floating reference rate used in coupon rate.
         /// </summary>
@@ -164,7 +169,7 @@ namespace RuDataAPI.Extensions
             string header = $"Instrument:\t" + name + $" ({isin} {moexid} {ifxid})" + LF;
             string status = $"Status:\t\t{Status}" + LF;
             string flags = $"Flags:\t\t{Flags}" + LF;
-            string faceVal = "Face:\t\t" + $"{Currency} {FaceValue:n}" + LF;
+            string faceVal = "Face:\t\t" + $"{Currency} {CurrentFaceValue:n}" + LF;
             string mktvol = "Mkt. Vol.:\t" + $"{Currency} {MarketVolume:n}" + LF;
             string guarnty = GuaranteedValue is not 0 ? "Guaranty:" + $"{GuaranteedValue:n}" + LF : string.Empty;
 

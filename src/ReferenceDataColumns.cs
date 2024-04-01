@@ -41,6 +41,7 @@
         ISGUARANTEED          = 1 << 29,      // Признак наличия по выпуску гарантии (1-да)
         GUARANTVAL            = 1 << 30,      // Гарантированная сумма
         BORROWERNAME          = 1 << 31,      // Название реального заемщика (эмитента) облигаций
-        BORROWERSECTOR        = 1 << 32,
+        BORROWERSECTOR        = (long)1 << 32,
+        FACEVALUE             = (long)1 << 33,
     }
 }

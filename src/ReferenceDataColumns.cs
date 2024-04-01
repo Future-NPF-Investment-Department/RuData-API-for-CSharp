@@ -6,7 +6,7 @@
     [Flags]
     public enum RefDataCols : long
     {
-        ALL                   = 0x1FFFFFFFF,  // ВСЕ ПОЛЯ
+        ALL                   = 0x3FFFFFFFF,  // ВСЕ ПОЛЯ
         ALLCODES              = 0x1F,         // ВСЕ КОДЫ (FINTOOLID, ISINCODE, MOEX_CODE, ISSUERINN, BORROWERINN)
 
         FINTOOLID             = 1 << 0,       // Идентификатор финансового инструмента в базе Интерфакс

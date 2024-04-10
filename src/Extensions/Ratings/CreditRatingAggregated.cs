@@ -8,7 +8,7 @@ namespace RuDataAPI.Extensions.Ratings
     {
         public static readonly CreditRatingAggregated Default = new();
 
-        private CreditRatingAggregated() { }
+        internal CreditRatingAggregated() { }
 
         /// <summary>
         ///     Creates aggregated rating based on generic US credit rating.

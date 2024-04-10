@@ -5,7 +5,7 @@ namespace RuDataAPI.Extensions
     /// <summary>
     ///     Represents instrument particular flow.
     /// </summary>
-    public class InstrumentFlow
+    public class InstrumentFlow : ICloneable
     {
         /// <summary>
         ///     Security ISIN-code.
@@ -41,5 +41,9 @@ namespace RuDataAPI.Extensions
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)
         /// </summary>
         public FlowType PaymentType { get; set; }
+
+        public object Clone()
+            => MemberwiseClone();
+        
     }
 }

@@ -21,6 +21,16 @@ namespace RuDataAPI.Extensions.Ratings
         }
 
         /// <summary>
+        ///     Creates aggregated rating based on generic US credit ratings.
+        /// </summary>
+        /// <param name="rating">RU rating value.</param>
+        public CreditRatingAggregated(CreditRatingUS[] ratings)
+        {
+            RatingBig3 = ratings.Aggregate((r1, r2) => r1 | r2);
+            DefaultProbability = Rating.GetDefaultProbality(RatingRu);
+        }
+
+        /// <summary>
         ///     Creates aggregated rating based on generic RU credit rating.
         /// </summary>
         /// <param name="rating">RU rating value.</param>
@@ -28,6 +38,16 @@ namespace RuDataAPI.Extensions.Ratings
         {
             RatingRu = rating;
             DefaultProbability = Rating.GetDefaultProbality(rating);
+        }
+
+        /// <summary>
+        ///     Creates aggregated rating based on generic RU credit ratings.
+        /// </summary>
+        /// <param name="rating">RU rating value.</param>
+        public CreditRatingAggregated(CreditRatingRU[] ratings)
+        {
+            RatingRu = ratings.Aggregate((r1, r2) => r1 | r2);
+            DefaultProbability = Rating.GetDefaultProbality(RatingRu);
         }
         
 

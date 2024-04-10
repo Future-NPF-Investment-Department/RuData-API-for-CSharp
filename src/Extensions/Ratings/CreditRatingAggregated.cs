@@ -8,6 +8,29 @@ namespace RuDataAPI.Extensions.Ratings
     {
         public static readonly CreditRatingAggregated Default = new();
 
+        private CreditRatingAggregated() { }
+
+        /// <summary>
+        ///     Creates aggregated rating based on generic US credit rating.
+        /// </summary>
+        /// <param name="rating">US rating value.</param>
+        public CreditRatingAggregated(CreditRatingUS rating)
+        {
+            RatingBig3 = rating;
+            DefaultProbability = Rating.GetDefaultProbality(rating);
+        }
+
+        /// <summary>
+        ///     Creates aggregated rating based on generic RU credit rating.
+        /// </summary>
+        /// <param name="rating">RU rating value.</param>
+        public CreditRatingAggregated(CreditRatingRU rating)
+        {
+            RatingRu = rating;
+            DefaultProbability = Rating.GetDefaultProbality(rating);
+        }
+        
+
         /// <summary>
         ///     Name of issuer that is subject for credit rating action.
         /// </summary>

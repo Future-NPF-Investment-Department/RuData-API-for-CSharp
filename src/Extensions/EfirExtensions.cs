@@ -32,6 +32,7 @@ namespace RuDataAPI.Extensions
         private static readonly Dictionary<string, CreditRatingAction[]> _ratings = new();
         private static readonly Dictionary<string, InstrumentFlow[]> _flows = new();
         private static readonly Dictionary<string, InstrumentHistoryRecord[]> _hist = new();
+        private static readonly ConcurrentDictionary<Calendar, HolidaysFields[]> _holidays = new();
         #endregion
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace RuDataAPI.Extensions
         {
             CurveProvider.MOEX => (await client.GetGcurveParametersAsync(date)).ToYieldCurve(date),
             _ => new YieldCurve()
-        };      
+        };
 
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace RuDataAPI.Extensions
             var missingInnCodes = inns.Except(historyRaw.Select(ratHist => ratHist.inn));
             var retval = historyRaw.Select(r => r.ToCreditRating());
 
-            foreach (var inncode in missingInnCodes)            
+            foreach (var inncode in missingInnCodes)
                 retval = retval.Concat(RuDataTools.CreateDefaultRatings(inncode));
 
             return retval;
@@ -83,7 +84,7 @@ namespace RuDataAPI.Extensions
             var start = startDate is not null ? startDate.Value : end.AddDays(-365);
 
             var filter = RuDataTools.CreateRatingFilter(ratings, "LAST");
-            var historyRaw = await client.GetRatingHistoryAsync(start, end, filter);           
+            var historyRaw = await client.GetRatingHistoryAsync(start, end, filter);
 
             return historyRaw.Select(r => r.ToCreditRating()).Where(s => !string.IsNullOrEmpty(s.Inn));
         }
@@ -101,18 +102,18 @@ namespace RuDataAPI.Extensions
             var (missingInns, foundRecords) = CheckCache(inns, _ratings);
 
             // if no missing inn codes then return data from cache
-            if (missingInns.Length is 0) 
+            if (missingInns.Length is 0)
                 return foundRecords;
 
             // otherwise get data for missing inn codes from EFIR server
-            var end = date is not null? date.Value : DateTime.Now;
-            var start = date is not null ? date.Value.AddDays(-365) : DateTime.Now.AddDays(-365); 
+            var end = date is not null ? date.Value : DateTime.Now;
+            var start = date is not null ? date.Value.AddDays(-365) : DateTime.Now.AddDays(-365);
             var hist = await client.ExGetRatingActionsByInns(start, end, missingInns);
             var last = RuDataTools.GetLastRatings(hist);
 
             // add missing data to cache
             var chunks = last.GroupBy(r => r.Inn);
-            foreach (var chunk in chunks)            
+            foreach (var chunk in chunks)
                 _ratings.TryAdd(chunk.Key, chunk.ToArray());
 
             // return data from cache
@@ -142,7 +143,7 @@ namespace RuDataAPI.Extensions
 
             var hist = await client.ExGetRatingActionsByInns(start, end, secinfo.issuerinn);
             var histForIsin = hist.Any(r => r.Isin == isin)
-                ? hist.Where(r=> r.Isin == isin)
+                ? hist.Where(r => r.Isin == isin)
                 : hist;
 
             var last = RuDataTools.GetLastRatings(histForIsin);
@@ -247,7 +248,7 @@ namespace RuDataAPI.Extensions
 
             var end = DateTime.Now.Date.AddDays(-1);
             var start = end.AddDays(-30);
-            
+
             var secTask = client.GetFinToolRefDataAsync(isin);
             var histTask = client.ExGetTradeHistory(start, end, isin);
             var flowsTask = client.ExGetInstrumentFlows(isin);
@@ -261,6 +262,20 @@ namespace RuDataAPI.Extensions
             return RuDataTools.CreateInstrumentInfo(sec, flows, hist, ratings);
         }
 
+
+        public static async Task<HolidaysFields[]> ExGetHolidays(this EfirClient client, Calendar cdr = Calendar.RU)
+        {
+            if (_holidays.TryGetValue(cdr, out var holidays))
+                return holidays;
+
+            int year = DateTime.Now.Year;
+            DateTime start = new(year - 1, 12, 20);
+            DateTime end = new(year, 12, 31);
+
+            holidays = await client.GetHolidaysAsync(start, end, cdr);
+            _holidays.TryAdd(cdr, holidays);
+            return holidays;
+        }
 
         /// <summary>
         ///     Search bond analogs by criteria provided. 

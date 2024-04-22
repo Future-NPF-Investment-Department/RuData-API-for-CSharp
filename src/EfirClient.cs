@@ -109,14 +109,11 @@ namespace RuDataAPI
         /// </remarks>
         /// <param name="year">Year for which list of holidays is returned.</param>
         /// <returns>Array of <see cref="HolidaysFields"/>.</returns>
-        public async Task<HolidaysFields[]> GetHolidaysAsync(int? year = null)
+        public async Task<HolidaysFields[]> GetHolidaysAsync(DateTime start, DateTime end, Calendar cdr)
         {
-            var start = year is not null ? new DateTime(year.Value, 1, 1) : new DateTime(DateTime.Now.Year, 1, 1);
-            var end = year is not null ? new DateTime(year.Value, 12, 31) : new DateTime(DateTime.Now.Year, 12, 31);
-
             var query = new HolidaysRequest
             {
-                CountryId = 262, // RU code
+                CountryId = (int)cdr,
                 BeginDate = start,
                 EndDate = end,
                 CalendarTypeId = CalendarTypes.Country

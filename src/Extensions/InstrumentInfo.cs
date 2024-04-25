@@ -243,7 +243,7 @@ namespace RuDataAPI.Extensions
             {
                 flowsInfo = $"{UNDSCR}FLOWS{RST}:" + LF;
                 foreach (var flow in Flows)                
-                    flowsInfo += $"{ACNT}{flow.PaymentType}{RST}|{flow.EndDate.ToShortDateString()}|{flow.Rate}%|{flow.Payment}" + LF;
+                    flowsInfo += $"{ACNT}{flow.PaymentType}{RST}|{flow.EndDate.ToShortDateString()}|{flow.Rate}%|{flow.Payment}|{flow.PeriodLength}" + LF;
                 flowsInfo += LF;
             }
 

@@ -25,7 +25,7 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Length of coupon period (for CPN events) or length of bond lifetime (for MTY events) in days.
         /// </summary>        
-        public int PeriodLength { get; set; }
+        public Tenor PeriodLength { get; set; }
 
         /// <summary>
         ///     Annual interest rate established for the coupon period.

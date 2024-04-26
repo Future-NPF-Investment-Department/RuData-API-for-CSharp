@@ -211,7 +211,11 @@ namespace RuDataAPI.Extensions
                 throw new Exception("Negative tenors not allowed.");
             return new(days);
         }
-        
 
+        public static bool operator ==(Tenor t1, Tenor t2)
+            => t1.Days == t1.Days;        
+
+        public static bool operator !=(Tenor t1, Tenor t2)
+            => t1.Days != t1.Days;
     }
 }

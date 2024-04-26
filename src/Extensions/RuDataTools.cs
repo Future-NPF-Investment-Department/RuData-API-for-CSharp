@@ -219,7 +219,7 @@ namespace RuDataAPI.Extensions
                 StartDate       = fields.BeginEventPer ?? default,
                 EndDate         = fields.EventDate ?? default,
                 PeriodLength    = fields.EventPeriod is not null ? (int)fields.EventPeriod! : 0,
-                Rate            = fields.Value is not null ? (double)fields.Value : .0,
+                Rate            = fields.Value is not null ? (double)fields.Value/100.0 : .0,
                 Payment         = fields.Pay1Bond is not null ? (double)fields.Pay1Bond : .0,
                 PaymentType     = MapToEnum<FlowType>(fields.TypeOperation)
             };

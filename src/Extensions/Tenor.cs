@@ -213,9 +213,9 @@ namespace RuDataAPI.Extensions
         }
 
         public static bool operator ==(Tenor t1, Tenor t2)
-            => t1.Days == t1.Days;        
+            => t1.Days == t2.Days;        
 
         public static bool operator !=(Tenor t1, Tenor t2)
-            => t1.Days != t1.Days;
+            => t1.Days != t2.Days;
     }
 }

@@ -38,7 +38,7 @@ namespace RuDataAPI.Extensions
         public Tenor(params (TenorBase, int)[] components)
         {
             foreach (var (baseUnit, count) in components)
-                _cmp[baseUnit] = count;
+                _cmp[baseUnit] += count;
             Rearrange();
             _days = GetNumberOfDays();
         }
@@ -72,7 +72,7 @@ namespace RuDataAPI.Extensions
                 char upper = char.ToUpper(c);
                 if (bases.Contains(upper))
                 {
-                    int len = s.IndexOf(c);
+                    int len = s.IndexOf(c, i);
                     int n = 1;
                     if (len > 0)
                     {
@@ -88,12 +88,11 @@ namespace RuDataAPI.Extensions
                 }
             }
 
-            if (components.Count == 0 && int.TryParse(s, provider, out int days))
-            {
+            if (components.Count == 0 && int.TryParse(s, provider, out int days))            
                 components.Add((D, days));
-                return new Tenor(components.ToArray());
-            }
-            throw new Exception($"Wrong tenor format {s}");
+            
+            return new Tenor(components.ToArray());
+            //throw new Exception($"Wrong tenor format {s}");
         }
 
         public static bool TryParse(string? s, IFormatProvider? provider, out Tenor result)

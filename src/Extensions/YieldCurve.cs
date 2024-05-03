@@ -2,7 +2,7 @@
 namespace RuDataAPI.Extensions
 {
     /// <summary>
-    ///     Represents yield curve 
+    ///     Represents yield curve. 
     /// </summary>
     public readonly struct YieldCurve
     {
@@ -24,11 +24,31 @@ namespace RuDataAPI.Extensions
         public double G8 { get; init; }
         public double G9 { get; init; }
 
+        /// <summary>
+        ///     Calculates curve value for specified tenor.
+        /// </summary>
+        /// <param name="tenor">Time tenor</param>
         public double GetValueForTenor(Tenor tenor) => Provider switch
         {
             CurveProvider.MOEX => GetValueForTenorMOEX(tenor),
             _ => .0
         };
+
+        /// <summary>
+        ///     calculates forward interest rate.
+        /// </summary>
+        /// <param name="t1">Tenor of r to calculate.</param>
+        /// <param name="dt">Forward period.</param>        
+        public double GetForwardValueForTenor(Tenor t1, Tenor dt)
+        {            
+            double r1 = GetValueForTenor(t1);           // rate for tenor t1 
+            double t2 = t1.Years + dt.Years;            // tenor t2 = t1 + dt 
+            double r2 = GetValueForTenor(t2);           // rate for tenor t2
+            double accum                                // accumulation func a(t)
+                = Math.Pow(1 + r2, t2)                  // a(t) = (1 + r)^t 
+                / Math.Pow(1 + r1, t1.Years);           // a(t) = (1 + r2)^t2 / (1 + r1)^t1    
+            return Math.Pow(accum, 1 / dt.Years) - 1;   // return forward rate            
+        }
 
         private double GetValueForTenorMOEX(Tenor tenor)
         {

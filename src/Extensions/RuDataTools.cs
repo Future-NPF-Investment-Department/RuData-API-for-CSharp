@@ -425,7 +425,7 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Convertes <see cref="GCurveOFZResponse"/> to <see cref="YieldCurve"/>.
         /// </summary>
-        internal static YieldCurve ToYieldCurve(this GCurveOFZResponse gcparams, DateTime date)
+        internal static YieldCurve ToYieldCurve(this GCurveOFZResponse gcparams)
         {
             double beta0 = gcparams.beta0val.HasValue
                 ? (double)gcparams.beta0val!.Value
@@ -481,7 +481,7 @@ namespace RuDataAPI.Extensions
 
             return new YieldCurve()
             {
-                Date = date,
+                Date = gcparams.dt ?? default,
                 Provider = CurveProvider.MOEX,
                 Tau1 = tau,
                 Beta0 = beta0,

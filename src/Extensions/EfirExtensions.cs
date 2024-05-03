@@ -42,7 +42,7 @@ namespace RuDataAPI.Extensions
         /// <param name="provider">G-Curve provider.</param>
         public static async Task<YieldCurve> GetGCurve(this EfirClient client, DateTime date, CurveProvider provider) => provider switch
         {
-            CurveProvider.MOEX => (await client.GetGcurveParametersAsync(date)).ToYieldCurve(date),
+            CurveProvider.MOEX => (await client.GetGcurveParametersAsync(date)).ToYieldCurve(),
             _ => new YieldCurve()
         };
 

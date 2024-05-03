@@ -30,7 +30,7 @@ namespace RuDataAPI.Extensions
             _ => .0
         };
 
-        private double GetValueForTenorMOEX(double tenor)
+        private double GetValueForTenorMOEX(Tenor tenor)
         {
             // these constants are specified according to MOEX (https://www.moex.com/s2532)
             double k = 1.6, a1 = .0, a2 = .6;
@@ -48,12 +48,12 @@ namespace RuDataAPI.Extensions
 
             // original Nelson-Siegel formula:
             double gt = Beta0
-                + (Beta1 + Beta2) * Tau1 / tenor * (1 - Math.Exp(-tenor / Tau1))
-                - Beta2 * Math.Exp(-tenor / Tau1);
+                + (Beta1 + Beta2) * Tau1 / tenor.Years * (1 - Math.Exp(-tenor.Years / Tau1))
+                - Beta2 * Math.Exp(-tenor.Years / Tau1);
 
             // adding adjustment components to Nelson-Siegel original formaula:
             for (int i = 0; i <= 8; i++)
-                gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));
+                gt += gCoeffs[i] * Math.Exp(-(Math.Pow(tenor.Years - aCoeffs[i], 2) / Math.Pow(bCoeffs[i], 2)));
 
             return Math.Exp(gt / 10000) - 1;
         }    

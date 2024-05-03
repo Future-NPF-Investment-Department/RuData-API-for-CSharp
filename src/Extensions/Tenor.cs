@@ -50,8 +50,6 @@ namespace RuDataAPI.Extensions
             _days = days;
         }
 
-        public Tenor(string s) => Parse(s);
-
         public int Days => _days;
         public IReadOnlyDictionary<TenorBase, int> Components => _cmp;
 

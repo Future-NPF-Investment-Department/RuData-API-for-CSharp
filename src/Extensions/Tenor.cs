@@ -2,16 +2,22 @@
 
 namespace RuDataAPI.Extensions
 {
+#pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+    /// <summary>
+    ///     Represents time tenor.
+    /// </summary>
     public readonly struct Tenor : IParsable<Tenor>
+
     {
         // tenor base: day, week, month, year, etc..
         public enum TenorBase : int
         {
             D = 1,                                          // 1 day
-            W = 7,                                          // days in 1 week            
-            M = 30,                                         // days in 1 month
-            Q = 91,                                         // days in 1 quater
-            Y = 365,                                        // days in year
+            W = 7,                                          // 1 week   = 7 days          
+            M = 30,                                         // 1 month  = 30 days
+            Q = 91,                                         // 1 quater = 91 day
+            Y = 365,                                        // 1 year   = 365 days
         }
 
         // tenor components
@@ -34,29 +40,77 @@ namespace RuDataAPI.Extensions
 #pragma warning restore IDE1006 // Naming Styles
 
         private readonly int _days; // number of days in tenor.
+        private readonly double _years; // number of years in tenor.
 
+        /// <summary>
+        ///     Creates new tenor from components specified.
+        /// </summary>
+        /// <param name="components"></param>
         public Tenor(params (TenorBase, int)[] components)
         {
             foreach (var (baseUnit, count) in components)
                 _cmp[baseUnit] += count;
             Rearrange();
             _days = GetNumberOfDays();
+            _years = GetNumberOfYears();
         }
 
+        /// <summary>
+        ///     Creates new tenor from specified number of days.
+        /// </summary>
+        /// <param name="days">Number of days.</param>
         public Tenor (int days)
         {
+            if (days < 0) NegativeTenorException();
             _cmp[D] = days;
             Rearrange();
             _days = days;
+            _years = GetNumberOfYears();
         }
 
+        /// <summary>
+        ///     Creates new tenor from specified number of years.
+        /// </summary>
+        /// <param name="years">Number of years.</param>
+        public Tenor (double years)
+        {
+            if (years < 0) NegativeTenorException();
+            int fullyears = (int)years;
+            _cmp[Y] = fullyears;
+            if (years % 0.25 == 0)
+                _cmp[Q] = (int)((years - fullyears) / 0.25); 
+            else
+                _cmp[D] = (int)((years - fullyears) * 365);
+            Rearrange();
+            _days = GetNumberOfDays();
+            _years = years;
+        }
+
+        /// <summary>
+        ///     Tenor length in days.
+        /// </summary>
         public int Days => _days;
+
+        /// <summary>
+        ///     Tenor length in years.
+        /// </summary>
+        public double Years => _years;
+
+        /// <summary>
+        ///     Tenor components (e.g. days, weeks, months, quaters, years)
+        /// </summary>
         public IReadOnlyDictionary<TenorBase, int> Components => _cmp;
 
+        /// <summary>
+        ///     Parses tenor from specified string. 
+        /// </summary>
+        /// <param name="s">String representation of tenor.</param>
         public static Tenor Parse(string s)
             => Parse(s, CultureInfo.InvariantCulture);
 
-
+        /// <summary>
+        ///     Parses string representation of tenor (e.g. 1W, 1Y, 2Y6M, ...) into a value. 
+        /// </summary>
         public static Tenor Parse(string s, IFormatProvider? provider)
         {
             ReadOnlySpan<char> bases =
@@ -90,9 +144,11 @@ namespace RuDataAPI.Extensions
                 components.Add((D, days));
             
             return new Tenor(components.ToArray());
-            //throw new Exception($"Wrong tenor format {s}");
         }
 
+        /// <summary>
+        ///     Tries to parse string representation of tenor into a value. 
+        /// </summary>
         public static bool TryParse(string? s, IFormatProvider? provider, out Tenor result)
         {
             try
@@ -107,7 +163,9 @@ namespace RuDataAPI.Extensions
             }
         }
 
-
+        /// <summary>
+        ///     Converts number of months to number of days. 
+        /// </summary>
         private static int MonthsToDays(int months)
         {
             if (months % 12 == 0) return months / 12 * (int)Y;
@@ -115,7 +173,9 @@ namespace RuDataAPI.Extensions
             return months * (int)M;
         }
 
-
+        /// <summary>
+        ///     Calculates number of days in time tenor. 
+        /// </summary>
         private int GetNumberOfDays()
         {
             int days = 0
@@ -128,7 +188,24 @@ namespace RuDataAPI.Extensions
             return days;
         }
 
+        /// <summary>
+        ///     Calculates number of years in time tenor. 
+        /// </summary>
+        private double GetNumberOfYears()
+        {
+            double years = 0
+                + _cmp[Y] 
+                + _cmp[W] * (int)W / 365.0
+                + _cmp[D] * (int)D / 365.0
+                + _cmp[M] / 12.0
+                ;
 
+            return years;
+        }
+
+        /// <summary>
+        ///     Rearrsnges tenor components for standard combinations such as 365D, 52W, 12M, etc.
+        /// </summary>
         private void Rearrange()
         {
             // do not change order of IF blocks !!
@@ -183,6 +260,10 @@ namespace RuDataAPI.Extensions
             }
         }
 
+        /// <summary>
+        ///     Returns string representation of tenor.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string retval = string.Empty;
@@ -190,6 +271,10 @@ namespace RuDataAPI.Extensions
                 if (count > 0) retval += $"{count}{baseUnit}";
             return retval;
         }
+
+        private static void NegativeTenorException()        
+            => throw new Exception("Negative tenor are not allowed.");
+        
 
         public static DateTime operator +(DateTime d, Tenor t)        
             => d.AddDays(t.Days);
@@ -205,9 +290,19 @@ namespace RuDataAPI.Extensions
 
         public static implicit operator Tenor(int days)
         {
-            if (days < 0) 
-                throw new Exception("Negative tenors not allowed.");
+            if (days < 0) NegativeTenorException();
             return new(days);
+        }
+
+        public static implicit operator Tenor(double years)
+        {
+            if (years < 0) NegativeTenorException();
+            return new(years);
+        }
+
+        public static implicit operator Tenor(TimeSpan span)
+        {
+            return new(span.Days);
         }
 
         public static bool operator ==(Tenor t1, Tenor t2)

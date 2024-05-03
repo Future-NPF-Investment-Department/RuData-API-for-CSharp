@@ -24,7 +24,7 @@ namespace RuDataAPI.Extensions
         public double G8 { get; init; }
         public double G9 { get; init; }
 
-        public double GetValueForTenor(double tenor) => Provider switch
+        public double GetValueForTenor(Tenor tenor) => Provider switch
         {
             CurveProvider.MOEX => GetValueForTenorMOEX(tenor),
             _ => .0

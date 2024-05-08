@@ -403,6 +403,29 @@ namespace RuDataAPI
             return await PostEfirRequestAsync<EmissionDocsRequest, EmissionDocsResponse>(query, url);
         }
 
+        /// <summary>
+        ///     Sends POST request to EFIR Server to get SPPI testing results for specified securities as of specified date
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="fintoolids"></param>
+        /// <returns>
+        ///     Array of <see cref="TestingFields"/>.
+        /// </returns>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Sppi/Testing">
+        ///         https://docs.efir-net.ru/dh2/#/Sppi/Testing
+        ///     </see>.
+        /// </remarks>
+        public async Task<TestingFields[]> GetSppiTestingResults(DateTime date, params long[] fintoolids)
+        {
+            var query = new TestingRequest
+            {
+                FintoolIds = fintoolids,
+                CalcDate = date,                
+            };
+            string url = $"{_credentials.Url}/SPPI/Testing";
+            return await PostEfirRequestAsync<TestingRequest, TestingFields[]>(query, url);
+        }
 
         /// <summary> 
         ///     Sends POST request to EFIR Server to get parameters of MOEX yield curve (GCurve) for specified date.

@@ -158,8 +158,6 @@ namespace RuDataAPI.Extensions
             string datesInfo = "";
             string couponInfo = "";
             string ratingInfo = "";
-            string flowsInfo = "";
-            string historyInfo = "";
 
 
             string name = string.IsNullOrEmpty(Name) ? "UNKNOWN SECURITY" : Name;
@@ -199,7 +197,14 @@ namespace RuDataAPI.Extensions
 
 
             string distDate = "Placement:\t" + PlacementDate.ToShortDateString() + LF;
-            string matDate = AssetClass is InstrumentType.BOND ? "Maturity:\t" + MaturityDate.ToShortDateString() + LF : string.Empty + LF;
+            string matDate = "Maturity:\t";
+            if (AssetClass is InstrumentType.BOND && Flags.HasFlag(InstrumentFlags.Perpetual))
+                matDate += ACNT + InstrumentFlags.Perpetual.ToString() + RST;
+            else if (AssetClass is InstrumentType.BOND && !Flags.HasFlag(InstrumentFlags.Perpetual))
+                matDate += MaturityDate.ToShortDateString();
+            else
+                matDate = string.Empty;
+            matDate += LF;
             datesInfo = $"{UNDSCR}DATES{RST}:" + LF + distDate + matDate + LF;
 
 
@@ -238,16 +243,7 @@ namespace RuDataAPI.Extensions
             
             ratingInfo = aggrRatingInfo + lastRatingsInfo;
 
-
-            if (Flows is not null)
-            {
-                flowsInfo = $"{UNDSCR}FLOWS{RST}:" + LF;
-                foreach (var flow in Flows)                
-                    flowsInfo += $"{ACNT}{flow.PaymentType}{RST}|{flow.EndDate.ToShortDateString()}|{flow.Rate:0.00%}|{flow.Payment}|{flow.PeriodLength}" + LF;
-                flowsInfo += LF;
-            }
-
-            return commonInfo + issuerInfo + datesInfo + couponInfo + ratingInfo + flowsInfo;
+            return commonInfo + issuerInfo + datesInfo + couponInfo + ratingInfo;
         }
 
     }

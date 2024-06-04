@@ -12,15 +12,18 @@ using Efir.DataHub.Models.Models.Moex;
 using Efir.DataHub.Models.Models.RuData;
 using Efir.DataHub.Models.Models.Rating;
 using Efir.DataHub.Models.Models.Archive;
+using Efir.DataHub.Models.Models.Sppi;
 
 using Efir.DataHub.Models.Requests.V2;
 using Efir.DataHub.Models.Requests.V2.Account;
 using Efir.DataHub.Models.Requests.V2.Info;
+using Efir.DataHub.Models.Requests.V2.Bond;
 using Efir.DataHub.Models.Requests.V2.Moex;
 using Efir.DataHub.Models.Requests.V2.RuData;
 using Efir.DataHub.Models.Requests.V2.Rating;
 using Efir.DataHub.Models.Requests.V2.Archive;
-using System.Diagnostics;
+using Efir.DataHub.Models.Requests.V2.Sppi;
+using EmissionDocsRequest = Efir.DataHub.Models.Requests.V2.Info.EmissionDocsRequest;
 
 namespace RuDataAPI
 {
@@ -416,15 +419,15 @@ namespace RuDataAPI
         ///         https://docs.efir-net.ru/dh2/#/Sppi/Testing
         ///     </see>.
         /// </remarks>
-        public async Task<TestingFields[]> GetSppiTestingResults(DateTime date, params long[] fintoolids)
+        public async Task<TestingV2Fields[]> GetSppiTestingResults(DateTime date, params string[] isins)
         {
-            var query = new TestingRequest
+            var query = new TestingV2Request
             {
-                FintoolIds = fintoolids,
+                Codes = isins,
                 CalcDate = date,                
             };
-            string url = $"{_credentials.Url}/SPPI/Testing";
-            return await PostEfirRequestAsync<TestingRequest, TestingFields[]>(query, url);
+            string url = $"{_credentials.Url}/SppiV2/Testing";
+            return await PostEfirRequestAsync<TestingV2Request, TestingV2Fields[]>(query, url);
         }
 
         /// <summary> 

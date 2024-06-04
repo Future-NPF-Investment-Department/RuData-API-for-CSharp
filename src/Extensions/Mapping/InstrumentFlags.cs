@@ -4,7 +4,7 @@
     ///     Security issue classifications.
     /// </summary>
     [Flags]
-    public enum InstrumentFlags
+    public enum InstrumentFlags : byte
     {
         None            = 0,
         Structured      = 1,
@@ -13,5 +13,7 @@
         Linker          = 8,
         Convertible     = 16,
         Guaranteed      = 32,
+        Perpetual       = 64,
+        Callable        = 128,
     }
 }

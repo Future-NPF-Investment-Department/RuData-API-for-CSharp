@@ -408,6 +408,10 @@ namespace RuDataAPI.Extensions
                 sec.Flags |= InstrumentFlags.Convertible;
             if (secData.isguaranteed is 1)
                 sec.Flags |= InstrumentFlags.Guaranteed;
+            if (secData.endmtydate is null)
+                sec.Flags |= InstrumentFlags.Perpetual;
+            if (secData.haverepayment is true)
+                sec.Flags |= InstrumentFlags.Callable;
 
 
             if (flows is not null)

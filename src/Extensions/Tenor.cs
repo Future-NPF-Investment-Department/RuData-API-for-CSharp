@@ -8,7 +8,8 @@ namespace RuDataAPI.Extensions
     ///     Represents time tenor.
     /// </summary>
     public readonly struct Tenor : IParsable<Tenor>
-
+#pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
+#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     {
         // tenor base: day, week, month, year, etc..
         public enum TenorBase : int
@@ -16,20 +17,9 @@ namespace RuDataAPI.Extensions
             D = 1,                                          // 1 day
             W = 7,                                          // 1 week   = 7 days          
             M = 30,                                         // 1 month  = 30 days
-            Q = 91,                                         // 1 quater = 91 day
+            Q = 91,                                         // 1 quarter = 91 day
             Y = 365,                                        // 1 year   = 365 days
         }
-
-        // tenor components
-        private readonly Dictionary<TenorBase, int> _cmp = new()
-        {
-            {TenorBase.D , 0 },                             // number of days in tenor
-            {TenorBase.W , 0 },                             // number of weeks in tenor
-            {TenorBase.M , 0 },                             // number of months in tenor
-            {TenorBase.Q , 0 },                             // number of quaters in tenor
-            {TenorBase.Y , 0 },                             // number of years in tenor
-        };
-
 
 #pragma warning disable IDE1006 // Naming Styles
         private const TenorBase D = TenorBase.D;
@@ -39,8 +29,19 @@ namespace RuDataAPI.Extensions
         private const TenorBase Y = TenorBase.Y;
 #pragma warning restore IDE1006 // Naming Styles
 
-        private readonly int _days; // number of days in tenor.
-        private readonly double _years; // number of years in tenor.
+
+        // tenor components
+        private readonly Dictionary<TenorBase, int> _cmp = new()
+        {
+            {TenorBase.D , 0 },                             // number of days in tenor
+            {TenorBase.W , 0 },                             // number of weeks in tenor
+            {TenorBase.M , 0 },                             // number of months in tenor
+            {TenorBase.Q , 0 },                             // number of quarters in tenor
+            {TenorBase.Y , 0 },                             // number of years in tenor
+        };
+
+        private readonly int _days;                         // number of days in tenor.
+        private readonly double _years;                     // number of years in tenor.
 
         /// <summary>
         ///     Creates new tenor from components specified.
@@ -97,7 +98,7 @@ namespace RuDataAPI.Extensions
         public double Years => _years;
 
         /// <summary>
-        ///     Tenor components (e.g. days, weeks, months, quaters, years)
+        ///     Tenor components (e.g. days, weeks, months, quarters, years)
         /// </summary>
         public IReadOnlyDictionary<TenorBase, int> Components => _cmp;
 
@@ -204,7 +205,7 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
-        ///     Rearrsnges tenor components for standard combinations such as 365D, 52W, 12M, etc.
+        ///     Rearranges tenor components for standard combinations such as 365D, 52W, 12M, etc.
         /// </summary>
         private void Rearrange()
         {
@@ -245,7 +246,7 @@ namespace RuDataAPI.Extensions
                 _cmp[W] = 0;
             }
 
-            // 1 quater ---> 3 months
+            // 1 quarter ---> 3 months
             if (_cmp[Q] > 0)
             {
                 _cmp[M] += _cmp[Q] * 3;
@@ -274,7 +275,9 @@ namespace RuDataAPI.Extensions
 
         private static void NegativeTenorException()        
             => throw new Exception("Negative tenor are not allowed.");
-        
+
+        public static Tenor operator +(Tenor t1, Tenor t2)
+            => new(t1._days + t2._days);
 
         public static DateTime operator +(DateTime d, Tenor t)        
             => d.AddDays(t.Days);

@@ -433,9 +433,7 @@ namespace RuDataAPI
         /// <summary> 
         ///     Sends POST request to EFIR Server to get parameters of MOEX yield curve (GCurve) for specified date.
         /// </summary>
-        /// <param name="date">Date of yield curve.<returns>
-        ///     Instance of <see cref="GCurveOFZResponse"/>.
-        /// </returns>
+        /// <param name="date">Date of yield curve.</param>
         /// <remarks>
         ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/g-curve-ofz?id=post-g-curve-ofz">
         ///         https://docs.efir-net.ru/dh2/#/Bond/g-curve-ofz?id=post-g-curve-ofz
@@ -444,6 +442,9 @@ namespace RuDataAPI
         ///             MOEX GCurve reference page</see>. 
         ///     </para>    
         /// </remarks>
+        /// <returns>
+        ///     Instance of <see cref="GCurveOFZResponse"/>.
+        /// </returns>
         public async Task<GCurveOFZResponse> GetGcurveParametersAsync(DateTime date)
         {
             var query = new GCurveOFZRequest
@@ -453,8 +454,30 @@ namespace RuDataAPI
 
             string url = $"{_credentials.Url}/Bond/g-curve-ofz";
             return await PostEfirRequestAsync<GCurveOFZRequest, GCurveOFZResponse>(query, url);
-        }         
+        }
 
+        /// <summary> 
+        ///     Sends POST request to EFIR Server to get parameters of floating bonds.
+        /// </summary>
+        /// <param name="ids">Security identificators.</param>
+        /// <returns>
+        ///     Array of <see cref="FloaterDataFields"/>.
+        /// </returns>
+        /// <remarks>
+        ///     For more details about usage see <see href="https://docs.efir-net.ru/dh2/#/Bond/FloaterData">
+        ///         https://docs.efir-net.ru/dh2/#/Bond/FloaterData
+        ///     </see>. 
+        /// </remarks>
+        public async Task<FloaterDataFields[]> GetFloaterDataAsync(params long[] ids)
+        {
+            var query = new FloaterDataRequest
+            {
+                FintoolIds=ids,
+                ShowFuturePeriods = true
+            };
+            string url = $"{_credentials.Url}/Bond/FloaterData";
+            return await PostEfirRequestAsync<FloaterDataRequest, FloaterDataFields[]>(query, url);
+        }
 
         /// <summary>
         ///     Returns history data for instrument tarded on MOEX.

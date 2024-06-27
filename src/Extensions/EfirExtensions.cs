@@ -203,7 +203,7 @@ namespace RuDataAPI.Extensions
         {
             int year = DateTime.Now.Year;
             DateTime start = new(year - 1, 12, 20);
-            DateTime end = new(year, 12, 31);
+            DateTime end = new DateTime(year, 12, 31) + TimeSpan.FromDays(20);
             var holidays = await client.GetHolidaysAsync(start, end, cdr);
             return holidays;
         }

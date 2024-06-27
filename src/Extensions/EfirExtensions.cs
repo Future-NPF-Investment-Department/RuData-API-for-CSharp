@@ -28,12 +28,6 @@ namespace RuDataAPI.Extensions
     /// </summary>
     public static class EfirExtensions
     {
-        #region Cache
-        private static readonly Dictionary<string, CreditRatingAction[]> _ratings = new();
-        private static readonly Dictionary<string, InstrumentFlow[]> _flows = new();
-        private static readonly Dictionary<string, InstrumentHistoryRecord[]> _hist = new();
-        private static readonly ConcurrentDictionary<Calendar, HolidaysFields[]> _holidays = new();
-        #endregion
 
         /// <summary>
         ///     Extracts G-Curve for specified date.
@@ -98,26 +92,11 @@ namespace RuDataAPI.Extensions
         /// <returns>Collection of <see cref="CreditRatingAction"/>.</returns>
         public static async Task<IEnumerable<CreditRatingAction>> ExGetLastRatingActionsByInn(this EfirClient client, DateTime? date = null, params string[] inns)
         {
-            // check cache for previuosly added data 
-            var (missingInns, foundRecords) = CheckCache(inns, _ratings);
-
-            // if no missing inn codes then return data from cache
-            if (missingInns.Length is 0)
-                return foundRecords;
-
-            // otherwise get data for missing inn codes from EFIR server
             var end = date is not null ? date.Value : DateTime.Now;
             var start = date is not null ? date.Value.AddDays(-365) : DateTime.Now.AddDays(-365);
-            var hist = await client.ExGetRatingActionsByInns(start, end, missingInns);
+            var hist = await client.ExGetRatingActionsByInns(start, end, inns);
             var last = RuDataTools.GetLastRatings(hist);
-
-            // add missing data to cache
-            var chunks = last.GroupBy(r => r.Inn);
-            foreach (var chunk in chunks)
-                _ratings.TryAdd(chunk.Key, chunk.ToArray());
-
-            // return data from cache
-            return GetFromCache(inns, _ratings);
+            return last;
         }
 
 
@@ -133,9 +112,6 @@ namespace RuDataAPI.Extensions
             if (RuDataTools.IsIsinCode(isin) is false)
                 throw new Exception($"Not an ISIN: {isin}.");
 
-            if (_ratings.TryGetValue(isin, out CreditRatingAction[]? value))
-                return value;
-
             var secinfo = await client.GetFinToolRefDataAsync(isin, RefDataCols.ALLCODES);
 
             var end = date is not null ? date.Value : DateTime.Now;
@@ -147,8 +123,7 @@ namespace RuDataAPI.Extensions
                 : hist;
 
             var last = RuDataTools.GetLastRatings(histForIsin);
-            _ratings.Add(isin, last);
-            _ratings.TryAdd(secinfo.issuerinn, last);
+
             return last;
         }
 
@@ -177,29 +152,9 @@ namespace RuDataAPI.Extensions
         /// <returns>Collection of <see cref="InstrumentHistoryRecord"/>.</returns>
         public static async Task<IEnumerable<InstrumentHistoryRecord>> ExGetTradeHistory(this EfirClient client, DateTime startDate, DateTime endDate, params string[] isins)
         {
-            // all values from input are assumed to be good ISIN codes.
-            // check for bad ISIN-codes is not performed here.
-            // all ISIN check should be performed in outside calling methods
-
-            // check cache for previuosly added data 
-            var (missingIsins, foundRecords) = CheckCache(isins, _hist);
-
-            // if no missing isins then return data from cache
-            if (missingIsins.Length is 0)
-                return foundRecords;
-
-            // otherwise get data for missing isins from EFIR server
-            var histRaw = await client.GetTradeHistoryAsync(startDate, endDate, missingIsins);
+            var histRaw = await client.GetTradeHistoryAsync(startDate, endDate, isins);
             var hist = histRaw.Select(hr => hr.ToHistoryRecord());
-            var foundIsins = hist.Select(hr => hr.Isin).Distinct().ToArray();
-
-            // add missing data to cache
-            var chunks = hist.GroupBy(r => r.Isin);
-            foreach (var chunk in chunks)
-                _hist.TryAdd(chunk.Key, chunk.ToArray());
-
-            // return data from cache
-            return GetFromCache(foundIsins, _hist);
+            return hist;
         }
 
 
@@ -210,28 +165,9 @@ namespace RuDataAPI.Extensions
         /// <returns>Collection of <see cref="InstrumentFlow"/>.</returns>
         public static async Task<IEnumerable<InstrumentFlow>> ExGetInstrumentFlows(this EfirClient client, params string[] isins)
         {
-            // all values from input are assumed to be good ISIN codes.
-            // check for bad ISIN-codes is not performed here.
-            // all ISIN check should be performed in outside calling methods
-
-            // check cache for previuosly added data 
-            var (missingIsins, foundRecords) = CheckCache(isins, _flows);
-
-            // if no missing isins then return data from cache
-            if (missingIsins.Length is 0)
-                return foundRecords;
-
-            // otherwise get data for missing isins from EFIR server
-            var flowsRaw = await client.GetEventsCalendarAsync(missingIsins);
+            var flowsRaw = await client.GetEventsCalendarAsync(isins);
             var flows = flowsRaw.Select(hr => hr.ToFlow());
-
-            // add missing data to cache
-            var chunks = flows.GroupBy(r => r.Isin);
-            foreach (var chunk in chunks)
-                _flows.TryAdd(chunk.Key, chunk.ToArray());
-
-            // return data from cache
-            return GetFromCache(isins, _flows);
+            return flows;
         }
 
 
@@ -265,15 +201,10 @@ namespace RuDataAPI.Extensions
 
         public static async Task<HolidaysFields[]> ExGetHolidays(this EfirClient client, Calendar cdr = Calendar.RU)
         {
-            if (_holidays.TryGetValue(cdr, out var holidays))
-                return holidays;
-
             int year = DateTime.Now.Year;
             DateTime start = new(year - 1, 12, 20);
             DateTime end = new(year, 12, 31);
-
-            holidays = await client.GetHolidaysAsync(start, end, cdr);
-            _holidays.TryAdd(cdr, holidays);
+            var holidays = await client.GetHolidaysAsync(start, end, cdr);
             return holidays;
         }
 
@@ -372,48 +303,6 @@ namespace RuDataAPI.Extensions
 
             // cast to array and return
             return result.ToArray();
-        }
-
-
-        /// <summary>
-        ///     Checks specified cache for data.
-        /// </summary>
-        /// <param name="keys">Collection of keys.</param>
-        /// <param name="cache">Cache dictionary.</param>
-        /// <returns>Tuple of keys not found and collection of found records.</returns>
-        private static (string[] MissingKeys, IEnumerable<TCache> FoundRecords) CheckCache<TCache>(string[] keys, Dictionary<string, TCache[]> cache)  
-        {
-            var retval = Enumerable.Empty<TCache>();
-            var missingKeys = Enumerable.Empty<string>();
-            int count = 0;
-            foreach (var key in keys)
-            {
-                if (cache.TryGetValue(key, out TCache[]? value))
-                {
-                    retval = retval.Concat(value);
-                    continue;
-                }
-                missingKeys = missingKeys.Append(key);
-                count++;
-            }
-
-            return (missingKeys.ToArray(), retval);
-        }
-
-
-        /// <summary>
-        ///     Gets data from cache.
-        /// </summary>
-        /// <typeparam name="TData">Cache data type.</typeparam>
-        /// <param name="keys">Collection of keys.</param>
-        /// <param name="cache">Cache dictionary.</param>
-        /// <returns>Collection of data records.</returns>
-        private static IEnumerable<TData> GetFromCache<TData>(string[] keys, Dictionary<string, TData[]> cache)
-        {
-            var data = Enumerable.Empty<TData>();
-            foreach (var key in keys)
-                data = data.Concat(cache[key]);
-            return data;
         }
     }
 }

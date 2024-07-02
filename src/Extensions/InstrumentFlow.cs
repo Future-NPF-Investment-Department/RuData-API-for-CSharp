@@ -8,6 +8,11 @@ namespace RuDataAPI.Extensions
     public class InstrumentFlow : ICloneable
     {
         /// <summary>
+        ///     Flow ID.
+        /// </summary>
+        public long Id { get; set; }
+
+        /// <summary>
         ///     Security ISIN-code.
         /// </summary>
         public string Isin { get; set; } = string.Empty;
@@ -30,12 +35,12 @@ namespace RuDataAPI.Extensions
         /// <summary>
         ///     Annual interest rate established for the coupon period.
         /// </summary>
-        public double Rate { get; set; }
+        public double? Rate { get; set; }
 
         /// <summary>
         ///     Payment per bond for this coupon period in units of bond's notional currency.
         /// </summary>
-        public double Payment { get; set; }
+        public double? Payment { get; set; }
 
         /// <summary>
         ///     Payment type (CPN, CALL, MTY, CONV, DIV)

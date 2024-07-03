@@ -2,13 +2,13 @@
 
 namespace RuDataAPI.Extensions
 {
-#pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
-#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     /// <summary>
     ///     Represents time tenor.
     /// </summary>
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     public readonly struct Tenor : IParsable<Tenor>
-#pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
     {
         // tenor base: day, week, month, year, etc..
@@ -271,6 +271,16 @@ namespace RuDataAPI.Extensions
             foreach (var (baseUnit, count) in _cmp.Reverse())
                 if (count > 0) retval += $"{count}{baseUnit}";
             return retval;
+        }
+
+        /// <summary>
+        ///     Determines whether the specified tenor is equal to the current <see cref="Tenor"/> instance.
+        /// </summary>
+        public override bool Equals(object? obj)
+        {
+            if (obj is Tenor t) 
+                return t.Days == this.Days;
+            return false;
         }
 
         private static void NegativeTenorException()        

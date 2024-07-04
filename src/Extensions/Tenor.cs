@@ -165,6 +165,18 @@ namespace RuDataAPI.Extensions
         }
 
         /// <summary>
+        ///     Normalizes this <see cref="Tenor"/> instance to specified tenor.
+        /// </summary>
+        public Tenor NormalizeTo(Tenor tenor)
+        {
+            if (tenor._days > _days || _days % tenor._days == 0)
+                return this;
+
+            int norm = _days / tenor._days;
+            return new Tenor(tenor._days * norm);
+        }
+
+        /// <summary>
         ///     Converts number of months to number of days. 
         /// </summary>
         private static int MonthsToDays(int months)

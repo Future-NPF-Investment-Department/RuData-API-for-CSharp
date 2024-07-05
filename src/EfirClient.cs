@@ -361,11 +361,10 @@ namespace RuDataAPI
                     Codes = chunk,
                     DateFrom = start,
                     DateTo = end,
-                    Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", "lclose",
-                                     "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid", "accruedint" },
+                    Fields = new[] { "last", "open", "high", "low", "facevalue", "val_acc", "lclose", "last_yield",
+                                     "mcap", "isin", "time", "exch", "deal_acc", "counter", "boardid", "accruedint",
+                                     "vol_acc", "deal_acc" },
                     UseDefaultTradeSite = true,
-                    //BoardIds = new[] { "last", "open", "high", "low", "facevalue", "val_acc",
-                    //                 "mcap", "isin", "time", "exch", "deal_acc", "counter" },
                 };
 
                 var task = PostEfirPagedRequestAsync2<EndOfDayOnExchangesRequest, EndOfDayOnExchangeFields>(query, url, 100);

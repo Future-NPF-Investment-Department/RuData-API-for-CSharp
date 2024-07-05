@@ -3,6 +3,11 @@
     public class InstrumentHistoryRecord
     {
         /// <summary>
+        ///     ISIN-code.
+        /// </summary>
+        public string Isin { get; set; } = string.Empty;
+
+        /// <summary>
         ///     Trade date.
         /// </summary>
         public DateTime Date { get; set; }
@@ -25,12 +30,27 @@
         /// <summary>
         ///     Close price for particulart trade date.
         /// </summary>
-        public double Close { get; set; }  
-        
+        public double Close { get; set; }
+
+        /// <summary>
+        ///     Yield for particulart trade date.
+        /// </summary>
+        public double Yield { get; set; }
+
         /// <summary>
         ///     Aggregated volume traded during trade day.
         /// </summary>
-        public double Volume { get; set; }
+        public double VolumeTraded { get; set; }
+
+        /// <summary>
+        ///     Aggregated amount traded during trade day.
+        /// </summary>
+        public long AmountTraded { get; set; }
+
+        /// <summary>
+        ///     Number of deals during trade day.
+        /// </summary>
+        public long NumberOfDeals { get; set; }
 
         /// <summary>
         ///     Face value for the last trade of the day.
@@ -43,9 +63,9 @@
         public double AccruedInterest { get; set; }
 
         /// <summary>
-        ///     ISIN-code.
+        ///     Market capitalization (issue size * price).
         /// </summary>
-        public string Isin { get; set; } = string.Empty;
+        public double Capitalization { get; set; }
 
         /// <summary>
         ///     Exhange name.

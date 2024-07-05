@@ -269,11 +269,15 @@ namespace RuDataAPI.Extensions
                 High = fields.high is null ? default : (double)fields.high,
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.last is null ? default : (double)fields.last,
-                Volume = fields.val_acc is null ? default : (double)fields.val_acc,
+                VolumeTraded = fields.val_acc is null ? default : (double)fields.val_acc,
+                AmountTraded = fields.vol_acc is null ? default : (long)fields.vol_acc,
                 FaceValue = fields.facevalue is null ? default : (double)fields.facevalue,
                 AccruedInterest = fields.accruedint is null ? default : (double)fields.accruedint,
                 Isin = fields.isin is null ? string.Empty : fields.isin,
-                ExchangeName = fields.exch is null? string.Empty : fields.exch
+                ExchangeName = fields.exch is null? string.Empty : fields.exch,
+                Capitalization = fields.mcap is null ? default : (double)fields.mcap,
+                Yield = fields.last_yield is null ? default : (double)fields.last_yield,
+                NumberOfDeals = fields.deal_acc is null ? default : (long)fields.deal_acc,
             };
         }
 
@@ -292,7 +296,7 @@ namespace RuDataAPI.Extensions
                 High = fields.high is null ? default : (double)fields.high,
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.close is null ? default : (double)fields.close,
-                Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
+                VolumeTraded = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
             };
         }
 
@@ -311,7 +315,7 @@ namespace RuDataAPI.Extensions
                 High = fields.high is null ? default : (double)fields.high,
                 Low = fields.low is null ? default : (double)fields.low,
                 Close = fields.close is null ? default : (double)fields.close,
-                Volume = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
+                VolumeTraded = fields.marketprice3tradesvalue is null ? default : (double)fields.marketprice3tradesvalue,
             };
         }
 

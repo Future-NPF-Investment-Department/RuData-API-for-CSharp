@@ -80,7 +80,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public override string ToString()
         {
-            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {(Value is "Снят" ? "NR" : Value)} ({Action} {Date.ToShortDateString()} | {Outlook})";
+            return $"{RuDataTools.GetEnumPrintStrig(Agency)}: {(Value is "Снят" ? "NR" : Value)} ({Action} {Date.ToShortDateString()} | {Outlook})";
         }
     }
 }

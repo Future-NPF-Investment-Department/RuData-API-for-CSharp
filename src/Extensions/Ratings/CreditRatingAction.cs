@@ -1,4 +1,5 @@
 ﻿using RuDataAPI.Extensions.Mapping;
+using System.Security.Cryptography;
 
 namespace RuDataAPI.Extensions.Ratings
 {
@@ -79,26 +80,7 @@ namespace RuDataAPI.Extensions.Ratings
         /// </summary>
         public override string ToString()
         {
-            const string ACNT = "\x1b[38;5;210m";       // color accent 
-            const string RST = "\x1b[0m";               // normal color accent
-            const string UNDSCR = "\x1b[4m";            // underscore accent
-
-            string head = $"{UNDSCR}RATING for {IssuerName} (INN: {ACNT}{Inn}{RST})\n";
-            string rating = $"{ACNT}{Value}{RST} from {Agency} ({Date.ToShortDateString()}, {Action})\n";
-            string scale = $"Scale: {Scale} in {Currency} currency\n";
-            string action = $"Outlook: {Outlook}\n";
-            string release = $"Press release: {PressRelease}\n";
-            return head + rating + scale + action + release;
-        }
-
-        /// <summary>
-        ///     Provides short stylized rating description.
-        /// </summary>
-        public string ToShortString()
-        {
-            const string ACNT = "\x1b[38;5;210m";              // color accent 
-            const string RST = "\x1b[0m";                      // normal color accent
-            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {ACNT}{(Value is "Снят" ? "NR" : Value)}{RST} ({Action} {Date.ToShortDateString()} | {Outlook})";
+            return $"{RuDataTools.GetEnumPrintStrig(Agency)}:\t {(Value is "Снят" ? "NR" : Value)} ({Action} {Date.ToShortDateString()} | {Outlook})";
         }
     }
 }

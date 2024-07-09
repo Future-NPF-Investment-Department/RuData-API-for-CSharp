@@ -91,7 +91,7 @@ namespace RuDataAPI.Extensions.Ratings
             {
                 lastRatingsHead = $"\nMost recent ratings:\n";
                 foreach(var r in Ratings)
-                    rawratings += r.ToShortString() + '\n';
+                    rawratings += r.ToString() + '\n';
             }
             return head + values + pd + lastRatingsHead + rawratings;
         }
